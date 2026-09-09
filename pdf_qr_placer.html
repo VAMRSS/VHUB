@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF QR Placer v1.1</title>
+  <style>
+    :root{
+      --bg:#f4f5f7;
+      --panel:#ffffff;
+      --ink:#16181c;
+      --muted:#6f7680;
+      --line:#d9dde3;
+      --line2:#e8ebef;
+      --accent:#17191d;
+      --soft:#f8f9fa;
+      --danger:#a3382d;
+      --ok:#2f6a45;
+      --shadow:0 10px 30px rgba(20,24,32,.08);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+      color:var(--ink);
+      background:var(--bg);
+      overflow:hidden;
+    }
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .app{height:100vh;display:grid;grid-template-rows:58px 1fr}
+    header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 18px 0 22px;background:var(--panel);border-bottom:1px solid var(--line);
+    }
+    .brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+    .brand h1{font-size:15px;letter-spacing:.01em;margin:0;font-weight:700}
+    .brand span{font-size:11px;color:var(--muted);white-space:nowrap}
+    .privacy{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}
+    .privacy i{width:7px;height:7px;border-radius:50%;background:#607d68;display:inline-block}
+    main{min-height:0;display:grid;grid-template-columns:360px 1fr}
+    .sidebar{
+      background:var(--panel);border-right:1px solid var(--line);padding:18px;overflow:auto;
+    }
+    .section{padding:0 0 18px;margin-bottom:18px;border-bottom:1px solid var(--line2)}
+    .section:last-child{border-bottom:0;margin-bottom:0}
+    .section-title{
+      font-size:11px;font-weight:700;color:#434952;letter-spacing:.06em;text-transform:uppercase;
+      margin:0 0 10px;
+    }
+    .drop{
+      border:1px dashed #aeb5bf;border-radius:12px;background:var(--soft);
+      min-height:114px;padding:18px;text-align:center;display:flex;flex-direction:column;
+      justify-content:center;align-items:center;gap:7px;transition:.15s;
+    }
+    .drop.drag{border-color:#2c3138;background:#f0f2f4}
+    .drop strong{font-size:13px;font-weight:650}
+    .drop small{font-size:11px;color:var(--muted)}
+    .file-meta{
+      margin-top:10px;padding:9px 10px;border:1px solid var(--line2);border-radius:9px;
+      display:none;grid-template-columns:1fr auto;gap:6px;font-size:11px;background:#fff;
+    }
+    .file-meta.on{display:grid}
+    .file-meta .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+    .file-meta .sub{color:var(--muted);grid-column:1/-1}
+    .btn{
+      border:1px solid var(--line);background:#fff;border-radius:8px;height:34px;padding:0 12px;
+      font-size:12px;font-weight:600;color:#2c3138;display:inline-flex;align-items:center;justify-content:center;
+      gap:6px;
+    }
+    .btn:hover{background:#f7f8f9}
+    .btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
+    .btn.primary:hover{background:#2a2d32}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .btn.full{width:100%;height:40px}
+    .field{display:grid;gap:6px;margin-bottom:11px}
+    .field:last-child{margin-bottom:0}
+    label{font-size:11px;color:#4d535c;font-weight:600}
+    input[type="text"], input[type="url"], input[type="number"], select{
+      width:100%;height:36px;border:1px solid var(--line);border-radius:8px;background:#fff;
+      color:var(--ink);padding:0 10px;outline:none;font-size:12px;
+    }
+    input:focus,select:focus{border-color:#8d949e;box-shadow:0 0 0 3px rgba(55,60,68,.06)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .inline{
+      display:flex;align-items:center;justify-content:space-between;gap:10px
+    }
+    .check{display:flex;align-items:center;gap:8px;font-size:11px;color:#4d535c}
+    .check input{accent-color:#222}
+    .range-wrap{display:grid;grid-template-columns:1fr 58px;gap:8px;align-items:center}
+    input[type="range"]{width:100%;accent-color:#25282d}
+    .size-readout{
+      height:30px;border:1px solid var(--line);border-radius:7px;display:flex;align-items:center;
+      justify-content:center;font-size:11px;background:#fff;
+    }
+    .hint{font-size:10px;line-height:1.5;color:var(--muted);margin-top:6px}
+    .status{
+      padding:9px 10px;border-radius:8px;background:#f5f6f7;font-size:10px;color:#5c636d;
+      line-height:1.5;margin-top:10px;min-height:42px;
+    }
+    .status.ok{color:var(--ok);background:#f2f7f3}
+    .status.warn{color:#7f5a1f;background:#faf7ef}
+    .status.err{color:var(--danger);background:#fbf2f1}
+    .workspace{
+      min-width:0;min-height:0;display:grid;grid-template-rows:48px 1fr;
+      background:#dfe2e6;
+    }
+    .toolbar{
+      background:#f7f8f9;border-bottom:1px solid #cfd4da;display:flex;align-items:center;
+      justify-content:space-between;padding:0 12px;gap:10px;
+    }
+    .toolbar-group{display:flex;align-items:center;gap:7px;min-width:0}
+    .iconbtn{
+      height:30px;min-width:30px;border:1px solid #d5d9df;border-radius:7px;background:white;
+      font-size:12px;color:#3f454e;padding:0 9px;
+    }
+    .iconbtn:disabled{opacity:.4}
+    .pagebox{display:flex;align-items:center;gap:6px;font-size:11px;color:#5a616a}
+    .pagebox input{width:50px;height:30px;text-align:center;padding:0 5px}
+    .zoom{font-size:11px;color:#5a616a;min-width:48px;text-align:center}
+    .canvas-stage{
+      position:relative;min-height:0;overflow:auto;padding:34px;
+      display:flex;align-items:flex-start;justify-content:center;
+    }
+    .paper-wrap{
+      position:relative;display:none;box-shadow:var(--shadow);background:white;user-select:none;
+    }
+    .paper-wrap.on{display:block}
+    #pdfCanvas{display:block;background:white}
+    .qr-overlay{
+      position:absolute;display:none;cursor:move;border:1px solid rgba(25,28,33,.75);
+      box-shadow:0 0 0 1px rgba(255,255,255,.7), 0 3px 12px rgba(0,0,0,.10);
+      touch-action:none;background:white;
+    }
+    .qr-overlay.on{display:block}
+    .qr-overlay img{display:block;width:100%;height:100%;pointer-events:none}
+    .qr-tag{
+      position:absolute;left:0;top:-21px;height:18px;padding:0 6px;border-radius:4px;
+      background:#202329;color:white;font-size:9px;display:flex;align-items:center;
+      white-space:nowrap;pointer-events:none;
+    }
+    .empty{
+      height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;
+      gap:9px;color:#666d76;text-align:center;
+    }
+    .empty strong{font-size:14px;color:#515861}
+    .empty span{font-size:11px}
+    .spinner{
+      width:16px;height:16px;border:2px solid #d0d4da;border-top-color:#4a4f56;border-radius:50%;
+      animation:spin .75s linear infinite;display:none;
+    }
+    .spinner.on{display:block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .export-row{display:grid;grid-template-columns:1fr 42px;gap:8px}
+    .mini-note{font-size:10px;color:var(--muted);line-height:1.55}
+    @media(max-width:900px){
+      body{overflow:auto}
+      .app{height:auto;min-height:100vh}
+      main{grid-template-columns:1fr;grid-template-rows:auto 70vh}
+      .sidebar{border-right:0;border-bottom:1px solid var(--line)}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <h1>PDF QR Placer <span style="font-weight:500;color:#777">v1.1</span></h1>
+      <span>URL → QR → PDF</span>
+    </div>
+    <div class="privacy"><i></i>PDF処理はブラウザ内で実行</div>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <section class="section">
+        <div class="section-title">01 / PDF</div>
+        <div id="dropZone" class="drop">
+          <strong>PDFをここにドロップ</strong>
+          <small>または</small>
+          <button id="pickBtn" class="btn" type="button">PDFを選択</button>
+          <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden />
+        </div>
+        <div id="fileMeta" class="file-meta">
+          <div id="fileName" class="name"></div>
+          <div id="fileSize"></div>
+          <div id="fileSub" class="sub"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">02 / URL</div>
+        <div class="field">
+          <label for="urlInput">QRコードに埋め込むURL</label>
+          <input id="urlInput" type="url" placeholder="https://example.com/" autocomplete="off" />
+        </div>
+        <div class="inline">
+          <label class="check"><input id="autoSize" type="checkbox" checked /> URL長に応じて推奨サイズ</label>
+          <button id="makeQrBtn" class="btn" type="button">QR更新</button>
+        </div>
+        <div id="qrStatus" class="status">URLを入力するとQRコードを生成します。</div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">03 / 配置</div>
+        <div class="row">
+          <div class="field">
+            <label for="targetMode">貼付対象</label>
+            <select id="targetMode">
+              <option value="current">表示中の1ページ</option>
+              <option value="all">全ページ・各ページ自動配置</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="positionMode">位置</label>
+            <select id="positionMode">
+              <option value="auto">余白を自動判定</option>
+              <option value="manual">手動配置</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="inline">
+            <label for="sizeRange">QR実寸</label>
+            <span class="mini-note">15–60 mm</span>
+          </div>
+          <div class="range-wrap">
+            <input id="sizeRange" type="range" min="15" max="60" step="1" value="24" />
+            <div id="sizeReadout" class="size-readout">24 mm</div>
+          </div>
+          <div class="hint">自動判定後もプレビュー上でQRをドラッグできます。手動移動すると、そのページは手動位置として扱われます。</div>
+        </div>
+
+        <div class="row">
+          <button id="autoPlaceBtn" class="btn" type="button" disabled>このページを自動配置</button>
+          <button id="resetManualBtn" class="btn" type="button" disabled>手動位置を解除</button>
+        </div>
+        <div id="placeStatus" class="status">PDFとQRコードの準備後に配置できます。</div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">04 / 出力</div>
+        <div class="field">
+          <label for="outputName">出力ファイル名</label>
+          <input id="outputName" type="text" value="qr_added.pdf" />
+        </div>
+        <div class="export-row">
+          <button id="exportBtn" class="btn primary full" type="button" disabled>QR付きPDFを書き出す</button>
+          <div id="spinner" class="spinner" aria-label="処理中"></div>
+        </div>
+        <div class="hint">電子署名済みPDFは、内容を変更するため署名が無効になる場合があります。</div>
+      </section>
+    </aside>
+
+    <section class="workspace">
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button id="prevBtn" class="iconbtn" type="button" disabled>‹</button>
+          <div class="pagebox">
+            <input id="pageInput" type="number" min="1" value="1" disabled />
+            <span>/ <span id="pageCount">–</span></span>
+          </div>
+          <button id="nextBtn" class="iconbtn" type="button" disabled>›</button>
+        </div>
+        <div class="toolbar-group">
+          <button id="zoomOutBtn" class="iconbtn" type="button" disabled>−</button>
+          <div id="zoomLabel" class="zoom">100%</div>
+          <button id="zoomInBtn" class="iconbtn" type="button" disabled>＋</button>
+          <button id="fitBtn" class="iconbtn" type="button" disabled>Fit</button>
+        </div>
+      </div>
+
+      <div id="stage" class="canvas-stage">
+        <div id="emptyState" class="empty">
+          <strong>PDFを読み込んでください</strong>
+          <span>ページの余白を解析し、QRコードの配置候補を自動選定します。</span>
+        </div>
+        <div id="paperWrap" class="paper-wrap">
+          <canvas id="pdfCanvas"></canvas>
+          <div id="qrOverlay" class="qr-overlay">
+            <div class="qr-tag">QR / drag</div>
+            <img id="qrPreview" alt="QR preview" />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/dist/qrcode.js"></script>
+<script type="module">
+  import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.2.108/build/pdf.min.mjs";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.2.108/build/pdf.worker.min.mjs";
+
+  const $ = (id) => document.getElementById(id);
+  const PT_PER_MM = 72 / 25.4;
+
+  const state = {
+    file: null,
+    bytes: null,
+    pdfJs: null,
+    pageCount: 0,
+    pageNum: 1,
+    zoom: 1,
+    fitMode: true,
+    viewport: null,
+    pagePts: null,
+    qrDataUrl: null,
+    qrModules: 0,
+    qrSizeMm: 24,
+    placements: new Map(), // page -> {xPt, yTopPt, sizePt, manual}
+    renderToken: 0,
+    dragging: null
+  };
+
+  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+  function mmToPt(mm){ return mm * PT_PER_MM; }
+  function ptToMm(pt){ return pt / PT_PER_MM; }
+
+  function formatBytes(bytes){
+    if(bytes < 1024) return bytes + " B";
+    if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + " KB";
+    return (bytes/(1024*1024)).toFixed(1) + " MB";
+  }
+
+  function safePdfName(name){
+    let n = (name || "qr_added.pdf").trim().replace(/[\\/:*?"<>|]+/g, "_");
+    if(!n.toLowerCase().endsWith(".pdf")) n += ".pdf";
+    return n || "qr_added.pdf";
+  }
+
+  function setStatus(el, text, type=""){
+    el.textContent = text;
+    el.className = "status" + (type ? " " + type : "");
+  }
+
+  function validateUrl(){
+    const raw = $("urlInput").value.trim();
+    if(!raw) return {ok:false, message:"URLを入力してください。"};
+    try{
+      const u = new URL(raw);
+      if(!["http:","https:"].includes(u.protocol)) {
+        return {ok:false, message:"http:// または https:// のURLを入力してください。"};
+      }
+      return {ok:true, url:u.href};
+    }catch{
+      return {ok:false, message:"URLの形式を確認してください。例：https://example.com/"};
+    }
+  }
+
+  function makeQrCanvas(text, targetPx=1024){
+    const qr = qrcode(0, "M");
+    qr.addData(text, "Byte");
+    qr.make();
+    const n = qr.getModuleCount();
+    const quiet = 4;
+    const total = n + quiet*2;
+    const cell = Math.max(1, Math.floor(targetPx / total));
+    const px = cell * total;
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = px;
+    const ctx = canvas.getContext("2d", {alpha:false});
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0,0,px,px);
+    ctx.fillStyle = "#000";
+    for(let r=0;r<n;r++){
+      for(let c=0;c<n;c++){
+        if(qr.isDark(r,c)){
+          ctx.fillRect((c+quiet)*cell, (r+quiet)*cell, cell, cell);
+        }
+      }
+    }
+    return {canvas, modules:n, totalModules:total};
+  }
+
+  function generateQr({updatePlacement=true}={}){
+    const v = validateUrl();
+    if(!v.ok){
+      state.qrDataUrl = null;
+      state.qrModules = 0;
+      $("qrPreview").removeAttribute("src");
+      setStatus($("qrStatus"), v.message, "err");
+      updateControls();
+      hideOverlay();
+      return false;
+    }
+    try{
+      const {canvas, modules, totalModules} = makeQrCanvas(v.url);
+      state.qrDataUrl = canvas.toDataURL("image/png");
+      state.qrModules = totalModules;
+      $("qrPreview").src = state.qrDataUrl;
+
+      if($("autoSize").checked){
+        // 0.45 mm/module, min 22 mm. Quiet zone is included in totalModules.
+        const recommended = clamp(Math.ceil(totalModules * 0.45), 22, 50);
+        state.qrSizeMm = recommended;
+        $("sizeRange").value = recommended;
+        $("sizeReadout").textContent = recommended + " mm";
+      }
+
+      const moduleMm = state.qrSizeMm / totalModules;
+      const quality = moduleMm >= .45 ? ["十分な読み取り余裕があります。","ok"]
+                    : moduleMm >= .35 ? ["一般的なスマートフォン向けの実用範囲です。","warn"]
+                    : ["QRが細かくなります。サイズを大きくすることを推奨します。","warn"];
+      setStatus($("qrStatus"), `QR生成済み：${modules}×${modules} modules / 1 module ≈ ${moduleMm.toFixed(2)} mm。${quality[0]}`, quality[1]);
+
+      if(updatePlacement && state.pdfJs){
+        state.placements.delete(state.pageNum);
+        autoPlaceCurrent();
+      }else{
+        updateOverlayFromPlacement();
+      }
+      updateControls();
+      return true;
+    }catch(e){
+      console.error(e);
+      setStatus($("qrStatus"), "QRコードの生成に失敗しました。URLが長すぎる可能性があります。", "err");
+      return false;
+    }
+  }
+
+  async function loadPdf(file){
+    if(!file) return;
+    if(file.type && file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")){
+      setStatus($("placeStatus"), "PDFファイルを選択してください。", "err");
+      return;
+    }
+    try{
+      $("spinner").classList.add("on");
+      const arr = await file.arrayBuffer();
+
+      // PDF.js用と書き出し用を完全に分離する。
+      // WorkerへのArrayBuffer移管で出力用データが影響を受けないようにする。
+      const previewBytes = new Uint8Array(arr.slice(0));
+      const exportBytes = new Uint8Array(arr.slice(0));
+      const task = pdfjsLib.getDocument({data: previewBytes});
+      const doc = await task.promise;
+
+      state.file = file;
+      state.bytes = exportBytes;
+      state.pdfJs = doc;
+      state.pageCount = doc.numPages;
+      state.pageNum = 1;
+      state.zoom = 1;
+      state.fitMode = true;
+      state.placements.clear();
+
+      $("fileName").textContent = file.name;
+      $("fileSize").textContent = formatBytes(file.size);
+      $("fileSub").textContent = `${doc.numPages} page${doc.numPages > 1 ? "s" : ""}`;
+      $("fileMeta").classList.add("on");
+      $("pageCount").textContent = doc.numPages;
+      $("pageInput").value = 1;
+      $("pageInput").max = doc.numPages;
+      $("outputName").value = file.name.replace(/\.pdf$/i,"") + "_QR.pdf";
+      $("emptyState").style.display = "none";
+      $("paperWrap").classList.add("on");
+
+      await renderCurrentPage(true);
+      if(state.qrDataUrl) await autoPlaceCurrent();
+
+      updateControls();
+      setStatus($("placeStatus"), "PDFを読み込みました。余白自動判定が利用できます。", "ok");
+    }catch(e){
+      console.error(e);
+      state.pdfJs = null;
+      state.bytes = null;
+      setStatus($("placeStatus"), "PDFを読み込めませんでした。暗号化・破損・特殊形式のPDFでは処理できない場合があります。", "err");
+    }finally{
+      $("spinner").classList.remove("on");
+      updateControls();
+    }
+  }
+
+  async function renderCurrentPage(forceFit=false){
+    if(!state.pdfJs) return;
+    const token = ++state.renderToken;
+    const page = await state.pdfJs.getPage(state.pageNum);
+    const baseViewport = page.getViewport({scale:1});
+    state.pagePts = {width:baseViewport.width, height:baseViewport.height};
+
+    let scale = state.zoom;
+    if(state.fitMode || forceFit){
+      const stage = $("stage");
+      const availW = Math.max(250, stage.clientWidth - 80);
+      const availH = Math.max(250, stage.clientHeight - 80);
+      scale = Math.min(availW/baseViewport.width, availH/baseViewport.height, 1.8);
+      scale = clamp(scale, .2, 2.4);
+      state.zoom = scale;
+    }
+
+    const viewport = page.getViewport({scale});
+    state.viewport = viewport;
+    const canvas = $("pdfCanvas");
+    const ctx = canvas.getContext("2d", {alpha:false, willReadFrequently:true});
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = Math.floor(viewport.width * dpr);
+    canvas.height = Math.floor(viewport.height * dpr);
+    canvas.style.width = viewport.width + "px";
+    canvas.style.height = viewport.height + "px";
+    $("paperWrap").style.width = viewport.width + "px";
+    $("paperWrap").style.height = viewport.height + "px";
+
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.fillStyle="#fff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    const transform = dpr !== 1 ? [dpr,0,0,dpr,0,0] : null;
+    await page.render({canvasContext:ctx, viewport, transform}).promise;
+    if(token !== state.renderToken) return;
+
+    $("zoomLabel").textContent = Math.round(scale*100) + "%";
+    $("pageInput").value = state.pageNum;
+    updateOverlayFromPlacement();
+    updateNav();
+  }
+
+  async function analyzeBestPlacement(page, sizePt, renderScale=null){
+    const baseViewport = page.getViewport({scale:1});
+    // Analysis around 900–1200 px on the long side.
+    const s = renderScale || clamp(1000 / Math.max(baseViewport.width, baseViewport.height), .75, 1.6);
+    const viewport = page.getViewport({scale:s});
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.floor(viewport.width));
+    c.height = Math.max(1, Math.floor(viewport.height));
+    const ctx = c.getContext("2d", {alpha:false, willReadFrequently:true});
+    ctx.fillStyle="#fff";
+    ctx.fillRect(0,0,c.width,c.height);
+    await page.render({canvasContext:ctx,viewport}).promise;
+
+    const img = ctx.getImageData(0,0,c.width,c.height);
+    const w=c.width,h=c.height,data=img.data;
+
+    // Integral image of "ink": white=0, black=255. Stronger weight for dark pixels.
+    const iw=w+1, ih=h+1;
+    const integral = new Float64Array(iw*ih);
+    for(let y=1;y<=h;y++){
+      let rowSum=0;
+      const rowOff=(y-1)*w*4;
+      for(let x=1;x<=w;x++){
+        const i=rowOff+(x-1)*4;
+        const lum = data[i]*.2126 + data[i+1]*.7152 + data[i+2]*.0722;
+        const ink = Math.max(0, 248-lum);
+        rowSum += ink;
+        integral[y*iw+x]=integral[(y-1)*iw+x]+rowSum;
+      }
+    }
+    const rectSum=(x,y,rw,rh)=>{
+      const x1=clamp(Math.floor(x),0,w), y1=clamp(Math.floor(y),0,h);
+      const x2=clamp(Math.ceil(x+rw),0,w), y2=clamp(Math.ceil(y+rh),0,h);
+      return integral[y2*iw+x2]-integral[y1*iw+x2]-integral[y2*iw+x1]+integral[y1*iw+x1];
+    };
+
+    const pxPerPt = s;
+    const q = sizePt * pxPerPt;
+    const pad = Math.max(8, mmToPt(4)*pxPerPt);
+    const margin = Math.max(mmToPt(6)*pxPerPt, 10);
+    const box = q + pad*2;
+    if(box > w-margin*2 || box > h-margin*2){
+      return {
+        xPt: mmToPt(6),
+        yTopPt: mmToPt(6),
+        sizePt
+      };
+    }
+
+    const candidates=[];
+    const step = Math.max(12, q * .25);
+    const maxX=w-margin-box, maxY=h-margin-box;
+
+    // Full-page scan, with guaranteed corner candidates.
+    for(let y=margin;y<=maxY+.1;y+=step){
+      for(let x=margin;x<=maxX+.1;x+=step) candidates.push([x,y]);
+    }
+    [
+      [margin,margin],[maxX,margin],[margin,maxY],[maxX,maxY],
+      [(w-box)/2,margin],[(w-box)/2,maxY],[margin,(h-box)/2],[maxX,(h-box)/2]
+    ].forEach(p=>candidates.push(p));
+
+    let best=null;
+    for(const [x0,y0] of candidates){
+      const ink = rectSum(x0,y0,box,box) / (box*box);
+      const cx=(x0+box/2)/w, cy=(y0+box/2)/h;
+      // Prefer peripheral areas so a near-tie does not land in the middle of content.
+      const edgeDist = Math.min(cx,1-cx,cy,1-cy);
+      const centerPenalty = edgeDist * 8.0;
+      // Slight preference for lower area and right side when equally blank.
+      const tiePenalty = (1-cy)*.5 + (1-cx)*.15;
+      const score = ink + centerPenalty + tiePenalty;
+      if(!best || score < best.score) best={x0,y0,score,ink};
+    }
+
+    const xPx=best.x0+pad;
+    const yPx=best.y0+pad;
+    return {
+      xPt:xPx/pxPerPt,
+      yTopPt:yPx/pxPerPt,
+      sizePt,
+      score:best.score,
+      ink:best.ink
+    };
+  }
+
+  async function autoPlaceCurrent(){
+    if(!state.pdfJs || !state.qrDataUrl) return;
+    try{
+      setStatus($("placeStatus"), "このページの余白を解析しています…");
+      const page = await state.pdfJs.getPage(state.pageNum);
+      const sizePt=mmToPt(state.qrSizeMm);
+      const p=await analyzeBestPlacement(page,sizePt);
+      state.placements.set(state.pageNum,{...p,manual:false});
+      $("positionMode").value="auto";
+      updateOverlayFromPlacement();
+      setStatus($("placeStatus"), `自動配置しました。QR左上：X ${ptToMm(p.xPt).toFixed(1)} mm / Y ${ptToMm(p.yTopPt).toFixed(1)} mm`, "ok");
+      updateControls();
+    }catch(e){
+      console.error(e);
+      setStatus($("placeStatus"), "自動配置に失敗しました。手動で配置してください。", "err");
+    }
+  }
+
+  function hideOverlay(){
+    $("qrOverlay").classList.remove("on");
+  }
+
+  function updateOverlayFromPlacement(){
+    if(!state.pdfJs || !state.qrDataUrl || !state.viewport || !state.pagePts){
+      hideOverlay(); return;
+    }
+    let p=state.placements.get(state.pageNum);
+    if(!p){
+      hideOverlay(); return;
+    }
+
+    // Keep size synced with current size control unless placement is being dragged.
+    p.sizePt = mmToPt(state.qrSizeMm);
+    const scale=state.viewport.scale;
+    const left=p.xPt*scale;
+    const top=p.yTopPt*scale;
+    const size=p.sizePt*scale;
+    const overlay=$("qrOverlay");
+    overlay.style.left=left+"px";
+    overlay.style.top=top+"px";
+    overlay.style.width=size+"px";
+    overlay.style.height=size+"px";
+    overlay.classList.add("on");
+    $("qrPreview").src=state.qrDataUrl;
+  }
+
+  function placementFromOverlay(){
+    if(!state.viewport) return null;
+    const overlay=$("qrOverlay");
+    const scale=state.viewport.scale;
+    return {
+      xPt:parseFloat(overlay.style.left||"0")/scale,
+      yTopPt:parseFloat(overlay.style.top||"0")/scale,
+      sizePt:mmToPt(state.qrSizeMm),
+      manual:true
+    };
+  }
+
+  function startDrag(e){
+    if(!$("qrOverlay").classList.contains("on")) return;
+    e.preventDefault();
+    const overlay=$("qrOverlay");
+    state.dragging={
+      pointerId:e.pointerId,
+      startX:e.clientX,startY:e.clientY,
+      left:parseFloat(overlay.style.left||"0"),
+      top:parseFloat(overlay.style.top||"0")
+    };
+    overlay.setPointerCapture(e.pointerId);
+  }
+
+  function moveDrag(e){
+    if(!state.dragging || e.pointerId!==state.dragging.pointerId) return;
+    const overlay=$("qrOverlay");
+    const wrap=$("paperWrap");
+    const size=overlay.getBoundingClientRect().width;
+    let left=state.dragging.left+(e.clientX-state.dragging.startX);
+    let top=state.dragging.top+(e.clientY-state.dragging.startY);
+    left=clamp(left,0,wrap.clientWidth-size);
+    top=clamp(top,0,wrap.clientHeight-size);
+    overlay.style.left=left+"px";
+    overlay.style.top=top+"px";
+  }
+
+  function endDrag(e){
+    if(!state.dragging || e.pointerId!==state.dragging.pointerId) return;
+    const overlay=$("qrOverlay");
+    try{overlay.releasePointerCapture(e.pointerId)}catch{}
+    state.dragging=null;
+    const p=placementFromOverlay();
+    if(p){
+      state.placements.set(state.pageNum,p);
+      $("positionMode").value="manual";
+      setStatus($("placeStatus"), `手動配置：X ${ptToMm(p.xPt).toFixed(1)} mm / Y ${ptToMm(p.yTopPt).toFixed(1)} mm`, "ok");
+      updateControls();
+    }
+  }
+
+  async function goPage(n){
+    if(!state.pdfJs) return;
+    n=clamp(Math.round(n),1,state.pageCount);
+    if(n===state.pageNum) return;
+    state.pageNum=n;
+    await renderCurrentPage();
+    if(state.qrDataUrl && !state.placements.has(n) && $("positionMode").value==="auto"){
+      await autoPlaceCurrent();
+    }
+  }
+
+  function updateNav(){
+    const has=!!state.pdfJs;
+    $("prevBtn").disabled=!has || state.pageNum<=1;
+    $("nextBtn").disabled=!has || state.pageNum>=state.pageCount;
+    $("pageInput").disabled=!has;
+  }
+
+  function updateControls(){
+    const hasPdf=!!state.pdfJs;
+    const hasQr=!!state.qrDataUrl;
+    ["zoomOutBtn","zoomInBtn","fitBtn"].forEach(id=>$(id).disabled=!hasPdf);
+    $("autoPlaceBtn").disabled=!(hasPdf&&hasQr);
+    $("resetManualBtn").disabled=!(hasPdf&&hasQr&&state.placements.has(state.pageNum));
+    $("exportBtn").disabled=!(hasPdf&&hasQr);
+    updateNav();
+  }
+
+  async function changeZoom(delta){
+    if(!state.pdfJs)return;
+    state.fitMode=false;
+    state.zoom=clamp(state.zoom+delta,.25,3);
+    await renderCurrentPage();
+  }
+
+  async function exportPdf(){
+    if(!state.bytes || !state.qrDataUrl) return;
+    const v=validateUrl();
+    if(!v.ok){ generateQr(); return; }
+
+    try{
+      $("spinner").classList.add("on");
+      $("exportBtn").disabled=true;
+      setStatus($("placeStatus"), "PDFを書き出しています…");
+
+      const {PDFDocument} = window.PDFLib;
+
+      // 書き出し専用のコピーを使用する。
+      const pdfDoc=await PDFDocument.load(state.bytes.slice(), {ignoreEncryption:false});
+
+      // QR PNGをdata URLから直接バイト列へ変換して埋め込む。
+      const b64=state.qrDataUrl.split(",")[1];
+      const bin=atob(b64);
+      const qrBytes=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++) qrBytes[i]=bin.charCodeAt(i);
+      const qrImage=await pdfDoc.embedPng(qrBytes);
+
+      const pages=pdfDoc.getPages();
+      const sizePt=mmToPt(state.qrSizeMm);
+      const targetAll=$("targetMode").value==="all";
+
+      const indices = targetAll
+        ? Array.from({length:pages.length},(_,i)=>i+1)
+        : [state.pageNum];
+
+      for(let k=0;k<indices.length;k++){
+        const pageNo=indices[k];
+        const outPage=pages[pageNo-1];
+        const jsPage=await state.pdfJs.getPage(pageNo);
+        const viewport=jsPage.getViewport({scale:1});
+        let p=state.placements.get(pageNo);
+
+        if(targetAll){
+          // 手動配置済みのページは尊重し、それ以外は各ページで自動解析。
+          if(!p || !p.manual){
+            setStatus($("placeStatus"), `全ページ自動配置：${pageNo} / ${indices.length} ページを解析中…`);
+            p=await analyzeBestPlacement(jsPage,sizePt);
+          }
+        }else if(!p){
+          p=await analyzeBestPlacement(jsPage,sizePt);
+        }
+
+        // 配置情報はPDF.jsの「表示上の左上原点」座標。
+        // PDF.js自身の変換関数を使って、PDF本来のUser Spaceへ戻す。
+        // これにより /Rotate、CropBox、非ゼロ原点を持つ図面PDFでも位置が一致する。
+        const xD=clamp(p.xPt,0,Math.max(0,viewport.width-sizePt));
+        const yD=clamp(p.yTopPt,0,Math.max(0,viewport.height-sizePt));
+
+        const displayCorners=[
+          [xD, yD],
+          [xD+sizePt, yD],
+          [xD, yD+sizePt],
+          [xD+sizePt, yD+sizePt]
+        ];
+        const pdfCorners=displayCorners.map(([x,y])=>viewport.convertToPdfPoint(x,y));
+        const xs=pdfCorners.map(v=>v[0]);
+        const ys=pdfCorners.map(v=>v[1]);
+
+        const x=Math.min(...xs);
+        const y=Math.min(...ys);
+        const drawW=Math.max(...xs)-x;
+        const drawH=Math.max(...ys)-y;
+
+        // QRのquiet zoneを確実に白背景として残す。
+        outPage.drawRectangle({
+          x,y,width:drawW,height:drawH,
+          color:window.PDFLib.rgb(1,1,1),
+          opacity:1
+        });
+        outPage.drawImage(qrImage,{
+          x,y,width:drawW,height:drawH,
+          opacity:1
+        });
+      }
+
+      const saved=await pdfDoc.save();
+      const blob=new Blob([saved],{type:"application/pdf"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;
+      a.download=safePdfName($("outputName").value);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
+
+      setStatus($("placeStatus"), `${indices.length}ページにQRコードを貼付してPDFを書き出しました。`, "ok");
+    }catch(e){
+      console.error(e);
+      setStatus($("placeStatus"), "PDFの書き出しに失敗しました。暗号化PDFや権限制限付きPDFでは処理できない場合があります。", "err");
+    }finally{
+      $("spinner").classList.remove("on");
+      updateControls();
+    }
+  }
+
+  // File input / drag & drop
+  $("pickBtn").addEventListener("click",()=>$("fileInput").click());
+  $("fileInput").addEventListener("change",(e)=>loadPdf(e.target.files?.[0]));
+  ["dragenter","dragover"].forEach(type=>$("dropZone").addEventListener(type,e=>{
+    e.preventDefault(); $("dropZone").classList.add("drag");
+  }));
+  ["dragleave","drop"].forEach(type=>$("dropZone").addEventListener(type,e=>{
+    e.preventDefault(); $("dropZone").classList.remove("drag");
+  }));
+  $("dropZone").addEventListener("drop",e=>{
+    const f=e.dataTransfer.files?.[0];
+    if(f) loadPdf(f);
+  });
+
+  // QR
+  $("makeQrBtn").addEventListener("click",()=>generateQr());
+  $("urlInput").addEventListener("keydown",e=>{if(e.key==="Enter") generateQr();});
+  $("urlInput").addEventListener("blur",()=>{if($("urlInput").value.trim()) generateQr({updatePlacement:false});});
+  $("autoSize").addEventListener("change",()=>{if(state.qrDataUrl)generateQr();});
+  $("sizeRange").addEventListener("input",()=>{
+    state.qrSizeMm=Number($("sizeRange").value);
+    $("sizeReadout").textContent=state.qrSizeMm+" mm";
+    if(state.qrModules){
+      const mm=state.qrSizeMm/state.qrModules;
+      const type=mm>=.45?"ok":"warn";
+      setStatus($("qrStatus"),`QR生成済み：1 module ≈ ${mm.toFixed(2)} mm。${mm>=.35?"読み取り実用域です。":"サイズを大きくすることを推奨します。"}`,type);
+    }
+    const p=state.placements.get(state.pageNum);
+    if(p){
+      p.sizePt=mmToPt(state.qrSizeMm);
+      // Clamp right/bottom after resize.
+      if(state.pagePts){
+        p.xPt=clamp(p.xPt,0,Math.max(0,state.pagePts.width-p.sizePt));
+        p.yTopPt=clamp(p.yTopPt,0,Math.max(0,state.pagePts.height-p.sizePt));
+      }
+      updateOverlayFromPlacement();
+    }
+  });
+  $("sizeRange").addEventListener("change",()=>{
+    if($("positionMode").value==="auto" && state.pdfJs && state.qrDataUrl) autoPlaceCurrent();
+  });
+
+  // Placement
+  $("autoPlaceBtn").addEventListener("click",autoPlaceCurrent);
+  $("positionMode").addEventListener("change",async()=>{
+    if($("positionMode").value==="auto" && state.pdfJs && state.qrDataUrl){
+      await autoPlaceCurrent();
+    }else if($("positionMode").value==="manual" && state.pdfJs && state.qrDataUrl && !state.placements.has(state.pageNum)){
+      const sizePt=mmToPt(state.qrSizeMm);
+      state.placements.set(state.pageNum,{
+        xPt:Math.max(mmToPt(8), state.pagePts.width-sizePt-mmToPt(8)),
+        yTopPt:Math.max(mmToPt(8), state.pagePts.height-sizePt-mmToPt(8)),
+        sizePt,manual:true
+      });
+      updateOverlayFromPlacement();
+    }
+  });
+  $("resetManualBtn").addEventListener("click",async()=>{
+    state.placements.delete(state.pageNum);
+    $("positionMode").value="auto";
+    await autoPlaceCurrent();
+  });
+
+  // Page navigation
+  $("prevBtn").addEventListener("click",()=>goPage(state.pageNum-1));
+  $("nextBtn").addEventListener("click",()=>goPage(state.pageNum+1));
+  $("pageInput").addEventListener("change",()=>goPage(Number($("pageInput").value)));
+  $("zoomOutBtn").addEventListener("click",()=>changeZoom(-.15));
+  $("zoomInBtn").addEventListener("click",()=>changeZoom(.15));
+  $("fitBtn").addEventListener("click",async()=>{state.fitMode=true;await renderCurrentPage(true);});
+
+  // Overlay drag
+  $("qrOverlay").addEventListener("pointerdown",startDrag);
+  $("qrOverlay").addEventListener("pointermove",moveDrag);
+  $("qrOverlay").addEventListener("pointerup",endDrag);
+  $("qrOverlay").addEventListener("pointercancel",endDrag);
+
+  // Export
+  $("exportBtn").addEventListener("click",exportPdf);
+
+  // Resize
+  let resizeTimer;
+  window.addEventListener("resize",()=>{
+    clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(()=>{if(state.pdfJs && state.fitMode) renderCurrentPage(true)},120);
+  });
+
+  // Sample URL only as placeholder; no auto generation.
+  updateControls();
+</script>
+</body>
+</html>
