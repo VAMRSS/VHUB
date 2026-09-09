@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revision Lens — Bécane Edition</title>
+<style>
+:root{
+  --bone:#f6f6f6;
+  --white:#ffffff;
+  --black:#0a0a0a;
+  --divider:#e6e6e6;
+  --muted:#b2b2b2;
+  --mid:#6e6e6e;
+  --signal:#c81f3a;
+  --signal-soft:rgba(200,31,58,.16);
+  --signal-mid:rgba(200,31,58,.24);
+  --signal-strong:rgba(200,31,58,.32);
+  --green:#168a52;
+  --green-soft:rgba(22,138,82,.16);
+  --green-mid:rgba(22,138,82,.24);
+  --green-strong:rgba(22,138,82,.32);
+  --font-euro:"Eurostile","Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-body:"Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-mono:"BIZ UDPGothic","Noto Sans Mono CJK JP","Yu Gothic UI",monospace;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  min-height:100%;
+  background:var(--bone);
+  color:var(--black);
+}
+body{
+  font-family:var(--font-body);
+  font-size:12px;
+  line-height:1.65;
+}
+button,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:1px solid var(--black);
+  outline-offset:-1px;
+}
+
+/* --- HEADER --- */
+.header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  height:86px;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:20px;
+  padding:0 20px;
+  background:var(--white);
+  border-bottom:.5px solid var(--divider);
+}
+.brand-cluster,.header-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.header-actions{justify-content:flex-end}
+.brand-mark{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.signal-block{
+  width:9px;
+  height:9px;
+  background:var(--signal);
+  flex:0 0 auto;
+}
+.sep{color:var(--black);font-size:8px}
+.ghost{
+  appearance:none;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--black);
+  padding:0;
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  font-weight:400;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.ghost:hover{color:#666}
+.ghost.active{font-weight:700}
+.ghost.danger{color:var(--signal)}
+.header-center{
+  text-align:center;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--muted);
+  white-space:nowrap;
+}
+
+/* --- PAGE --- */
+.page{
+  width:100%;
+  padding:34px 20px 110px;
+}
+.hero{
+  margin-bottom:42px;
+}
+.meta{
+  margin-bottom:7px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--black);
+}
+.wordmark{
+  margin:0;
+  font-family:var(--font-euro);
+  font-size:30px;
+  line-height:1;
+  font-weight:700;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+}
+.hero-copy{
+  margin:14px 0 0;
+  max-width:840px;
+  font-size:12px;
+  line-height:1.75;
+  color:#343434;
+}
+
+/* --- CONTROL STRIP --- */
+.control-strip{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px 18px;
+  padding:10px 0;
+  border-top:.5px solid var(--divider);
+  border-bottom:.5px solid var(--divider);
+  margin-bottom:20px;
+}
+.control-group{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.control-label{
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--black);
+}
+select{
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--black);
+  padding:0 18px 0 0;
+  min-height:22px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.spacer{flex:1}
+.toggle{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.toggle input{
+  width:12px;
+  height:12px;
+  accent-color:var(--signal);
+}
+
+/* --- EDITORS --- */
+.editor-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  border-top:.5px solid var(--divider);
+  border-bottom:.5px solid var(--divider);
+  background:var(--white);
+}
+.editor-panel{
+  min-width:0;
+  background:var(--white);
+}
+.editor-panel + .editor-panel{
+  border-left:.5px solid var(--divider);
+}
+.editor-head{
+  display:grid;
+  grid-template-columns:auto 1fr auto auto;
+  gap:10px;
+  align-items:center;
+  min-height:42px;
+  padding:0 10px;
+  border-bottom:.5px solid var(--divider);
+}
+.editor-index{
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.editor-title{
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.editor-title .jp{
+  font-family:var(--font-body);
+  font-size:11px;
+  font-weight:400;
+  letter-spacing:0;
+  text-transform:none;
+  margin-left:7px;
+}
+.editor-meta{
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.editor-shell{
+  position:relative;
+  min-height:390px;
+  background:var(--white);
+}
+.mirror,.editor{
+  width:100%;
+  min-height:390px;
+  margin:0;
+  padding:18px 16px 24px;
+  border:0;
+  border-radius:0;
+  font-family:var(--font-mono);
+  font-size:14px;
+  line-height:1.9;
+  letter-spacing:0;
+  tab-size:4;
+  white-space:pre-wrap;
+  overflow-wrap:break-word;
+  word-break:break-word;
+}
+.mirror{
+  position:absolute;
+  inset:0;
+  height:100%;
+  overflow:hidden;
+  color:transparent;
+  pointer-events:none;
+  background:var(--white);
+}
+.editor{
+  position:relative;
+  display:block;
+  height:390px;
+  resize:vertical;
+  overflow:auto;
+  outline:0;
+  background:transparent;
+  color:var(--black);
+  caret-color:var(--black);
+}
+.editor::placeholder{color:var(--muted)}
+.editor:focus{
+  box-shadow:inset 0 -1px 0 var(--black);
+}
+.mark-equal{color:transparent}
+.mark-del,.mark-add,.mark-mod-old,.mark-mod-new{
+  color:transparent;
+  border-radius:0;
+  box-decoration-break:clone;
+  -webkit-box-decoration-break:clone;
+}
+.mark-del{
+  background:var(--signal-strong);
+  text-decoration:line-through;
+  text-decoration-thickness:2px;
+  text-decoration-color:var(--signal);
+  box-shadow:inset 0 -2px 0 var(--signal);
+}
+.mark-mod-old{
+  background:var(--signal-mid);
+  box-shadow:inset 0 -2px 0 var(--signal);
+}
+.mark-add{
+  background:var(--green-strong);
+  box-shadow:inset 0 -2px 0 var(--green);
+}
+.mark-mod-new{
+  background:var(--green-mid);
+  box-shadow:inset 0 -3px 0 var(--green);
+}
+.editor-foot{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 10px;
+  border-top:.5px solid var(--divider);
+}
+.state{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.state-line{
+  width:18px;
+  height:1px;
+  background:var(--muted);
+}
+.state-line.changed{background:var(--signal)}
+.state-line.same{background:var(--black)}
+.editor-hint{
+  font-size:11px;
+  color:#767676;
+}
+
+/* --- METRICS --- */
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  margin-top:42px;
+  border-top:.5px solid var(--divider);
+  border-bottom:.5px solid var(--divider);
+}
+.metric{
+  min-width:0;
+  padding:10px 10px 11px;
+}
+.metric + .metric{border-left:.5px solid var(--divider)}
+.metric-label{
+  margin-bottom:6px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.metric-value{
+  font-family:var(--font-euro);
+  font-size:22px;
+  line-height:1;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+}
+.metric.changed .metric-value{color:var(--signal)}
+
+/* --- CHANGE RECORD --- */
+.record{
+  margin-top:42px;
+}
+.record-head{
+  display:flex;
+  align-items:flex-end;
+  gap:18px;
+  margin-bottom:10px;
+}
+.record-heading{
+  margin:0;
+  font-family:var(--font-euro);
+  font-size:30px;
+  line-height:1;
+  font-weight:700;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+}
+.record-nav{
+  margin-left:auto;
+  display:flex;
+  gap:14px;
+  align-items:center;
+}
+.record-table{
+  border-top:.5px solid var(--divider);
+}
+.change-row{
+  display:grid;
+  grid-template-columns:54px 86px minmax(0,1fr) minmax(0,1fr);
+  border-bottom:.5px solid var(--divider);
+}
+.change-row>div{
+  padding:10px;
+}
+.change-row>div + div{
+  border-left:.5px solid var(--divider);
+}
+.change-no{
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  color:var(--muted);
+}
+.change-kind{
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.change-kind.mod,.change-kind.del{color:var(--signal)}
+.change-kind.add{color:var(--green)}
+.change-old,.change-new{
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  font-family:var(--font-mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.change-row.del .change-old{
+  background:var(--signal-mid);
+  text-decoration:line-through;
+  text-decoration-thickness:2px;
+  text-decoration-color:var(--signal);
+  box-shadow:inset 3px 0 0 var(--signal);
+}
+.change-row.add .change-new{
+  background:var(--green-mid);
+  box-shadow:inset 3px 0 0 var(--green);
+}
+.change-row.mod .change-old{
+  background:var(--signal-soft);
+  box-shadow:inset 3px 0 0 var(--signal);
+}
+.change-row.mod .change-new{
+  background:var(--green-soft);
+  box-shadow:inset 3px 0 0 var(--green);
+}
+.empty{
+  padding:28px 10px;
+  border-bottom:.5px solid var(--divider);
+  font-size:12px;
+  color:#777;
+}
+
+/* --- FOOTER STRIP --- */
+.footer-strip{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:40;
+  min-height:52px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:20px;
+  padding:0 20px;
+  background:var(--bone);
+  border-top:.5px solid var(--divider);
+}
+.footer-main,.footer-side{
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.footer-side{color:var(--muted)}
+.toast{
+  position:fixed;
+  left:20px;
+  bottom:66px;
+  z-index:100;
+  padding:7px 9px;
+  background:var(--black);
+  color:var(--white);
+  border-radius:0;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  opacity:0;
+  transform:translateY(5px);
+  transition:.16s;
+  pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){
+  .header{
+    grid-template-columns:1fr auto;
+    height:auto;
+    min-height:72px;
+    padding:14px 14px;
+  }
+  .header-center{display:none}
+  .page{padding:28px 14px 100px}
+  .editor-grid{grid-template-columns:1fr}
+  .editor-panel + .editor-panel{
+    border-left:0;
+    border-top:.5px solid var(--divider);
+  }
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metric:nth-child(odd){border-left:0}
+  .metric:nth-child(n+3){border-top:.5px solid var(--divider)}
+  .metric:last-child{grid-column:1/-1}
+  .record-head{align-items:flex-start;flex-direction:column}
+  .record-nav{margin-left:0}
+  .change-row{grid-template-columns:42px 70px 1fr}
+  .change-old,.change-new{grid-column:3}
+  .change-new{border-top:.5px solid var(--divider)}
+  .footer-strip{padding:0 14px}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand-cluster">
+    <div class="brand-mark"><span class="signal-block"></span><strong>REVISION LENS</strong></div>
+    <span class="sep">/</span>
+    <button class="ghost active" id="compareBtn">COMPARE</button>
+    <button class="ghost" id="swapBtn">SWAP</button>
+    <button class="ghost" id="sampleBtn">SAMPLE</button>
+  </div>
+
+  <div class="header-center">TEXT REVISION / LOCAL PROCESSING</div>
+
+  <div class="header-actions">
+    <button class="ghost" id="prevBtn">PREV</button>
+    <span class="sep">/</span>
+    <button class="ghost" id="nextBtn">NEXT</button>
+    <span class="sep">/</span>
+    <button class="ghost danger" id="clearBtn">CLEAR</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="meta">REVISION 01 / 01</div>
+    <h1 class="wordmark">REVISION</h1>
+    <p class="hero-copy">
+      新旧文章を入力すると、入力フォーム内で差分を直接確認できます。
+      旧文章では削除・変更を赤、新文章では追加・変更を緑で示します。
+      新旧フォームはスクロール位置を同期でき、比較処理はブラウザ内で完結します。入力内容は外部へ送信しません。
+    </p>
+  </section>
+
+  <section class="control-strip">
+    <div class="control-group">
+      <span class="control-label">COMPARE UNIT</span>
+      <select id="modeSelect">
+        <option value="line">LINE / 行</option>
+        <option value="word" selected>WORD / 語句</option>
+        <option value="char">CHAR / 文字</option>
+      </select>
+    </div>
+
+    <label class="toggle"><input type="checkbox" id="liveToggle" checked>LIVE COMPARE</label>
+    <label class="toggle"><input type="checkbox" id="highlightToggle" checked>INLINE HIGHLIGHT</label>
+    <label class="toggle"><input type="checkbox" id="syncScrollToggle" checked>SYNC SCROLL</label>
+
+    <div class="control-group">
+      <span class="control-label">REMOVE HALF SPACE</span>
+      <button class="ghost" id="removeSpaceOldBtn">ORIGINAL</button>
+      <span class="sep">/</span>
+      <button class="ghost" id="removeSpaceNewBtn">REVISED</button>
+      <span class="sep">/</span>
+      <button class="ghost" id="removeSpaceBothBtn">BOTH</button>
+    </div>
+
+    <div class="spacer"></div>
+    <button class="ghost" id="copyOldBtn">COPY ORIGINAL</button>
+    <span class="sep">/</span>
+    <button class="ghost" id="copyNewBtn">COPY REVISED</button>
+  </section>
+
+  <section class="editor-grid">
+    <article class="editor-panel">
+      <div class="editor-head">
+        <span class="editor-index">A</span>
+        <div class="editor-title">ORIGINAL <span class="jp">旧文章</span></div>
+        <div class="editor-meta" id="oldMeta">0 CHARS / 0 LINES</div>
+        <button class="ghost" id="copyOldBtn2">COPY</button>
+      </div>
+      <div class="editor-shell">
+        <div class="mirror" id="oldMirror" aria-hidden="true"></div>
+        <textarea class="editor" id="oldText" spellcheck="false" placeholder="修正前の文章を入力してください"></textarea>
+      </div>
+      <div class="editor-foot">
+        <div class="state"><span class="state-line" id="oldLine"></span><span id="oldState">WAITING</span></div>
+        <div class="editor-hint">削除・変更を赤で表示</div>
+      </div>
+    </article>
+
+    <article class="editor-panel">
+      <div class="editor-head">
+        <span class="editor-index">B</span>
+        <div class="editor-title">REVISED <span class="jp">新文章</span></div>
+        <div class="editor-meta" id="newMeta">0 CHARS / 0 LINES</div>
+        <button class="ghost" id="copyNewBtn2">COPY</button>
+      </div>
+      <div class="editor-shell">
+        <div class="mirror" id="newMirror" aria-hidden="true"></div>
+        <textarea class="editor" id="newText" spellcheck="false" placeholder="修正後の文章を入力してください"></textarea>
+      </div>
+      <div class="editor-foot">
+        <div class="state"><span class="state-line" id="newLine"></span><span id="newState">WAITING</span></div>
+        <div class="editor-hint">追加・変更を緑で表示</div>
+      </div>
+    </article>
+  </section>
+
+  <section class="metrics">
+    <div class="metric">
+      <div class="metric-label">CHANGE BLOCKS</div>
+      <div class="metric-value" id="totalChanges">0</div>
+    </div>
+    <div class="metric changed">
+      <div class="metric-label">ADDED</div>
+      <div class="metric-value" id="addCount">0</div>
+    </div>
+    <div class="metric changed">
+      <div class="metric-label">DELETED</div>
+      <div class="metric-value" id="delCount">0</div>
+    </div>
+    <div class="metric changed">
+      <div class="metric-label">MODIFIED</div>
+      <div class="metric-value" id="modCount">0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">MATCH</div>
+      <div class="metric-value" id="similarity">100%</div>
+    </div>
+  </section>
+
+  <section class="record">
+    <div class="meta">CHANGE RECORD / DETAIL</div>
+    <div class="record-head">
+      <h2 class="record-heading">CHANGES</h2>
+      <nav class="record-nav">
+        <button class="ghost active filter-btn" data-filter="all">ALL</button>
+        <button class="ghost filter-btn" data-filter="mod">MODIFIED</button>
+        <button class="ghost filter-btn" data-filter="add">ADDED</button>
+        <button class="ghost filter-btn" data-filter="del">DELETED</button>
+      </nav>
+    </div>
+
+    <div class="record-table" id="changesList">
+      <div class="empty">旧文章と新文章を入力すると、変更内容がここに表示されます。</div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer-strip">
+  <div class="footer-main" id="footerCount">0 CHANGES · CTRL / ⌘ + ENTER TO COMPARE</div>
+  <div class="footer-side">REVISION LENS / V4.3</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const oldText = $('#oldText');
+  const newText = $('#newText');
+  const oldMirror = $('#oldMirror');
+  const newMirror = $('#newMirror');
+  const modeSelect = $('#modeSelect');
+  const liveToggle = $('#liveToggle');
+  const highlightToggle = $('#highlightToggle');
+  const syncScrollToggle = $('#syncScrollToggle');
+  const changesList = $('#changesList');
+
+  let blocks = [];
+  let filter = 'all';
+  let current = -1;
+  let timer = null;
+  let scrollSyncLock = false;
+
+  const esc = s => s
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+
+  function showToast(message){
+    const t = $('#toast');
+    t.textContent = message;
+    t.classList.add('show');
+    clearTimeout(showToast.t);
+    showToast.t = setTimeout(() => t.classList.remove('show'), 1200);
+  }
+
+  function metaText(text){
+    const lines = text.length ? text.split('\n').length : 0;
+    return `${text.length.toLocaleString()} CHARS / ${lines.toLocaleString()} LINES`;
+  }
+
+  function updateMeta(){
+    $('#oldMeta').textContent = metaText(oldText.value);
+    $('#newMeta').textContent = metaText(newText.value);
+  }
+
+  function tokenize(text, mode){
+    if(mode === 'char') return Array.from(text);
+    if(mode === 'line') return text ? (text.match(/[^\n]*\n|[^\n]+$/g) || []) : [];
+
+    if('Segmenter' in Intl){
+      try{
+        const seg = new Intl.Segmenter('ja', {granularity:'word'});
+        return Array.from(seg.segment(text), x => x.segment);
+      }catch(e){}
+    }
+    return text.match(/\s+|[A-Za-z0-9_]+|[^\sA-Za-z0-9_]/gu) || [];
+  }
+
+  function diff(a,b){
+    const n = a.length, m = b.length;
+    if(!n) return m ? [{type:'insert',items:b}] : [];
+    if(!m) return n ? [{type:'delete',items:a}] : [];
+
+    const cells = (n+1)*(m+1);
+    if(cells > 3200000) return coarse(a,b);
+
+    const w = m+1;
+    const dp = new Uint32Array(cells);
+
+    for(let i=n-1;i>=0;i--){
+      const r=i*w, nr=(i+1)*w;
+      for(let j=m-1;j>=0;j--){
+        dp[r+j] = a[i]===b[j]
+          ? dp[nr+j+1]+1
+          : Math.max(dp[nr+j], dp[r+j+1]);
+      }
+    }
+
+    const ops=[];
+    let i=0,j=0;
+    const push=(type,item)=>{
+      const last=ops.at(-1);
+      if(last && last.type===type) last.items.push(item);
+      else ops.push({type,items:[item]});
+    };
+
+    while(i<n && j<m){
+      if(a[i]===b[j]){push('equal',a[i]);i++;j++}
+      else if(dp[(i+1)*w+j] >= dp[i*w+j+1]){push('delete',a[i]);i++}
+      else{push('insert',b[j]);j++}
+    }
+    while(i<n) push('delete',a[i++]);
+    while(j<m) push('insert',b[j++]);
+    return ops;
+  }
+
+  function coarse(a,b){
+    let p=0;
+    while(p<a.length && p<b.length && a[p]===b[p]) p++;
+
+    let ai=a.length-1, bi=b.length-1;
+    while(ai>=p && bi>=p && a[ai]===b[bi]){ai--;bi--}
+
+    const out=[];
+    if(p) out.push({type:'equal',items:a.slice(0,p)});
+    if(ai>=p) out.push({type:'delete',items:a.slice(p,ai+1)});
+    if(bi>=p) out.push({type:'insert',items:b.slice(p,bi+1)});
+    if(ai+1<a.length) out.push({type:'equal',items:a.slice(ai+1)});
+    return out;
+  }
+
+  function group(ops){
+    const out=[];
+    let pending=null;
+
+    const flush=()=>{
+      if(!pending) return;
+      pending.kind = pending.old && pending.new ? 'mod' : pending.new ? 'add' : 'del';
+      out.push(pending);
+      pending=null;
+    };
+
+    ops.forEach(op=>{
+      const text=op.items.join('');
+      if(op.type==='equal'){
+        flush();
+        if(text) out.push({kind:'equal',old:text,new:text});
+      }else{
+        if(!pending) pending={old:'',new:''};
+        if(op.type==='delete') pending.old += text;
+        if(op.type==='insert') pending.new += text;
+      }
+    });
+
+    flush();
+    return out.map((b,i)=>({...b,id:i}));
+  }
+
+  function similarity(ops){
+    let equal=0;
+    ops.forEach(op=>{
+      if(op.type==='equal') equal += op.items.join('').length;
+    });
+    return Math.round(equal / Math.max(oldText.value.length,newText.value.length,1) * 100);
+  }
+
+  function compare(){
+    updateMeta();
+
+    const ops = diff(
+      tokenize(oldText.value, modeSelect.value),
+      tokenize(newText.value, modeSelect.value)
+    );
+
+    blocks = group(ops);
+    const changed = blocks.filter(b=>b.kind!=='equal');
+
+    $('#totalChanges').textContent = changed.length;
+    $('#addCount').textContent = changed.filter(b=>b.kind==='add').length;
+    $('#delCount').textContent = changed.filter(b=>b.kind==='del').length;
+    $('#modCount').textContent = changed.filter(b=>b.kind==='mod').length;
+    $('#similarity').textContent = similarity(ops)+'%';
+    $('#footerCount').textContent = `${changed.length} CHANGES · CTRL / ⌘ + ENTER TO COMPARE`;
+
+    updateStates(changed);
+    renderMirrors();
+    renderChanges();
+    current=-1;
+  }
+
+  function updateStates(changed){
+    const hasInput = oldText.value || newText.value;
+    const same = hasInput && changed.length===0 && oldText.value===newText.value;
+
+    [['old', '#oldLine', '#oldState'],['new', '#newLine', '#newState']].forEach(([_,lineSel,stateSel])=>{
+      const line=$(lineSel), state=$(stateSel);
+      line.className='state-line '+(same?'same':changed.length?'changed':'');
+      state.textContent = !hasInput ? 'WAITING' : same ? 'NO CHANGE' : changed.length ? 'CHANGED' : 'READY';
+    });
+  }
+
+  function mirrorHTML(side){
+    if(!highlightToggle.checked){
+      return esc(side==='old' ? oldText.value : newText.value) + '\n';
+    }
+
+    return blocks.map(b=>{
+      const text = side==='old' ? b.old : b.new;
+      if(!text) return '';
+
+      let cls='mark-equal';
+
+      if(b.kind==='del' && side==='old') cls='mark-del';
+      if(b.kind==='add' && side==='new') cls='mark-add';
+      if(b.kind==='mod') cls=side==='old' ? 'mark-mod-old' : 'mark-mod-new';
+
+      return `<span class="${cls}">${esc(text)}</span>`;
+    }).join('') + '\n';
+  }
+
+  function renderMirrors(){
+    oldMirror.innerHTML = mirrorHTML('old');
+    newMirror.innerHTML = mirrorHTML('new');
+    syncMirror(oldText, oldMirror);
+    syncMirror(newText, newMirror);
+  }
+
+  function renderChanges(){
+    const list = blocks.filter(b=>b.kind!=='equal' && (filter==='all' || b.kind===filter));
+
+    if(!list.length){
+      changesList.innerHTML = `<div class="empty">${
+        blocks.length ? '該当する変更はありません。' : '旧文章と新文章を入力すると、変更内容がここに表示されます。'
+      }</div>`;
+      return;
+    }
+
+    const label={add:'ADDED',del:'DELETED',mod:'MODIFIED'};
+
+    changesList.innerHTML = list.map((b,i)=>`
+      <div class="change-row ${b.kind}" data-id="${b.id}">
+        <div class="change-no">${String(i+1).padStart(2,'0')}</div>
+        <div class="change-kind ${b.kind}">${label[b.kind]}</div>
+        <div class="change-old">${b.old ? esc(b.old) : '—'}</div>
+        <div class="change-new">${b.new ? esc(b.new) : '—'}</div>
+      </div>
+    `).join('');
+  }
+
+  function syncMirror(textarea,mirror){
+    mirror.scrollTop = textarea.scrollTop;
+    mirror.scrollLeft = textarea.scrollLeft;
+  }
+
+  function scrollRatio(el, axis){
+    if(axis === 'x'){
+      const max = el.scrollWidth - el.clientWidth;
+      return max > 0 ? el.scrollLeft / max : 0;
+    }
+    const max = el.scrollHeight - el.clientHeight;
+    return max > 0 ? el.scrollTop / max : 0;
+  }
+
+  function applyLinkedScroll(source, target){
+    if(!syncScrollToggle.checked || scrollSyncLock) return;
+
+    scrollSyncLock = true;
+
+    const y = scrollRatio(source, 'y');
+    const x = scrollRatio(source, 'x');
+
+    const targetMaxY = Math.max(0, target.scrollHeight - target.clientHeight);
+    const targetMaxX = Math.max(0, target.scrollWidth - target.clientWidth);
+
+    target.scrollTop = targetMaxY * y;
+    target.scrollLeft = targetMaxX * x;
+
+    syncMirror(target, target === oldText ? oldMirror : newMirror);
+
+    requestAnimationFrame(() => {
+      scrollSyncLock = false;
+    });
+  }
+
+  oldText.addEventListener('scroll',()=>{
+    syncMirror(oldText,oldMirror);
+    applyLinkedScroll(oldText,newText);
+  });
+
+  newText.addEventListener('scroll',()=>{
+    syncMirror(newText,newMirror);
+    applyLinkedScroll(newText,oldText);
+  });
+
+  function scheduleCompare(){
+    updateMeta();
+
+    if(!liveToggle.checked){
+      oldMirror.innerHTML=esc(oldText.value)+'\n';
+      newMirror.innerHTML=esc(newText.value)+'\n';
+      return;
+    }
+
+    clearTimeout(timer);
+    timer=setTimeout(compare,150);
+  }
+
+  oldText.addEventListener('input',scheduleCompare);
+  newText.addEventListener('input',scheduleCompare);
+  modeSelect.addEventListener('change',compare);
+  highlightToggle.addEventListener('change',renderMirrors);
+
+  $('#compareBtn').addEventListener('click',compare);
+
+  $('#swapBtn').addEventListener('click',()=>{
+    const t=oldText.value;
+    oldText.value=newText.value;
+    newText.value=t;
+    compare();
+  });
+
+  $('#sampleBtn').addEventListener('click',()=>{
+    oldText.value=`①図示する断面形状・寸法は参考とし、採用するメーカーの標準仕様を優先すること。
+②折板の仕様は、採用箇所の荷重条件およびメーカー仕様に基づき決定すること。
+③施工完了後は目視により仕上がりを確認すること。`;
+
+    newText.value=`①図示する断面形状・寸法は参考とし、メーカー標準仕様を優先すること。
+②折板の仕様は、耐風圧性能等の荷重条件およびメーカー仕様に基づき決定すること。
+③施工完了後は目視および打診により仕上がりを確認すること。
+④検査結果は記録として保管すること。`;
+
+    compare();
+  });
+
+  $('#clearBtn').addEventListener('click',()=>{
+    oldText.value='';
+    newText.value='';
+    blocks=[];
+    filter='all';
+    current=-1;
+
+    document.querySelectorAll('.filter-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+    compare();
+  });
+
+  function removeHalfWidthSpaces(target){
+    const before = target.value;
+    const removed = (before.match(/ /g) || []).length;
+
+    if(!removed){
+      showToast('NO HALF SPACES');
+      return;
+    }
+
+    target.value = before.replace(/ /g, '');
+    compare();
+    showToast(`${removed} HALF SPACES REMOVED`);
+  }
+
+  function removeHalfWidthSpacesBoth(){
+    const oldCount = (oldText.value.match(/ /g) || []).length;
+    const newCount = (newText.value.match(/ /g) || []).length;
+    const total = oldCount + newCount;
+
+    if(!total){
+      showToast('NO HALF SPACES');
+      return;
+    }
+
+    oldText.value = oldText.value.replace(/ /g, '');
+    newText.value = newText.value.replace(/ /g, '');
+    compare();
+    showToast(`${total} HALF SPACES REMOVED`);
+  }
+
+  $('#removeSpaceOldBtn').addEventListener('click',()=>removeHalfWidthSpaces(oldText));
+  $('#removeSpaceNewBtn').addEventListener('click',()=>removeHalfWidthSpaces(newText));
+  $('#removeSpaceBothBtn').addEventListener('click',removeHalfWidthSpacesBoth);
+
+  async function copyText(value){
+    try{
+      await navigator.clipboard.writeText(value);
+      showToast('COPIED');
+    }catch(e){
+      showToast('COPY FAILED');
+    }
+  }
+
+  $('#copyOldBtn').addEventListener('click',()=>copyText(oldText.value));
+  $('#copyOldBtn2').addEventListener('click',()=>copyText(oldText.value));
+  $('#copyNewBtn').addEventListener('click',()=>copyText(newText.value));
+  $('#copyNewBtn2').addEventListener('click',()=>copyText(newText.value));
+
+  document.querySelectorAll('.filter-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));
+      btn.classList.add('active');
+      filter=btn.dataset.filter;
+      renderChanges();
+    });
+  });
+
+  function navigate(dir){
+    const changed=blocks.filter(b=>b.kind!=='equal');
+
+    if(!changed.length){
+      showToast('NO CHANGES');
+      return;
+    }
+
+    current=(current+dir+changed.length)%changed.length;
+    const target=changed[current];
+
+    filter='all';
+    document.querySelectorAll('.filter-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+    renderChanges();
+
+    const el=changesList.querySelector(`[data-id="${target.id}"]`);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
+  $('#prevBtn').addEventListener('click',()=>navigate(-1));
+  $('#nextBtn').addEventListener('click',()=>navigate(1));
+
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey) && e.key==='Enter'){
+      e.preventDefault();
+      compare();
+    }
+  });
+
+  if('ResizeObserver' in window){
+    const ro=new ResizeObserver(entries=>{
+      entries.forEach(entry=>{
+        const ta=entry.target;
+        const mirror=ta===oldText ? oldMirror : newMirror;
+        mirror.style.height=ta.offsetHeight+'px';
+        ta.parentElement.style.minHeight=ta.offsetHeight+'px';
+      });
+    });
+    ro.observe(oldText);
+    ro.observe(newText);
+  }
+
+  updateMeta();
+  renderMirrors();
+})();
+</script>
+</body>
+</html>
