@@ -1,722 +1,587 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Line Timer Stamp</title>
-  <style>
-    :root {
-      --canvas: #f6f6f6;
-      --surface: #ffffff;
-      --ink: #0a0a0a;
-      --muted: #9d9d9d;
-      --line: #dfdfdf;
-      --line-dark: #bdbdbd;
-      --accent: #d71920;
-      --font: "Helvetica Neue", Helvetica, Arial, "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
-      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, "BIZ UDPGothic", monospace;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Timestamp Editor</title>
+<style>
+:root{
+  --bone:#f6f6f6;
+  --white:#ffffff;
+  --black:#0a0a0a;
+  --divider:#e6e6e6;
+  --muted:#b2b2b2;
+  --mid:#6e6e6e;
+  --signal:#c81f3a;
+  --signal-soft:rgba(200,31,58,.16);
+  --green:#168a52;
+  --font-euro:"Eurostile","Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-body:"Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-mono:"BIZ UDPGothic","Noto Sans Mono CJK JP","Yu Gothic UI",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bone);color:var(--black)}
+body{font-family:var(--font-body);font-size:12px;line-height:1.65}
+button,textarea,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible{outline:1px solid var(--black);outline-offset:-1px}
 
-    * { box-sizing: border-box; }
-    html, body { min-height: 100%; }
+.header{
+  position:sticky;top:0;z-index:50;height:86px;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;
+  padding:0 20px;background:var(--white);border-bottom:.5px solid var(--divider)
+}
+.brand-cluster,.header-actions{display:flex;align-items:center;gap:10px;min-width:0}
+.header-actions{justify-content:flex-end}
+.brand-mark{display:flex;align-items:center;gap:7px;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.signal-block{width:9px;height:9px;background:var(--signal);flex:0 0 auto}
+.signal-block.idle{opacity:.28}
+.signal-block.running{opacity:1}
+.sep{color:var(--black);font-size:8px}
+.ghost{
+  appearance:none;border:0;border-radius:0;background:transparent;color:var(--black);padding:0;
+  font-family:var(--font-euro);font-size:8px;line-height:1.1;font-weight:400;letter-spacing:.04em;text-transform:uppercase
+}
+.ghost:hover{color:#666}
+.ghost.active{font-weight:700}
+.ghost.danger{color:var(--signal)}
+.header-center{text-align:center;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 
-    body {
-      margin: 0;
-      background: var(--canvas);
-      color: var(--ink);
-      font-family: var(--font);
-      -webkit-font-smoothing: antialiased;
-    }
+.page{width:100%;padding:34px 20px 110px}
+.hero{margin-bottom:42px}
+.meta{margin-bottom:7px;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+.wordmark{margin:0;font-family:var(--font-euro);font-size:30px;line-height:1;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}
+.hero-copy{margin:14px 0 0;max-width:840px;font-size:12px;line-height:1.75;color:#343434}
 
-    button, textarea { font: inherit; }
-    button { cursor: pointer; }
+.control-strip{
+  display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;
+  padding:10px 0;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);margin-bottom:20px
+}
+.control-group{display:flex;align-items:center;gap:8px}
+.control-label,.status-label{
+  font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase
+}
+.status-label{color:var(--muted)}
+.status-label.running{color:var(--signal);font-weight:700}
+.spacer{flex:1}
+.timer-compact{display:flex;align-items:baseline;gap:10px}
+.timer-value{font-family:var(--font-euro);font-size:22px;line-height:1;font-weight:700;letter-spacing:.02em;font-variant-numeric:tabular-nums}
 
-    .micro {
-      font-size: 9px;
-      line-height: 1.2;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
+.workspace{background:var(--white);border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider)}
+.editor-head{
+  display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;
+  min-height:42px;padding:0 10px;border-bottom:.5px solid var(--divider)
+}
+.editor-index,.editor-title,.editor-count{
+  font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase
+}
+.editor-index,.editor-title{font-weight:700}
+.editor-title .jp{font-family:var(--font-body);font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;margin-left:7px}
+.editor-count{color:var(--muted);white-space:nowrap}
+.editor-shell{position:relative;min-height:390px;background:var(--white)}
+.editor{
+  display:block;width:100%;height:460px;min-height:390px;margin:0;padding:18px 16px 24px;
+  border:0;border-radius:0;resize:vertical;overflow:auto;outline:0;background:transparent;color:var(--black);
+  font-family:var(--font-mono);font-size:14px;line-height:1.9;letter-spacing:0;tab-size:4;
+  white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;caret-color:var(--black)
+}
+.editor:focus{box-shadow:inset 0 -1px 0 var(--black)}
+.editor::placeholder{color:var(--muted)}
+.editor-foot{
+  min-height:34px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 10px;border-top:.5px solid var(--divider)
+}
+.state{display:flex;align-items:center;gap:7px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}
+.state-line{width:18px;height:1px;background:var(--muted)}
+.state-line.running{background:var(--signal)}
+.editor-hint{font-size:11px;color:#777}
 
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      height: 72px;
-      display: flex;
-      align-items: stretch;
-      justify-content: space-between;
-      background: rgba(255,255,255,.97);
-      border-bottom: .5px solid var(--line);
-      backdrop-filter: blur(8px);
-    }
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:42px;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider)}
+.metric{min-width:0;padding:10px 10px 11px}
+.metric + .metric{border-left:.5px solid var(--divider)}
+.metric-label{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;color:var(--mid);margin-bottom:7px}
+.metric-value{font-family:var(--font-euro);font-size:22px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric.changed .metric-value{color:var(--signal)}
 
-    .brand-cluster,
-    .top-actions {
-      display: flex;
-      align-items: stretch;
-    }
+.record{margin-top:42px}
+.record-head{display:flex;align-items:flex-end;gap:18px;margin-bottom:10px}
+.record-heading{margin:0;font-family:var(--font-euro);font-size:30px;line-height:1;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}
+.record-copy{margin:0;color:#777;font-size:11px;line-height:1.6}
+.record-row{display:grid;grid-template-columns:70px 90px minmax(0,1fr);border-bottom:.5px solid var(--divider)}
+.record-row:first-of-type{border-top:.5px solid var(--divider)}
+.record-row > div{padding:10px}
+.record-row > div + div{border-left:.5px solid var(--divider)}
+.record-no,.record-time{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.record-text{font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.empty{padding:28px 10px;border-bottom:.5px solid var(--divider);font-size:12px;color:#777}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .10em;
-      text-transform: uppercase;
-      border-right: .5px solid var(--line);
-      white-space: nowrap;
-    }
+.footer-strip{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;min-height:52px;
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px;padding:0 20px;
+  background:var(--bone);border-top:.5px solid var(--divider)
+}
+.footer-main,.footer-side{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+.footer-side{color:var(--muted)}
+.toast{
+  position:fixed;left:20px;bottom:66px;z-index:100;padding:7px 9px;background:var(--black);color:var(--white);border-radius:0;
+  font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;opacity:0;transform:translateY(5px);transition:.16s;pointer-events:none
+}
+.toast.show{opacity:1;transform:translateY(0)}
 
-    .nav-meta {
-      display: flex;
-      align-items: center;
-      padding: 0 18px;
-      color: var(--muted);
-      border-right: .5px solid var(--line);
-      white-space: nowrap;
-    }
-
-    .top-actions button {
-      min-width: 116px;
-      padding: 0 18px;
-      border: 0;
-      border-left: .5px solid var(--line);
-      border-radius: 0;
-      background: transparent;
-      color: var(--ink);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .top-actions button:hover { background: #f2f2f2; }
-
-    .page {
-      min-height: calc(100vh - 72px);
-      padding: 24px;
-    }
-
-    .title-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 24px;
-      align-items: end;
-      padding: 12px 0 22px;
-      border-bottom: .5px solid var(--line-dark);
-    }
-
-    .kicker {
-      margin-bottom: 12px;
-      color: var(--muted);
-    }
-
-    h1 {
-      margin: 0;
-      max-width: 760px;
-      font-size: 20px;
-      line-height: .98;
-      font-weight: 700;
-      letter-spacing: .015em;
-      text-transform: uppercase;
-    }
-
-    .title-note {
-      max-width: 390px;
-      margin: 0;
-      color: #666;
-      font-size: 12px;
-      line-height: 1.7;
-      text-align: right;
-    }
-
-    .control-grid {
-      display: grid;
-      grid-template-columns: 1fr 360px;
-      min-height: 156px;
-      border-bottom: .5px solid var(--line-dark);
-    }
-
-    .howto {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      border-right: .5px solid var(--line-dark);
-    }
-
-    .step {
-      position: relative;
-      padding: 20px 20px 18px 0;
-    }
-
-    .step + .step {
-      padding-left: 20px;
-      border-left: .5px solid var(--line);
-    }
-
-    .step-no {
-      display: block;
-      margin-bottom: 34px;
-      color: var(--muted);
-      font-size: 9px;
-      letter-spacing: .08em;
-    }
-
-    .step strong {
-      display: block;
-      margin-bottom: 7px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .03em;
-    }
-
-    .step span:last-child {
-      display: block;
-      max-width: 240px;
-      color: #777;
-      font-size: 11px;
-      line-height: 1.55;
-    }
-
-    .timer-panel {
-      position: relative;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: 18px 0 0 22px;
-      overflow: hidden;
-    }
-
-    .accent-signal {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 9px;
-      height: 9px;
-      background: var(--accent);
-      opacity: .28;
-      transition: opacity .15s ease, transform .15s ease;
-    }
-
-    .timer-panel.running .accent-signal {
-      opacity: 1;
-      transform: scale(1.15);
-    }
-
-    .timer-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-right: 2px;
-    }
-
-    .timer-status { color: var(--muted); }
-    .timer-panel.running .timer-status { color: var(--ink); }
-
-    .timer-value {
-      align-self: center;
-      font-size: 22px;
-      line-height: 1;
-      font-weight: 400;
-      letter-spacing: -.035em;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .timer-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      margin-left: -22px;
-      border-top: .5px solid var(--line);
-    }
-
-    .timer-actions button {
-      min-height: 42px;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      color: var(--ink);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .timer-actions button + button { border-left: .5px solid var(--line); }
-    .timer-actions button:hover { background: #ededed; }
-
-    .editor-section { padding-top: 30px; }
-
-    .editor-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      align-items: end;
-      padding-bottom: 10px;
-    }
-
-    .editor-heading {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-
-    .mode-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-    }
-
-    .mode-status::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      background: var(--line-dark);
-    }
-
-    .mode-status.active { color: var(--ink); }
-    .mode-status.active::before { background: var(--accent); }
-
-    .editor-frame {
-      position: relative;
-      background: var(--surface);
-      border-top: .5px solid var(--line-dark);
-      border-bottom: .5px solid var(--line-dark);
-    }
-
-    .editor-toolbar {
-      min-height: 42px;
-      display: flex;
-      align-items: stretch;
-      justify-content: space-between;
-      border-bottom: .5px solid var(--line);
-    }
-
-    .editor-meta,
-    .editor-tools { display: flex; align-items: stretch; }
-
-    .editor-meta span {
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      color: var(--muted);
-      border-right: .5px solid var(--line);
-    }
-
-    .editor-tools button {
-      padding: 0 13px;
-      border: 0;
-      border-left: .5px solid var(--line);
-      border-radius: 0;
-      background: transparent;
-      color: var(--ink);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-
-    .editor-tools button:hover { background: #f1f1f1; }
-
-    textarea {
-      display: block;
-      width: 100%;
-      min-height: 480px;
-      resize: vertical;
-      padding: 22px 18px 40px;
-      border: 0;
-      border-radius: 0;
-      outline: none;
-      background: var(--surface);
-      color: var(--ink);
-      font-family: var(--mono);
-      font-size: 14px;
-      line-height: 1.85;
-      letter-spacing: 0;
-      caret-color: var(--accent);
-      tab-size: 2;
-    }
-
-    textarea::selection { background: #e8e8e8; }
-    textarea::placeholder { color: #b9b9b9; }
-
-    .stamp-flash {
-      position: absolute;
-      right: 12px;
-      bottom: 12px;
-      padding: 8px 10px;
-      background: var(--accent);
-      color: white;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      opacity: 0;
-      transform: translateY(4px);
-      pointer-events: none;
-      transition: opacity .14s ease, transform .14s ease;
-    }
-
-    .stamp-flash.show { opacity: 1; transform: translateY(0); }
-
-    .footer-strip {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 12px 0 4px;
-      color: var(--muted);
-      font-size: 9px;
-      line-height: 1.35;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-
-    .kbd {
-      color: var(--ink);
-      font-weight: 700;
-    }
-
-    @media (max-width: 900px) {
-      .topbar { height: 62px; }
-      .nav-meta { display: none; }
-      .brand { padding: 0 14px; }
-      .top-actions button { min-width: auto; padding: 0 12px; }
-      .page { padding: 16px; }
-      .title-row { grid-template-columns: 1fr; }
-      .title-note { text-align: left; }
-      .control-grid { grid-template-columns: 1fr; }
-      .howto { border-right: 0; border-bottom: .5px solid var(--line-dark); }
-      .timer-panel { min-height: 160px; padding-left: 0; }
-      .timer-actions { margin-left: 0; }
-    }
-
-    @media (max-width: 620px) {
-      .brand { font-size: 9px; }
-      .top-actions button { font-size: 8px; }
-      .howto { grid-template-columns: 1fr; }
-      .step { padding: 14px 0; }
-      .step + .step { padding-left: 0; border-left: 0; border-top: .5px solid var(--line); }
-      .step-no { margin-bottom: 8px; }
-      .editor-header { align-items: flex-start; flex-direction: column; }
-      .editor-toolbar { align-items: stretch; flex-direction: column; }
-      .editor-meta, .editor-tools { min-height: 38px; }
-      .editor-meta { border-bottom: .5px solid var(--line); }
-      .editor-tools button { flex: 1; }
-      textarea { min-height: 420px; padding: 18px 12px 36px; font-size: 13px; }
-      .footer-strip { flex-direction: column; }
-    }
-  </style>
+@media(max-width:900px){
+  .header{grid-template-columns:1fr auto;height:auto;min-height:72px;padding:14px}
+  .header-center{display:none}
+  .page{padding:28px 14px 100px}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metric:nth-child(3){border-left:0;border-top:.5px solid var(--divider)}
+  .metric:nth-child(4){border-top:.5px solid var(--divider)}
+  .record-head{align-items:flex-start;flex-direction:column}
+  .record-row{grid-template-columns:54px 78px minmax(0,1fr)}
+  .footer-strip{padding:0 14px}
+}
+@media(max-width:620px){
+  .brand-cluster .sep,.brand-cluster .ghost{display:none}
+  .header-actions{gap:8px}
+  .control-strip{align-items:flex-start}
+  .spacer{flex-basis:100%;height:0}
+  .timer-compact{width:100%;justify-content:space-between}
+  .editor-head{grid-template-columns:auto 1fr auto}
+  .editor-head .editor-count{display:none}
+  .editor{height:420px;font-size:14px;padding:16px 12px 22px}
+  .editor-foot{align-items:flex-start;flex-direction:column;padding:9px 10px}
+  .record-row{grid-template-columns:50px 72px minmax(0,1fr)}
+  .record-row > div{padding:8px}
+}
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand-cluster">
-      <div class="brand">Line Timer Stamp</div>
-      <div class="nav-meta micro">Timestamp / Text Utility / 01</div>
+<header class="header">
+  <div class="brand-cluster">
+    <div class="brand-mark">
+      <span class="signal-block idle" id="brandSignal" aria-hidden="true"></span>
+      <strong>Timestamp</strong>
     </div>
-    <div class="top-actions">
-      <button id="copyBtn" type="button">Copy text</button>
-      <button id="downloadBtn" type="button">Save txt</button>
+    <span class="sep">/</span>
+    <button class="ghost active" id="headerRunBtn" type="button">Run</button>
+    <button class="ghost" id="headerResetBtn" type="button">Reset</button>
+  </div>
+  <div class="header-center">Text Timestamp / Local Processing</div>
+  <div class="header-actions">
+    <button class="ghost" id="copyBtn" type="button">Copy</button>
+    <span class="sep">/</span>
+    <button class="ghost" id="downloadBtn" type="button">Export</button>
+    <span class="sep">/</span>
+    <button class="ghost danger" id="clearBtn" type="button">Clear</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="meta">Tool / 01</div>
+    <h1 class="wordmark">Timestamp Editor</h1>
+    <p class="hero-copy">文章を入力してタイマーを開始し、時刻を入れたい行をクリックします。クリックした行の先頭へ、その時点の「分:秒」を記録します。処理はブラウザ内のみで行われます。</p>
+  </section>
+
+  <section class="control-strip" aria-label="タイマー操作">
+    <div class="control-group">
+      <span class="control-label">Timer</span>
+      <button class="ghost active" id="startPauseBtn" type="button">Run</button>
+      <span class="sep">/</span>
+      <button class="ghost" id="resetBtn" type="button">Reset</button>
     </div>
-  </header>
+    <div class="control-group" aria-label="タイマースタートモード">
+      <span class="control-label">Start</span>
+      <button class="ghost active" id="modeZeroBtn" type="button" aria-pressed="true">00:00</button>
+      <span class="sep">/</span>
+      <button class="ghost" id="modeMinus5Btn" type="button" aria-pressed="false">-00:05</button>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Status</span>
+      <span class="status-label" id="timerStatus">Ready</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="timer-compact">
+      <span class="control-label">Elapsed</span>
+      <span class="timer-value" id="timerValue">00:00</span>
+    </div>
+  </section>
 
-  <main class="page">
-    <section class="title-row">
-      <div>
-        <div class="kicker micro">Simple timestamp editor</div>
-        <h1>Click a line.<br>Stamp the time.</h1>
-      </div>
-      <p class="title-note">
-        文章を貼り付け、タイマーを開始。時刻を付けたい行をクリックすると、
-        その瞬間の「分:秒」を行頭へ記録します。
-      </p>
-    </section>
+  <section class="workspace">
+    <div class="editor-head">
+      <div class="editor-index">A</div>
+      <div class="editor-title">Transcript <span class="jp">文章</span></div>
+      <div class="editor-count" id="editorCount">0 Chars / 1 Line</div>
+      <button class="ghost" id="undoStampBtn" type="button">Undo</button>
+    </div>
+    <div class="editor-shell">
+      <textarea class="editor" id="editor" spellcheck="false" aria-label="タイムスタンプを付ける文章" placeholder="ここに文章を入力または貼り付けます。\n\nタイマー開始後、時刻を入れたい行をクリックしてください。"></textarea>
+    </div>
+    <div class="editor-foot">
+      <div class="state"><span class="state-line" id="stateLine"></span><span id="modeState">Waiting</span></div>
+      <div class="editor-hint">クリックした行の先頭に MM:SS を入力します。-5秒モードでは負の時刻も記録します。</div>
+    </div>
+  </section>
 
-    <section class="control-grid">
-      <div class="howto">
-        <div class="step">
-          <span class="step-no micro">01 / Input</span>
-          <strong>文章を入力</strong>
-          <span>本文をそのまま入力、または貼り付けます。</span>
-        </div>
-        <div class="step">
-          <span class="step-no micro">02 / Timer</span>
-          <strong>タイマーを開始</strong>
-          <span>開始後はクリックによる時刻入力が有効になります。</span>
-        </div>
-        <div class="step">
-          <span class="step-no micro">03 / Stamp</span>
-          <strong>任意の行をクリック</strong>
-          <span>クリックした行の先頭に現在の分:秒を入力します。</span>
-        </div>
-      </div>
+  <section class="metrics" aria-label="集計">
+    <div class="metric changed"><div class="metric-label">Elapsed</div><div class="metric-value" id="metricElapsed">00:00</div></div>
+    <div class="metric"><div class="metric-label">Lines</div><div class="metric-value" id="metricLines">1</div></div>
+    <div class="metric"><div class="metric-label">Chars</div><div class="metric-value" id="metricChars">0</div></div>
+    <div class="metric"><div class="metric-label">Stamps</div><div class="metric-value" id="metricStamps">0</div></div>
+  </section>
 
-      <aside class="timer-panel" id="timerPanel" aria-label="タイマー">
-        <span class="accent-signal" aria-hidden="true"></span>
-        <div class="timer-head">
-          <span class="timer-status micro" id="timerStatus">Ready</span>
-          <span class="micro">MM:SS</span>
-        </div>
-        <div class="timer-value" id="timerValue">00:00</div>
-        <div class="timer-actions">
-          <button id="startPauseBtn" type="button">Start</button>
-          <button id="resetBtn" type="button">Reset</button>
-        </div>
-      </aside>
-    </section>
+  <section class="record">
+    <div class="record-head">
+      <h2 class="record-heading">Event Record</h2>
+      <p class="record-copy">現在の文章内でタイムスタンプが付いている行を表示します。</p>
+    </div>
+    <div id="recordList"><div class="empty">タイムスタンプ付きの行はまだありません。</div></div>
+  </section>
+</main>
 
-    <section class="editor-section">
-      <div class="editor-header">
-        <h2 class="editor-heading">Transcript</h2>
-        <div class="mode-status micro" id="modeChip">Stamp mode / off</div>
-      </div>
+<footer class="footer-strip">
+  <div class="footer-main" id="footerStatus">Ready · Ctrl / ⌘ + Enter = Run / Pause</div>
+  <div class="footer-side">Timestamp / V1.2</div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-      <div class="editor-frame">
-        <div class="editor-toolbar">
-          <div class="editor-meta micro">
-            <span id="lineCount">1 line</span>
-            <span id="charCount">0 chars</span>
-          </div>
-          <div class="editor-tools">
-            <button id="undoStampBtn" type="button">Undo stamp</button>
-            <button id="clearBtn" type="button">Clear</button>
-          </div>
-        </div>
+<script>
+(() => {
+  const editor = document.getElementById('editor');
+  const timerValue = document.getElementById('timerValue');
+  const timerStatus = document.getElementById('timerStatus');
+  const startPauseBtn = document.getElementById('startPauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const modeZeroBtn = document.getElementById('modeZeroBtn');
+  const modeMinus5Btn = document.getElementById('modeMinus5Btn');
+  const headerRunBtn = document.getElementById('headerRunBtn');
+  const headerResetBtn = document.getElementById('headerResetBtn');
+  const copyBtn = document.getElementById('copyBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const undoStampBtn = document.getElementById('undoStampBtn');
+  const brandSignal = document.getElementById('brandSignal');
+  const stateLine = document.getElementById('stateLine');
+  const modeState = document.getElementById('modeState');
+  const footerStatus = document.getElementById('footerStatus');
+  const editorCount = document.getElementById('editorCount');
+  const metricElapsed = document.getElementById('metricElapsed');
+  const metricLines = document.getElementById('metricLines');
+  const metricChars = document.getElementById('metricChars');
+  const metricStamps = document.getElementById('metricStamps');
+  const recordList = document.getElementById('recordList');
+  const toast = document.getElementById('toast');
 
-        <textarea id="editor" spellcheck="false" placeholder="ここに文章を入力または貼り付けます。\n\nタイマー開始後、時刻を入れたい行をクリックしてください。"></textarea>
-        <div class="stamp-flash" id="stampFlash">00:00 stamped</div>
-      </div>
+  const STORAGE_KEY = 'timestamp-editor:ui-system-v2';
+  const LEGACY_STORAGE_KEY = 'timestamp-editor:ui-system-v1';
+  const TIMESTAMP_RE = /^\s*(-?\d+):(\d{2})\s+/;
+  let running = false;
+  let timerMode = 'zero';
+  let hasStarted = false;
+  let elapsedBeforeRun = 0;
+  let startedAt = 0;
+  let animationId = null;
+  let lastStampSnapshot = null;
+  let toastTimer = null;
 
-      <div class="footer-strip">
-        <span>Text and timer state are stored locally in this browser.</span>
-        <span><span class="kbd">Ctrl / ⌘ + Enter</span> — Start / Pause</span>
-      </div>
-    </section>
-  </main>
+  function modeBaseMs(){
+    return timerMode === 'minus5' ? -5000 : 0;
+  }
 
-  <script>
-    (() => {
-      const editor = document.getElementById('editor');
-      const timerPanel = document.getElementById('timerPanel');
-      const timerValue = document.getElementById('timerValue');
-      const timerStatus = document.getElementById('timerStatus');
-      const startPauseBtn = document.getElementById('startPauseBtn');
-      const resetBtn = document.getElementById('resetBtn');
-      const modeChip = document.getElementById('modeChip');
-      const lineCount = document.getElementById('lineCount');
-      const charCount = document.getElementById('charCount');
-      const copyBtn = document.getElementById('copyBtn');
-      const downloadBtn = document.getElementById('downloadBtn');
-      const clearBtn = document.getElementById('clearBtn');
-      const undoStampBtn = document.getElementById('undoStampBtn');
-      const stampFlash = document.getElementById('stampFlash');
+  function currentElapsedMs(){
+    return running ? elapsedBeforeRun + (performance.now() - startedAt) : elapsedBeforeRun;
+  }
 
-      const STORAGE_KEY = 'line-timer-stamp:v2-becane';
-      let running = false;
-      let elapsedBeforeRun = 0;
-      let startedAt = 0;
-      let animationId = null;
-      let lastStampSnapshot = null;
+  function formatTime(ms){
+    const negative = ms < 0;
+    const totalSeconds = negative ? Math.ceil(Math.abs(ms) / 1000) : Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const core = `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+    return negative ? `-${core}` : core;
+  }
 
-      function currentElapsedMs() {
-        return running ? elapsedBeforeRun + (performance.now() - startedAt) : elapsedBeforeRun;
+  function showToast(message){
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1200);
+  }
+
+  function getStats(){
+    const text = editor.value;
+    const lines = text.length ? text.split('\n') : [''];
+    const stamped = lines.map((line,index) => {
+      const match = line.match(TIMESTAMP_RE);
+      if(!match) return null;
+      return {
+        line:index + 1,
+        time:match[0].trim(),
+        text:line.replace(TIMESTAMP_RE,'')
+      };
+    }).filter(Boolean);
+    return { text, lines, stamped };
+  }
+
+  function renderRecord(stamped){
+    if(!stamped.length){
+      recordList.innerHTML = '<div class="empty">タイムスタンプ付きの行はまだありません。</div>';
+      return;
+    }
+    recordList.innerHTML = stamped.map(item => `
+      <div class="record-row">
+        <div class="record-no">L ${item.line}</div>
+        <div class="record-time">${escapeHtml(item.time)}</div>
+        <div class="record-text">${escapeHtml(item.text || '—')}</div>
+      </div>`).join('');
+  }
+
+  function escapeHtml(value){
+    return String(value)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#039;');
+  }
+
+  function updateStats(){
+    const { text, lines, stamped } = getStats();
+    const lineCount = lines.length;
+    editorCount.textContent = `${text.length} Chars / ${lineCount} ${lineCount === 1 ? 'Line' : 'Lines'}`;
+    metricLines.textContent = String(lineCount);
+    metricChars.textContent = String(text.length);
+    metricStamps.textContent = String(stamped.length);
+    renderRecord(stamped);
+  }
+
+  function updateTimerDisplay(){
+    const text = formatTime(currentElapsedMs());
+    timerValue.textContent = text;
+    metricElapsed.textContent = text;
+    if(running) animationId = requestAnimationFrame(updateTimerDisplay);
+  }
+
+  function updateModeUI(){
+    const minus5 = timerMode === 'minus5';
+    modeZeroBtn.classList.toggle('active', !minus5);
+    modeMinus5Btn.classList.toggle('active', minus5);
+    modeZeroBtn.setAttribute('aria-pressed', String(!minus5));
+    modeMinus5Btn.setAttribute('aria-pressed', String(minus5));
+  }
+
+  function updateTimerUI(){
+    brandSignal.classList.toggle('running', running);
+    brandSignal.classList.toggle('idle', !running);
+    stateLine.classList.toggle('running', running);
+    timerStatus.classList.toggle('running', running);
+    updateModeUI();
+
+    const modeLabel = timerMode === 'minus5' ? '-5 Sec' : 'Zero';
+    if(running){
+      timerStatus.textContent = 'Running';
+      modeState.textContent = `Running / ${modeLabel} / Stamp On`;
+      startPauseBtn.textContent = 'Pause';
+      headerRunBtn.textContent = 'Pause';
+      footerStatus.textContent = `Running · ${modeLabel} Start · Click a line to stamp · Ctrl / ⌘ + Enter = Pause`;
+    }else if(hasStarted){
+      timerStatus.textContent = 'Paused';
+      modeState.textContent = `Paused / ${modeLabel} / Stamp Off`;
+      startPauseBtn.textContent = 'Resume';
+      headerRunBtn.textContent = 'Resume';
+      footerStatus.textContent = `Paused · ${modeLabel} Start · Ctrl / ⌘ + Enter = Resume`;
+    }else{
+      timerStatus.textContent = 'Ready';
+      modeState.textContent = `Waiting / ${modeLabel} Start`;
+      startPauseBtn.textContent = 'Run';
+      headerRunBtn.textContent = 'Run';
+      footerStatus.textContent = `Ready · ${modeLabel} Start · Ctrl / ⌘ + Enter = Run / Pause`;
+    }
+  }
+
+  function setRunning(next){
+    if(next === running) return;
+    if(next){
+      startedAt = performance.now();
+      running = true;
+      hasStarted = true;
+      updateTimerUI();
+      updateTimerDisplay();
+    }else{
+      elapsedBeforeRun = currentElapsedMs();
+      running = false;
+      if(animationId) cancelAnimationFrame(animationId);
+      animationId = null;
+      updateTimerDisplay();
+      updateTimerUI();
+    }
+    persist();
+  }
+
+  function resetTimer(){
+    running = false;
+    hasStarted = false;
+    elapsedBeforeRun = modeBaseMs();
+    startedAt = 0;
+    if(animationId) cancelAnimationFrame(animationId);
+    animationId = null;
+    updateTimerDisplay();
+    updateTimerUI();
+    persist();
+    showToast(timerMode === 'minus5' ? 'Reset To -00:05' : 'Timer Reset');
+  }
+
+  function setTimerMode(nextMode){
+    if(nextMode !== 'zero' && nextMode !== 'minus5') return;
+    if(timerMode === nextMode && !running && !hasStarted) return;
+    running = false;
+    hasStarted = false;
+    timerMode = nextMode;
+    elapsedBeforeRun = modeBaseMs();
+    startedAt = 0;
+    if(animationId) cancelAnimationFrame(animationId);
+    animationId = null;
+    updateTimerDisplay();
+    updateTimerUI();
+    persist();
+    showToast(nextMode === 'minus5' ? '-5 Sec Start' : '00:00 Start');
+  }
+
+  function persist(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        text:editor.value,
+        elapsedMs:currentElapsedMs(),
+        timerMode,
+        hasStarted
+      }));
+    }catch(_){ }
+  }
+
+  function restore(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+      if(!raw){
+        elapsedBeforeRun = modeBaseMs();
+        return;
       }
+      const data = JSON.parse(raw);
+      if(typeof data.text === 'string') editor.value = data.text;
+      if(data.timerMode === 'minus5' || data.timerMode === 'zero') timerMode = data.timerMode;
+      if(Number.isFinite(data.elapsedMs)) elapsedBeforeRun = data.elapsedMs;
+      else elapsedBeforeRun = modeBaseMs();
+      if(typeof data.hasStarted === 'boolean') hasStarted = data.hasStarted;
+      else hasStarted = elapsedBeforeRun !== modeBaseMs();
+    }catch(_){
+      elapsedBeforeRun = modeBaseMs();
+    }
+  }
 
-      function formatTime(ms) {
-        const totalSeconds = Math.floor(ms / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      }
+  function stampCurrentLine(){
+    if(!running) return;
 
-      function updateTimerDisplay() {
-        timerValue.textContent = formatTime(currentElapsedMs());
-        if (running) animationId = requestAnimationFrame(updateTimerDisplay);
-      }
+    const text = editor.value;
+    const caret = editor.selectionStart;
+    const lineStart = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
+    let lineEnd = text.indexOf('\n', caret);
+    if(lineEnd === -1) lineEnd = text.length;
 
-      function updateTimerUI() {
-        timerPanel.classList.toggle('running', running);
-        modeChip.classList.toggle('active', running);
-        if (running) {
-          timerStatus.textContent = 'Running';
-          modeChip.textContent = 'Stamp mode / on';
-          startPauseBtn.textContent = 'Pause';
-        } else if (elapsedBeforeRun > 0) {
-          timerStatus.textContent = 'Paused';
-          modeChip.textContent = 'Stamp mode / off';
-          startPauseBtn.textContent = 'Resume';
-        } else {
-          timerStatus.textContent = 'Ready';
-          modeChip.textContent = 'Stamp mode / off';
-          startPauseBtn.textContent = 'Start';
-        }
-      }
+    const currentLine = text.slice(lineStart, lineEnd);
+    const time = formatTime(currentElapsedMs());
+    const cleanLine = currentLine.replace(TIMESTAMP_RE, '');
+    const newLine = `${time} ${cleanLine}`;
 
-      function setRunning(next) {
-        if (next === running) return;
+    lastStampSnapshot = {
+      value:text,
+      selectionStart:editor.selectionStart,
+      selectionEnd:editor.selectionEnd
+    };
 
-        if (next) {
-          startedAt = performance.now();
-          running = true;
-          updateTimerUI();
-          updateTimerDisplay();
-        } else {
-          elapsedBeforeRun = currentElapsedMs();
-          running = false;
-          if (animationId) cancelAnimationFrame(animationId);
-          animationId = null;
-          timerValue.textContent = formatTime(elapsedBeforeRun);
-          updateTimerUI();
-        }
-        persist();
-      }
+    editor.value = text.slice(0,lineStart) + newLine + text.slice(lineEnd);
+    const newCaret = lineStart + newLine.length;
+    editor.setSelectionRange(newCaret,newCaret);
+    editor.focus({preventScroll:true});
+    updateStats();
+    persist();
+    showToast(`${time} Stamped`);
+  }
 
-      function resetTimer() {
-        running = false;
-        elapsedBeforeRun = 0;
-        startedAt = 0;
-        if (animationId) cancelAnimationFrame(animationId);
-        animationId = null;
-        timerValue.textContent = '00:00';
-        updateTimerUI();
-        persist();
-      }
+  startPauseBtn.addEventListener('click',() => setRunning(!running));
+  headerRunBtn.addEventListener('click',() => setRunning(!running));
+  resetBtn.addEventListener('click',resetTimer);
+  headerResetBtn.addEventListener('click',resetTimer);
+  modeZeroBtn.addEventListener('click',() => setTimerMode('zero'));
+  modeMinus5Btn.addEventListener('click',() => setTimerMode('minus5'));
 
-      function updateCounts() {
-        const value = editor.value;
-        const lines = value.length ? value.split('\n').length : 1;
-        lineCount.textContent = `${lines} ${lines === 1 ? 'line' : 'lines'}`;
-        charCount.textContent = `${value.length} chars`;
-      }
+  editor.addEventListener('input',() => {
+    updateStats();
+    persist();
+  });
 
-      function persist() {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            text: editor.value,
-            elapsedMs: currentElapsedMs()
-          }));
-        } catch (_) {}
-      }
+  editor.addEventListener('mouseup',(event) => {
+    if(event.button !== 0 || !running) return;
+    requestAnimationFrame(stampCurrentLine);
+  });
 
-      function restore() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return;
-          const data = JSON.parse(raw);
-          if (typeof data.text === 'string') editor.value = data.text;
-          if (Number.isFinite(data.elapsedMs) && data.elapsedMs >= 0) elapsedBeforeRun = data.elapsedMs;
-        } catch (_) {}
+  document.addEventListener('keydown',(event) => {
+    if((event.ctrlKey || event.metaKey) && event.key === 'Enter'){
+      event.preventDefault();
+      setRunning(!running);
+    }
+  });
 
-        timerValue.textContent = formatTime(elapsedBeforeRun);
-        updateTimerUI();
-      }
+  undoStampBtn.addEventListener('click',() => {
+    if(!lastStampSnapshot){showToast('Nothing To Undo');return;}
+    editor.value = lastStampSnapshot.value;
+    editor.setSelectionRange(lastStampSnapshot.selectionStart,lastStampSnapshot.selectionEnd);
+    editor.focus();
+    lastStampSnapshot = null;
+    updateStats();
+    persist();
+    showToast('Stamp Undone');
+  });
 
-      function stampCurrentLine() {
-        if (!running) return;
+  clearBtn.addEventListener('click',() => {
+    if(!editor.value) return;
+    if(!confirm('入力した文章をすべてクリアしますか？')) return;
+    editor.value = '';
+    lastStampSnapshot = null;
+    updateStats();
+    persist();
+    editor.focus();
+    showToast('Cleared');
+  });
 
-        const text = editor.value;
-        const caret = editor.selectionStart;
-        const lineStart = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
-        let lineEnd = text.indexOf('\n', caret);
-        if (lineEnd === -1) lineEnd = text.length;
+  copyBtn.addEventListener('click',async() => {
+    try{
+      await navigator.clipboard.writeText(editor.value);
+      showToast('Copied');
+    }catch(_){
+      editor.select();
+      document.execCommand('copy');
+      editor.setSelectionRange(editor.value.length,editor.value.length);
+      showToast('Copied');
+    }
+  });
 
-        const currentLine = text.slice(lineStart, lineEnd);
-        const time = formatTime(currentElapsedMs());
-        const timestampPattern = /^\s*\d{1,}:\d{2}\s+/;
-        const withoutExistingStamp = currentLine.replace(timestampPattern, '');
-        const newLine = `${time} ${withoutExistingStamp}`;
+  downloadBtn.addEventListener('click',() => {
+    const blob = new Blob([editor.value],{type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'timestamped-text.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Exported');
+  });
 
-        lastStampSnapshot = {
-          value: text,
-          selectionStart: editor.selectionStart,
-          selectionEnd: editor.selectionEnd
-        };
+  window.addEventListener('beforeunload',persist);
 
-        editor.value = text.slice(0, lineStart) + newLine + text.slice(lineEnd);
-        const newCaret = lineStart + newLine.length;
-        editor.setSelectionRange(newCaret, newCaret);
-        editor.focus({ preventScroll: true });
-
-        stampFlash.textContent = `${time} stamped`;
-        stampFlash.classList.add('show');
-        window.clearTimeout(stampFlash._hideTimer);
-        stampFlash._hideTimer = window.setTimeout(() => stampFlash.classList.remove('show'), 650);
-
-        updateCounts();
-        persist();
-      }
-
-      startPauseBtn.addEventListener('click', () => setRunning(!running));
-      resetBtn.addEventListener('click', resetTimer);
-
-      editor.addEventListener('input', () => {
-        updateCounts();
-        persist();
-      });
-
-      editor.addEventListener('mouseup', (event) => {
-        if (event.button !== 0 || !running) return;
-        requestAnimationFrame(stampCurrentLine);
-      });
-
-      document.addEventListener('keydown', (event) => {
-        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-          event.preventDefault();
-          setRunning(!running);
-        }
-      });
-
-      undoStampBtn.addEventListener('click', () => {
-        if (!lastStampSnapshot) return;
-        editor.value = lastStampSnapshot.value;
-        editor.setSelectionRange(lastStampSnapshot.selectionStart, lastStampSnapshot.selectionEnd);
-        editor.focus();
-        lastStampSnapshot = null;
-        updateCounts();
-        persist();
-      });
-
-      clearBtn.addEventListener('click', () => {
-        if (!editor.value) return;
-        if (!confirm('入力した文章をすべてクリアしますか？')) return;
-        editor.value = '';
-        lastStampSnapshot = null;
-        updateCounts();
-        persist();
-        editor.focus();
-      });
-
-      copyBtn.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText(editor.value);
-          const original = copyBtn.textContent;
-          copyBtn.textContent = 'Copied';
-          setTimeout(() => copyBtn.textContent = original, 1000);
-        } catch (_) {
-          editor.select();
-          document.execCommand('copy');
-          editor.setSelectionRange(editor.value.length, editor.value.length);
-        }
-      });
-
-      downloadBtn.addEventListener('click', () => {
-        const blob = new Blob([editor.value], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'timestamped-text.txt';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      });
-
-      window.addEventListener('beforeunload', persist);
-
-      restore();
-      updateCounts();
-    })();
-  </script>
+  restore();
+  updateTimerDisplay();
+  updateTimerUI();
+  updateStats();
+})();
+</script>
 </body>
 </html>
