@@ -70,8 +70,70 @@ summary{cursor:pointer;font-weight:700;color:#454a53}
   .item{grid-template-columns:18px 28px minmax(0,1fr) auto}.moves{display:none}.card{border-radius:16px}
 }
 </style>
+
+<style id="web-app-ui-system-v1">
+
+/* WEB APP UI SYSTEM v1.0 — unified override */
+:root{
+  --bone:#f6f6f6 !important;
+  --white:#ffffff !important;
+  --black:#0a0a0a !important;
+  --divider:#e6e6e6 !important;
+  --muted-ui:#b2b2b2 !important;
+  --mid-ui:#6e6e6e !important;
+  --signal:#c81f3a !important;
+  --signal-soft:rgba(200,31,58,.16) !important;
+  --green:#168a52 !important;
+  --green-soft:rgba(22,138,82,.16) !important;
+  --font-euro:"Eurostile","Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;
+  --font-body:"Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;
+  --font-mono-ui:"BIZ UDPGothic","Noto Sans Mono CJK JP","Yu Gothic UI",monospace;
+}
+html,body{background:var(--bone) !important;color:var(--black) !important}
+body{font-family:var(--font-body) !important;font-size:12px !important;line-height:1.65 !important}
+button,input,select,textarea{border-radius:0 !important}
+button{font-family:var(--font-euro)}
+:focus-visible{outline:1px solid var(--black) !important;outline-offset:3px !important}
+.ui-system-header{
+  position:sticky;top:0;z-index:90;height:86px;display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:center;gap:20px;padding:0 20px;background:var(--white);border-bottom:.5px solid var(--divider);
+  font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;
+}
+.ui-system-header .ui-brand{display:flex;align-items:center;gap:9px;min-width:0;white-space:nowrap;font-size:8px;font-weight:700}
+.ui-system-header .ui-signal{width:9px;height:9px;background:var(--signal);flex:0 0 auto}
+.ui-system-header .ui-context{color:var(--muted-ui);text-align:center;white-space:nowrap}
+.ui-system-header .ui-right{justify-self:end;color:var(--mid-ui);white-space:nowrap}
+.ui-hero{padding:34px 20px 0;background:var(--bone)}
+.ui-hero .ui-meta{margin:0 0 7px;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+.ui-hero h2{margin:0;font-family:var(--font-euro);font-size:30px;line-height:1;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}
+.ui-hero p{max-width:840px;margin:14px 0 0;color:#343434;font-size:12px;line-height:1.75}
+.ui-system-footer{
+  position:fixed;left:0;right:0;bottom:0;z-index:80;min-height:52px;display:grid;grid-template-columns:1fr auto;
+  align-items:center;gap:20px;padding:0 20px;background:var(--bone);border-top:.5px solid var(--divider);
+  font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;color:var(--mid-ui);
+}
+.ui-system-footer .ui-footer-right{font-weight:700;color:var(--black)}
+@media(max-width:900px){
+  .ui-system-header{grid-template-columns:1fr auto;height:auto;min-height:72px;padding:14px}.ui-system-header .ui-context{display:none}
+  .ui-hero{padding:28px 14px 0}.ui-system-footer{padding:0 14px;gap:10px}
+}
+
+.shell{min-height:calc(100vh - 86px) !important;display:block !important;padding:34px 20px 110px !important}
+.card{width:100% !important;max-width:none !important;background:transparent !important;border:0 !important;border-radius:0 !important;padding:0 !important;box-shadow:none !important}
+.eyebrow{margin:0 0 7px !important;font-family:var(--font-euro) !important;font-size:8px !important;line-height:1.1 !important;letter-spacing:.04em !important;text-transform:uppercase !important;font-weight:400 !important;color:var(--black) !important}
+h1{margin:0 !important;font-family:var(--font-euro) !important;font-size:30px !important;line-height:1 !important;font-weight:700 !important;letter-spacing:1.2px !important;text-transform:uppercase !important}.lead{max-width:840px;margin:14px 0 42px !important;color:#343434 !important;font-size:12px !important;line-height:1.75 !important}
+.drop{padding:28px 18px !important;min-height:126px !important;border:0 !important;border-top:.5px solid var(--divider) !important;border-bottom:.5px solid var(--divider) !important;border-radius:0 !important;background:var(--white) !important}.drop:hover,.drop.over{background:#fafafa !important}.drop strong{font-family:var(--font-euro);font-size:12px !important;letter-spacing:.04em;text-transform:uppercase}.drop span{font-size:11px !important;color:var(--mid-ui) !important}
+.head{margin:42px 0 0 !important;padding:10px 0 !important;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);font-family:var(--font-euro);font-size:8px !important;letter-spacing:.04em;text-transform:uppercase;color:var(--black) !important}.textbtn,.moves button,.remove,.primary{appearance:none !important;border:0 !important;border-radius:0 !important;background:transparent !important;color:var(--black) !important;padding:0 !important;min-height:24px !important;font-family:var(--font-euro) !important;font-size:8px !important;line-height:1.1 !important;letter-spacing:.04em !important;text-transform:uppercase !important;font-weight:400 !important}.textbtn:hover,.moves button:hover,.remove:hover,.primary:hover{color:#666 !important}.primary{width:auto !important;margin-top:24px !important;font-weight:700 !important}.primary::before{content:"[";color:var(--muted-ui);margin-right:.35em}.primary::after{content:"]";color:var(--muted-ui);margin-left:.35em}
+.list{gap:0 !important;border-bottom:.5px solid var(--divider)}.item{grid-template-columns:22px 34px minmax(0,1fr) auto auto !important;padding:10px !important;border:0 !important;border-bottom:.5px solid var(--divider) !important;border-radius:0 !important;background:var(--white) !important}.item:last-child{border-bottom:0 !important}.drag,.num,.meta small{font-family:var(--font-euro);font-size:8px !important;letter-spacing:.04em;text-transform:uppercase;color:var(--muted-ui) !important}.meta strong{font-size:12px !important;font-weight:400 !important}
+.status{margin-top:14px !important;min-height:22px;color:var(--mid-ui) !important;font-size:11px !important}.progress{height:1px !important;margin-top:9px !important;border-radius:0 !important;background:var(--divider) !important}.bar{background:var(--black) !important}.result{margin-top:12px !important;padding:10px !important;border-radius:0 !important;background:var(--green-soft) !important;color:var(--green) !important;font-size:11px !important}.download{width:auto !important;min-height:24px !important;margin-top:12px !important;border-radius:0 !important;background:transparent !important;color:var(--black) !important;display:inline-flex !important;align-items:center;text-decoration:none;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;font-weight:700}.download::before{content:"[";color:var(--muted-ui);margin-right:.35em}.download::after{content:"]";color:var(--muted-ui);margin-left:.35em}.errorbox{border:.5px solid var(--signal) !important;border-radius:0 !important;background:var(--signal-soft) !important;color:var(--signal) !important}
+details{margin-top:42px !important;border-top:.5px solid var(--divider) !important;padding-top:14px !important;color:var(--mid-ui) !important;font-size:11px !important}summary{font-family:var(--font-euro);font-size:8px !important;letter-spacing:.04em;text-transform:uppercase;color:var(--black) !important}.badge{border-radius:0 !important;background:var(--bone) !important;font-family:var(--font-euro);font-size:8px !important;letter-spacing:.04em;text-transform:uppercase}
+@media(max-width:900px){.shell{padding:28px 14px 100px !important}}
+
+</style>
 </head>
 <body>
+<header class="ui-system-header"><div class="ui-brand"><span class="ui-signal"></span><span>MP4 SEAMLESS JOINER</span></div><div class="ui-context">MEDIA UTILITY / LOCAL PROCESSING</div><div class="ui-right">PACKET COPY</div></header>
+
 <main class="shell">
 <section class="card">
   <div class="eyebrow">PACKET COPY / NO RE-ENCODE / NO EXTRA FRAMES</div>
@@ -639,5 +701,7 @@ summary{cursor:pointer;font-weight:700;color:#454a53}
   render();
 })();
 </script>
+
+<footer class="ui-system-footer"><div>LOCAL MEDIA PROCESSING / NO RE-ENCODE</div><div class="ui-footer-right">MP4 SEAMLESS JOINER</div></footer>
 </body>
 </html>
