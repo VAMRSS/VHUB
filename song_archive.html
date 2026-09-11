@@ -423,6 +423,31 @@ select{
   color:var(--green);
   font-weight:700;
 }
+
+.library-progress-detail{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 10px;
+  margin-top:5px;
+  font-family:var(--font-body);
+  font-size:9px;
+  line-height:1.3;
+  color:var(--mid);
+}
+.library-progress-item{
+  white-space:nowrap;
+}
+.library-progress-item.done{
+  color:var(--green);
+}
+.library-progress-mark{
+  display:inline-block;
+  width:12px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  text-align:left;
+}
 .text-input{
   width:100%;
   border:0;
@@ -608,15 +633,15 @@ select{
 }
 .audio-body{
   display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-columns:minmax(0,1fr);
   align-items:center;
-  gap:18px;
+  gap:10px;
   min-height:64px;
   padding:10px;
 }
 .audio-main{
   display:grid;
-  grid-template-columns:auto auto minmax(160px,1fr) auto;
+  grid-template-columns:auto auto minmax(220px,1fr) auto;
   align-items:center;
   gap:12px;
   min-width:0;
@@ -638,8 +663,9 @@ select{
   white-space:nowrap;
 }
 .audio-progress{
+  grid-column:1 / -1;
   width:100%;
-  height:14px;
+  height:18px;
   margin:0;
   padding:0;
   border:0;
@@ -676,7 +702,7 @@ select{
   display:flex;
   align-items:center;
   flex-wrap:wrap;
-  justify-content:flex-end;
+  justify-content:flex-start;
   gap:8px;
 }
 .audio-actions .active{
@@ -737,8 +763,7 @@ select{
   .page{padding:28px 14px 100px}
   .workspace-grid{grid-template-columns:1fr}
   .audio-body{grid-template-columns:1fr}
-  .audio-main{grid-template-columns:auto minmax(0,1fr) auto}
-  .audio-file{grid-column:1/-1;grid-row:1}
+  .audio-main{grid-template-columns:auto auto minmax(0,1fr) auto}
   .audio-actions{justify-content:flex-start}
   .library-panel{
     border-right:0;
@@ -999,7 +1024,7 @@ select{
 
 <footer class="footer-strip">
   <div class="footer-main" id="footerStatus">READY · CTRL / ⌘ + S TO SAVE</div>
-  <div class="footer-side">SONG ARCHIVE / V1.3</div>
+  <div class="footer-side">SONG ARCHIVE / V1.4</div>
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1237,6 +1262,19 @@ select{
   function progressDone(progress) {
     const p = normalizeProgress(progress);
     return [p.artwork, p.tempVideo, p.article, p.videoComplete].filter(Boolean).length;
+  }
+
+  function progressDetailHtml(progress) {
+    const p = normalizeProgress(progress);
+    const items = [
+      ['アートワーク', p.artwork],
+      ['仮動画', p.tempVideo],
+      ['記事', p.article],
+      ['動画完成', p.videoComplete]
+    ];
+    return items.map(([label, done]) =>
+      `<span class="library-progress-item ${done ? 'done' : ''}"><span class="library-progress-mark">${done ? '✓' : '□'}</span>${label}</span>`
+    ).join('');
   }
 
   function applyProgress(progress) {
@@ -1522,6 +1560,7 @@ select{
           <span class="library-title">${escapeHtml(record.title || 'UNTITLED')}</span>
           <span class="library-style">${escapeHtml(record.style || 'NO STYLE')}</span>
           <span class="library-progress ${progressDone(record.progress) === 4 ? 'complete' : ''}">PROGRESS ${progressDone(record.progress)} / 4</span>
+          <span class="library-progress-detail">${progressDetailHtml(record.progress)}</span>
         </span>
         <span class="library-date">${record.audioName ? 'MP3 / ' : ''}${escapeHtml(formatDate(record.updatedAt))}</span>
       </button>
@@ -1702,7 +1741,7 @@ ${draft.lyrics}`;
     }
     const payload = {
       app: 'SONG ARCHIVE',
-      version: 1.3,
+      version: 1.4,
       exportedAt: nowIso(),
       note: 'MP3 binary data is stored in IndexedDB and is not included in this JSON file.',
       records
