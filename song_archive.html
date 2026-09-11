@@ -497,6 +497,141 @@ select{
 }
 .hidden{display:none!important}
 
+
+.audio-workspace{
+  margin-bottom:20px;
+  background:var(--white);
+  border-top:.5px solid var(--divider);
+  border-bottom:.5px solid var(--divider);
+}
+.audio-head{
+  min-height:42px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:0 10px;
+  border-bottom:.5px solid var(--divider);
+}
+.audio-body{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:18px;
+  min-height:64px;
+  padding:10px;
+}
+.audio-main{
+  display:grid;
+  grid-template-columns:auto auto minmax(160px,1fr) auto;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.audio-file{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  color:#555;
+}
+.audio-time{
+  min-width:88px;
+  text-align:right;
+  font-family:var(--font-euro);
+  font-size:12px;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.audio-progress{
+  width:100%;
+  height:14px;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  appearance:none;
+  background:transparent;
+  cursor:pointer;
+}
+.audio-progress::-webkit-slider-runnable-track{
+  height:2px;
+  background:var(--divider);
+}
+.audio-progress::-webkit-slider-thumb{
+  appearance:none;
+  width:8px;
+  height:12px;
+  margin-top:-5px;
+  border:0;
+  border-radius:0;
+  background:var(--black);
+}
+.audio-progress::-moz-range-track{
+  height:2px;
+  background:var(--divider);
+}
+.audio-progress::-moz-range-thumb{
+  width:8px;
+  height:12px;
+  border:0;
+  border-radius:0;
+  background:var(--black);
+}
+.audio-actions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:8px;
+}
+.audio-actions .active{
+  color:var(--green);
+  font-weight:700;
+}
+.section-strip{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px 12px;
+  min-height:46px;
+  padding:8px 10px;
+  border-bottom:.5px solid var(--divider);
+  background:#fcfcfc;
+}
+.section-strip .section-label{
+  margin-right:4px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.section-btn{
+  appearance:none;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--black);
+  padding:0;
+  font-family:var(--font-body);
+  font-size:11px;
+  line-height:1.1;
+}
+.section-btn:hover{color:#666}
+.section-btn.custom{color:var(--green)}
+.audio-note{
+  min-height:30px;
+  display:flex;
+  align-items:center;
+  padding:0 10px;
+  border-top:.5px solid var(--divider);
+  color:var(--mid);
+  font-size:11px;
+}
+
 @media(max-width:900px){
   .header{
     grid-template-columns:1fr auto;
@@ -508,6 +643,10 @@ select{
   .brand-cluster{flex-wrap:wrap}
   .page{padding:28px 14px 100px}
   .workspace-grid{grid-template-columns:1fr}
+  .audio-body{grid-template-columns:1fr}
+  .audio-main{grid-template-columns:auto minmax(0,1fr) auto}
+  .audio-file{grid-column:1/-1;grid-row:1}
+  .audio-actions{justify-content:flex-start}
   .library-panel{
     border-right:0;
     border-bottom:.5px solid var(--divider);
@@ -576,8 +715,8 @@ select{
     <div class="meta">LIBRARY / AI GENERATED MUSIC</div>
     <h1 class="wordmark">SONG ARCHIVE</h1>
     <p class="hero-copy">
-      AI生成楽曲のタイトル、スタイル、歌詞をブラウザ内に保存・整理します。
-      データは外部へ送信せず、この端末のブラウザ内に保持されます。JSONでバックアップと復元ができます。
+      AI生成楽曲のタイトル、スタイル、歌詞とMP3をブラウザ内に保存・整理します。
+      音源を再生しながら分:秒のタイムスタンプや曲構成ラベルを歌詞へ入力できます。データは外部へ送信しません。
     </p>
   </section>
 
@@ -601,6 +740,37 @@ select{
       <span class="sep">/</span>
       <button class="ghost" id="resetSearchBtn" type="button">RESET</button>
     </div>
+  </section>
+
+  <section class="audio-workspace" aria-label="MP3再生とタイムスタンプ">
+    <div class="audio-head">
+      <div class="panel-index">AUDIO</div>
+      <div class="panel-title">PLAYER / TIMESTAMP <span class="jp">MP3再生・時間入力</span></div>
+      <div class="panel-meta" id="audioState">NO AUDIO</div>
+    </div>
+    <div class="audio-body">
+      <div class="audio-main">
+        <button class="ghost active" id="loadAudioBtn" type="button">LOAD MP3</button>
+        <button class="ghost" id="playPauseBtn" type="button" disabled>PLAY</button>
+        <div class="audio-file" id="audioFileName">MP3を選択してください</div>
+        <div class="audio-time"><span id="audioCurrent">0:00</span> / <span id="audioDuration">0:00</span></div>
+        <input class="audio-progress" id="audioProgress" type="range" min="0" max="1000" value="0" step="1" disabled aria-label="再生位置">
+      </div>
+      <div class="audio-actions">
+        <button class="ghost" id="back5Btn" type="button" disabled>−5 SEC</button>
+        <span class="sep">/</span>
+        <button class="ghost" id="forward5Btn" type="button" disabled>+5 SEC</button>
+        <span class="sep">/</span>
+        <button class="ghost positive" id="insertTimeBtn" type="button" disabled>INSERT TIME</button>
+        <span class="sep">/</span>
+        <button class="ghost" id="clickStampBtn" type="button" aria-pressed="false">CLICK STAMP OFF</button>
+      </div>
+    </div>
+    <div class="audio-note">
+      歌詞内の任意位置にカーソルを置いて INSERT TIME。CLICK STAMP をONにすると、歌詞の行をクリックするだけで現在の再生時刻を行頭へ入力します。
+    </div>
+    <input class="hidden" id="audioInput" type="file" accept="audio/mpeg,audio/mp3,audio/*">
+    <audio class="hidden" id="audioEl" preload="metadata"></audio>
   </section>
 
   <section class="workspace">
@@ -632,9 +802,26 @@ select{
             <textarea class="text-input style-input" id="styleInput" placeholder="例：80s, Japanese city pop, disco, funk, R&B"></textarea>
           </div>
 
+          <div class="section-strip" aria-label="曲構成ラベルの挿入">
+            <span class="section-label">SECTION INSERT</span>
+            <button class="section-btn" type="button" data-section="イントロ">イントロ</button>
+            <button class="section-btn" type="button" data-section="1番Aメロ">1番Aメロ</button>
+            <button class="section-btn" type="button" data-section="1番Bメロ">1番Bメロ</button>
+            <button class="section-btn" type="button" data-section="1番サビ">1番サビ</button>
+            <button class="section-btn" type="button" data-section="間奏">間奏</button>
+            <button class="section-btn" type="button" data-section="2番Aメロ">2番Aメロ</button>
+            <button class="section-btn" type="button" data-section="2番Bメロ">2番Bメロ</button>
+            <button class="section-btn" type="button" data-section="2番サビ">2番サビ</button>
+            <button class="section-btn" type="button" data-section="Cメロ">Cメロ</button>
+            <button class="section-btn" type="button" data-section="アウトロ">アウトロ</button>
+            <button class="section-btn" type="button" data-section="エンディング">エンディング</button>
+            <span class="sep">/</span>
+            <button class="section-btn custom" id="customSectionBtn" type="button">CUSTOM +</button>
+          </div>
+
           <div class="lyrics-field">
             <label class="field-label" for="lyricsInput">LYRICS <span class="jp">歌詞</span></label>
-            <textarea class="lyrics" id="lyricsInput" spellcheck="false" placeholder="[Intro]&#10;(Instrumental)&#10;&#10;[Verse]&#10;歌詞を入力..."></textarea>
+            <textarea class="lyrics" id="lyricsInput" spellcheck="false" placeholder="歌詞を入力。上のSECTION INSERTから曲構成を追加できます。"></textarea>
           </div>
         </div>
 
@@ -644,6 +831,8 @@ select{
             <span id="stateText">READY</span>
           </div>
           <div class="editor-actions">
+            <button class="ghost positive" id="copyExportBtn" type="button">COPY EXPORT</button>
+            <span class="sep">/</span>
             <button class="ghost" id="duplicateBtn" type="button" disabled>DUPLICATE</button>
             <span class="sep">/</span>
             <button class="ghost danger" id="deleteBtn" type="button" disabled>DELETE</button>
@@ -679,7 +868,7 @@ select{
 
 <footer class="footer-strip">
   <div class="footer-main" id="footerStatus">READY · CTRL / ⌘ + S TO SAVE</div>
-  <div class="footer-side">SONG ARCHIVE / V1.0</div>
+  <div class="footer-side">SONG ARCHIVE / V1.2</div>
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -689,6 +878,10 @@ select{
   'use strict';
 
   const STORAGE_KEY = 'song-archive-v1';
+  const DB_NAME = 'song-archive-media-v1';
+  const DB_VERSION = 1;
+  const AUDIO_STORE = 'audio';
+
   const ui = {
     newBtn: document.getElementById('newBtn'),
     saveBtn: document.getElementById('saveBtn'),
@@ -708,6 +901,7 @@ select{
     lyricsInput: document.getElementById('lyricsInput'),
     stateLine: document.getElementById('stateLine'),
     stateText: document.getElementById('stateText'),
+    copyExportBtn: document.getElementById('copyExportBtn'),
     duplicateBtn: document.getElementById('duplicateBtn'),
     deleteBtn: document.getElementById('deleteBtn'),
     metricSongs: document.getElementById('metricSongs'),
@@ -716,13 +910,30 @@ select{
     metricLatest: document.getElementById('metricLatest'),
     metricLatestSub: document.getElementById('metricLatestSub'),
     footerStatus: document.getElementById('footerStatus'),
-    toast: document.getElementById('toast')
+    toast: document.getElementById('toast'),
+    loadAudioBtn: document.getElementById('loadAudioBtn'),
+    audioInput: document.getElementById('audioInput'),
+    audioEl: document.getElementById('audioEl'),
+    playPauseBtn: document.getElementById('playPauseBtn'),
+    back5Btn: document.getElementById('back5Btn'),
+    forward5Btn: document.getElementById('forward5Btn'),
+    insertTimeBtn: document.getElementById('insertTimeBtn'),
+    clickStampBtn: document.getElementById('clickStampBtn'),
+    audioProgress: document.getElementById('audioProgress'),
+    audioCurrent: document.getElementById('audioCurrent'),
+    audioDuration: document.getElementById('audioDuration'),
+    audioFileName: document.getElementById('audioFileName'),
+    audioState: document.getElementById('audioState'),
+    customSectionBtn: document.getElementById('customSectionBtn')
   };
 
   let records = loadRecords();
   let selectedId = null;
   let dirty = false;
   let toastTimer = null;
+  let audioObjectUrl = null;
+  let pendingAudioFile = null;
+  let clickStampMode = false;
 
   function loadRecords() {
     try {
@@ -743,6 +954,68 @@ select{
 
   function persist() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  function openMediaDb() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(AUDIO_STORE)) {
+          db.createObjectStore(AUDIO_STORE);
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function putAudio(id, file) {
+    if (!id || !file) return;
+    const db = await openMediaDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(AUDIO_STORE, 'readwrite');
+      tx.objectStore(AUDIO_STORE).put(file, id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  }
+
+  async function getAudio(id) {
+    if (!id) return null;
+    const db = await openMediaDb();
+    const value = await new Promise((resolve, reject) => {
+      const tx = db.transaction(AUDIO_STORE, 'readonly');
+      const req = tx.objectStore(AUDIO_STORE).get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+    return value;
+  }
+
+  async function deleteAudio(id) {
+    if (!id) return;
+    const db = await openMediaDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(AUDIO_STORE, 'readwrite');
+      tx.objectStore(AUDIO_STORE).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  }
+
+  async function clearAudioStore() {
+    const db = await openMediaDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(AUDIO_STORE, 'readwrite');
+      tx.objectStore(AUDIO_STORE).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
   }
 
   function uuid() {
@@ -778,6 +1051,13 @@ select{
       year:'numeric', month:'2-digit', day:'2-digit',
       hour:'2-digit', minute:'2-digit'
     }).format(d);
+  }
+
+  function formatAudioTime(seconds) {
+    const value = Number.isFinite(seconds) && seconds >= 0 ? Math.floor(seconds) : 0;
+    const minutes = Math.floor(value / 60);
+    const secs = value % 60;
+    return `${minutes}:${String(secs).padStart(2,'0')}`;
   }
 
   function escapeHtml(text) {
@@ -819,6 +1099,64 @@ select{
     updateEditorMeta();
   }
 
+  function releaseAudioUrl() {
+    ui.audioEl.pause();
+    if (audioObjectUrl) {
+      URL.revokeObjectURL(audioObjectUrl);
+      audioObjectUrl = null;
+    }
+    ui.audioEl.removeAttribute('src');
+    ui.audioEl.load();
+  }
+
+  function setAudioControls(enabled) {
+    ui.playPauseBtn.disabled = !enabled;
+    ui.back5Btn.disabled = !enabled;
+    ui.forward5Btn.disabled = !enabled;
+    ui.insertTimeBtn.disabled = !enabled;
+    ui.audioProgress.disabled = !enabled;
+  }
+
+  function resetAudioUi() {
+    releaseAudioUrl();
+    pendingAudioFile = null;
+    ui.audioFileName.textContent = 'MP3を選択してください';
+    ui.audioCurrent.textContent = '0:00';
+    ui.audioDuration.textContent = '0:00';
+    ui.audioProgress.value = 0;
+    ui.audioState.textContent = 'NO AUDIO';
+    ui.playPauseBtn.textContent = 'PLAY';
+    setAudioControls(false);
+  }
+
+  function attachAudioBlob(blob, name) {
+    releaseAudioUrl();
+    audioObjectUrl = URL.createObjectURL(blob);
+    ui.audioEl.src = audioObjectUrl;
+    ui.audioFileName.textContent = name || blob.name || 'AUDIO FILE';
+    ui.audioState.textContent = 'AUDIO READY';
+    ui.playPauseBtn.textContent = 'PLAY';
+    setAudioControls(true);
+  }
+
+  async function loadAudioForRecord(record) {
+    resetAudioUi();
+    if (!record) return;
+    try {
+      const blob = await getAudio(record.id);
+      if (!blob) {
+        if (record.audioName) {
+          ui.audioFileName.textContent = `${record.audioName} / FILE NOT FOUND`;
+          ui.audioState.textContent = 'AUDIO MISSING';
+        }
+        return;
+      }
+      attachAudioBlob(blob, record.audioName || blob.name);
+    } catch (_) {
+      ui.audioState.textContent = 'AUDIO ERROR';
+    }
+  }
+
   function resetEditor(options = {}) {
     const {confirmDirty = true} = options;
     if (confirmDirty && dirty) {
@@ -832,6 +1170,7 @@ select{
     ui.lyricsInput.value = '';
     ui.deleteBtn.disabled = true;
     ui.duplicateBtn.disabled = true;
+    resetAudioUi();
     setState('ready');
     updateEditorMeta();
     renderLibrary();
@@ -839,7 +1178,7 @@ select{
     return true;
   }
 
-  function selectRecord(id) {
+  async function selectRecord(id) {
     if (id === selectedId) return;
     if (dirty) {
       const ok = confirm('未保存の変更があります。保存せず別の楽曲を開きますか？');
@@ -849,6 +1188,7 @@ select{
     if (!record) return;
     selectedId = id;
     dirty = false;
+    pendingAudioFile = null;
     ui.titleInput.value = record.title;
     ui.styleInput.value = record.style;
     ui.lyricsInput.value = record.lyrics;
@@ -857,9 +1197,10 @@ select{
     setState('saved');
     updateEditorMeta();
     renderLibrary();
+    await loadAudioForRecord(record);
   }
 
-  function saveCurrent() {
+  async function saveCurrent() {
     const draft = currentDraft();
     if (!draft.title) {
       showToast('TITLE REQUIRED');
@@ -868,29 +1209,42 @@ select{
     }
 
     const stamp = nowIso();
+    let record;
 
     if (selectedId) {
       const index = records.findIndex(r => r.id === selectedId);
       if (index >= 0) {
-        records[index] = {
+        record = {
           ...records[index],
           title: draft.title,
           style: draft.style,
           lyrics: draft.lyrics,
+          audioName: pendingAudioFile ? pendingAudioFile.name : (records[index].audioName || ''),
           updatedAt: stamp
         };
+        records[index] = record;
       }
     } else {
-      const record = {
+      record = {
         id: uuid(),
         title: draft.title,
         style: draft.style,
         lyrics: draft.lyrics,
+        audioName: pendingAudioFile ? pendingAudioFile.name : '',
         createdAt: stamp,
         updatedAt: stamp
       };
       records.unshift(record);
       selectedId = record.id;
+    }
+
+    if (pendingAudioFile && selectedId) {
+      try {
+        await putAudio(selectedId, pendingAudioFile);
+        pendingAudioFile = null;
+      } catch (_) {
+        showToast('AUDIO SAVE ERROR');
+      }
     }
 
     persist();
@@ -903,13 +1257,15 @@ select{
     showToast('SAVED');
   }
 
-  function deleteCurrent() {
+  async function deleteCurrent() {
     if (!selectedId) return;
     const record = records.find(r => r.id === selectedId);
     if (!record) return;
     if (!confirm(`「${record.title}」を削除しますか？`)) return;
+    const id = selectedId;
     records = records.filter(r => r.id !== selectedId);
     persist();
+    try { await deleteAudio(id); } catch (_) {}
     selectedId = null;
     dirty = false;
     ui.titleInput.value = '';
@@ -917,16 +1273,18 @@ select{
     ui.lyricsInput.value = '';
     ui.deleteBtn.disabled = true;
     ui.duplicateBtn.disabled = true;
+    resetAudioUi();
     setState('ready');
     renderAll();
     updateEditorMeta();
     showToast('DELETED');
   }
 
-  function duplicateCurrent() {
+  async function duplicateCurrent() {
     if (!selectedId) return;
     const record = records.find(r => r.id === selectedId);
     if (!record) return;
+    const sourceId = selectedId;
     const stamp = nowIso();
     const copy = {
       ...record,
@@ -936,8 +1294,13 @@ select{
       updatedAt: stamp
     };
     records.unshift(copy);
+    try {
+      const blob = await getAudio(sourceId);
+      if (blob) await putAudio(copy.id, blob);
+    } catch (_) {}
     persist();
-    selectRecord(copy.id);
+    selectedId = null;
+    await selectRecord(copy.id);
     renderAll();
     showToast('DUPLICATED');
   }
@@ -978,7 +1341,7 @@ select{
           <span class="library-title">${escapeHtml(record.title || 'UNTITLED')}</span>
           <span class="library-style">${escapeHtml(record.style || 'NO STYLE')}</span>
         </span>
-        <span class="library-date">${escapeHtml(formatDate(record.updatedAt))}</span>
+        <span class="library-date">${record.audioName ? 'MP3 / ' : ''}${escapeHtml(formatDate(record.updatedAt))}</span>
       </button>
     `).join('');
 
@@ -1026,6 +1389,117 @@ select{
     updateEditorMeta();
   }
 
+  function insertAtCursor(text, options = {}) {
+    const textarea = ui.lyricsInput;
+    const start = textarea.selectionStart ?? textarea.value.length;
+    const end = textarea.selectionEnd ?? start;
+    const before = textarea.value.slice(0, start);
+    const after = textarea.value.slice(end);
+
+    let insertion = text;
+    if (options.block) {
+      const prefix = before && !before.endsWith('\n') ? '\n' : '';
+      const suffix = after && !after.startsWith('\n') ? '\n' : '';
+      insertion = `${prefix}${text}${suffix}`;
+    }
+
+    textarea.value = before + insertion + after;
+    const pos = before.length + insertion.length;
+    textarea.focus();
+    textarea.setSelectionRange(pos, pos);
+    markDirty();
+    updateEditorMeta();
+  }
+
+  function insertSection(label) {
+    insertAtCursor(`[${label}]\n`, {block:true});
+  }
+
+  function stampCurrentLine() {
+    if (!ui.audioEl.src) {
+      showToast('LOAD MP3 FIRST');
+      return;
+    }
+    const textarea = ui.lyricsInput;
+    const value = textarea.value;
+    const caret = textarea.selectionStart ?? 0;
+    const lineStart = value.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
+    const nextBreak = value.indexOf('\n', caret);
+    const lineEnd = nextBreak === -1 ? value.length : nextBreak;
+    const line = value.slice(lineStart, lineEnd);
+    const timestamp = formatAudioTime(ui.audioEl.currentTime);
+    const replaced = /^\s*\d+:\d{2}\s*/.test(line)
+      ? line.replace(/^\s*\d+:\d{2}\s*/, `${timestamp} `)
+      : `${timestamp} ${line}`;
+
+    textarea.value = value.slice(0, lineStart) + replaced + value.slice(lineEnd);
+    const newCaret = lineStart + replaced.length;
+    textarea.focus();
+    textarea.setSelectionRange(newCaret, newCaret);
+    markDirty();
+    updateEditorMeta();
+    showToast(`STAMP ${timestamp}`);
+  }
+
+  function insertTimestampAtCursor() {
+    if (!ui.audioEl.src) {
+      showToast('LOAD MP3 FIRST');
+      return;
+    }
+    const timestamp = formatAudioTime(ui.audioEl.currentTime);
+    insertAtCursor(`${timestamp} `);
+    showToast(`TIME ${timestamp}`);
+  }
+
+  function updateAudioClock() {
+    const current = Number.isFinite(ui.audioEl.currentTime) ? ui.audioEl.currentTime : 0;
+    const duration = Number.isFinite(ui.audioEl.duration) ? ui.audioEl.duration : 0;
+    ui.audioCurrent.textContent = formatAudioTime(current);
+    ui.audioDuration.textContent = formatAudioTime(duration);
+    ui.audioProgress.value = duration > 0 ? Math.round((current / duration) * 1000) : 0;
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const helper = document.createElement('textarea');
+    helper.value = text;
+    helper.setAttribute('readonly', '');
+    helper.style.position = 'fixed';
+    helper.style.left = '-9999px';
+    helper.style.top = '0';
+    document.body.appendChild(helper);
+    helper.select();
+    const ok = document.execCommand('copy');
+    helper.remove();
+    if (!ok) throw new Error('copy failed');
+  }
+
+  async function copyCurrentExport() {
+    const draft = currentDraft();
+
+    if (!draft.title && !draft.style && !draft.lyrics.trim()) {
+      showToast('NO SONG DATA');
+      return;
+    }
+
+    const text =
+`曲名：${draft.title}
+スタイル：${draft.style}
+歌詞：
+${draft.lyrics}`;
+
+    try {
+      await copyTextToClipboard(text);
+      showToast('COPIED');
+    } catch (_) {
+      showToast('COPY ERROR');
+    }
+  }
+
   function exportData() {
     if (!records.length) {
       showToast('NO DATA');
@@ -1033,8 +1507,9 @@ select{
     }
     const payload = {
       app: 'SONG ARCHIVE',
-      version: 1,
+      version: 1.2,
       exportedAt: nowIso(),
+      note: 'MP3 binary data is stored in IndexedDB and is not included in this JSON file.',
       records
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
@@ -1062,6 +1537,7 @@ select{
           title: r.title,
           style: r.style,
           lyrics: r.lyrics,
+          audioName: r.audioName || '',
           createdAt: r.createdAt || nowIso(),
           updatedAt: r.updatedAt || r.createdAt || nowIso()
         }));
@@ -1078,6 +1554,7 @@ select{
         ui.lyricsInput.value = '';
         ui.deleteBtn.disabled = true;
         ui.duplicateBtn.disabled = true;
+        resetAudioUi();
         setState('ready');
         renderAll();
         showToast(`${clean.length} IMPORTED`);
@@ -1090,15 +1567,16 @@ select{
     reader.readAsText(file, 'utf-8');
   }
 
-  function clearAll() {
+  async function clearAll() {
     if (!records.length) {
       showToast('NO DATA');
       return;
     }
     if (!confirm('保存済みの全楽曲を削除します。この操作は元に戻せません。')) return;
-    if (!confirm('本当に全データを削除しますか？ 必要であれば先に EXPORT してください。')) return;
+    if (!confirm('MP3を含む全データを削除します。必要であれば先にバックアップしてください。')) return;
     records = [];
     persist();
+    try { await clearAudioStore(); } catch (_) {}
     selectedId = null;
     dirty = false;
     ui.titleInput.value = '';
@@ -1106,6 +1584,7 @@ select{
     ui.lyricsInput.value = '';
     ui.deleteBtn.disabled = true;
     ui.duplicateBtn.disabled = true;
+    resetAudioUi();
     setState('ready');
     renderAll();
     showToast('CLEARED');
@@ -1118,17 +1597,104 @@ select{
     });
   });
 
+  document.querySelectorAll('[data-section]').forEach(button => {
+    button.addEventListener('click', () => insertSection(button.dataset.section));
+  });
+
+  ui.customSectionBtn.addEventListener('click', () => {
+    const label = prompt('追加する曲構成名を入力してください。');
+    if (label && label.trim()) insertSection(label.trim());
+  });
+
+  ui.loadAudioBtn.addEventListener('click', () => ui.audioInput.click());
+  ui.audioInput.addEventListener('change', () => {
+    const file = ui.audioInput.files && ui.audioInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('audio/') && !/\.mp3$/i.test(file.name)) {
+      showToast('AUDIO FILE REQUIRED');
+      ui.audioInput.value = '';
+      return;
+    }
+    pendingAudioFile = file;
+    attachAudioBlob(file, file.name);
+    markDirty();
+    ui.audioInput.value = '';
+    showToast('AUDIO LOADED');
+  });
+
+  ui.playPauseBtn.addEventListener('click', async () => {
+    if (!ui.audioEl.src) return;
+    if (ui.audioEl.paused) {
+      try {
+        await ui.audioEl.play();
+      } catch (_) {
+        showToast('PLAY ERROR');
+      }
+    } else {
+      ui.audioEl.pause();
+    }
+  });
+
+  ui.back5Btn.addEventListener('click', () => {
+    ui.audioEl.currentTime = Math.max(0, ui.audioEl.currentTime - 5);
+    updateAudioClock();
+  });
+
+  ui.forward5Btn.addEventListener('click', () => {
+    const limit = Number.isFinite(ui.audioEl.duration) ? ui.audioEl.duration : Infinity;
+    ui.audioEl.currentTime = Math.min(limit, ui.audioEl.currentTime + 5);
+    updateAudioClock();
+  });
+
+  ui.insertTimeBtn.addEventListener('click', insertTimestampAtCursor);
+
+  ui.clickStampBtn.addEventListener('click', () => {
+    clickStampMode = !clickStampMode;
+    ui.clickStampBtn.textContent = clickStampMode ? 'CLICK STAMP ON' : 'CLICK STAMP OFF';
+    ui.clickStampBtn.classList.toggle('active', clickStampMode);
+    ui.clickStampBtn.setAttribute('aria-pressed', String(clickStampMode));
+    showToast(clickStampMode ? 'CLICK STAMP ON' : 'CLICK STAMP OFF');
+  });
+
+  ui.lyricsInput.addEventListener('click', () => {
+    if (clickStampMode) stampCurrentLine();
+  });
+
+  ui.audioEl.addEventListener('loadedmetadata', updateAudioClock);
+  ui.audioEl.addEventListener('durationchange', updateAudioClock);
+  ui.audioEl.addEventListener('timeupdate', updateAudioClock);
+  ui.audioEl.addEventListener('play', () => {
+    ui.playPauseBtn.textContent = 'PAUSE';
+    ui.audioState.textContent = 'PLAYING';
+  });
+  ui.audioEl.addEventListener('pause', () => {
+    ui.playPauseBtn.textContent = 'PLAY';
+    ui.audioState.textContent = ui.audioEl.src ? 'PAUSED' : 'NO AUDIO';
+  });
+  ui.audioEl.addEventListener('ended', () => {
+    ui.playPauseBtn.textContent = 'PLAY';
+    ui.audioState.textContent = 'ENDED';
+    updateAudioClock();
+  });
+
+  ui.audioProgress.addEventListener('input', () => {
+    if (!Number.isFinite(ui.audioEl.duration) || ui.audioEl.duration <= 0) return;
+    ui.audioEl.currentTime = (Number(ui.audioProgress.value) / 1000) * ui.audioEl.duration;
+    updateAudioClock();
+  });
+
   ui.newBtn.addEventListener('click', () => resetEditor({confirmDirty:true}));
-  ui.saveBtn.addEventListener('click', saveCurrent);
-  ui.deleteBtn.addEventListener('click', deleteCurrent);
-  ui.duplicateBtn.addEventListener('click', duplicateCurrent);
+  ui.copyExportBtn.addEventListener('click', () => copyCurrentExport());
+  ui.saveBtn.addEventListener('click', () => saveCurrent());
+  ui.deleteBtn.addEventListener('click', () => deleteCurrent());
+  ui.duplicateBtn.addEventListener('click', () => duplicateCurrent());
   ui.exportBtn.addEventListener('click', exportData);
   ui.importBtn.addEventListener('click', () => ui.importInput.click());
   ui.importInput.addEventListener('change', () => {
     const file = ui.importInput.files && ui.importInput.files[0];
     if (file) importData(file);
   });
-  ui.clearAllBtn.addEventListener('click', clearAll);
+  ui.clearAllBtn.addEventListener('click', () => clearAll());
   ui.searchInput.addEventListener('input', renderLibrary);
   ui.sortSelect.addEventListener('change', renderLibrary);
   ui.resetSearchBtn.addEventListener('click', () => {
@@ -1143,6 +1709,10 @@ select{
       event.preventDefault();
       saveCurrent();
     }
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 't') {
+      event.preventDefault();
+      insertTimestampAtCursor();
+    }
   });
 
   window.addEventListener('beforeunload', event => {
@@ -1150,6 +1720,8 @@ select{
     event.preventDefault();
     event.returnValue = '';
   });
+
+  window.addEventListener('unload', releaseAudioUrl);
 
   renderAll();
 })();
