@@ -65,10 +65,10 @@ select{border:0;background:transparent;color:var(--black);padding:0 18px 0 0;min
 .item-note textarea:focus{border-bottom-color:var(--black)}
 .item-note textarea:not(:placeholder-shown){border-bottom-color:var(--signal)}
 
-.composer-input{padding:12px 10px;border-bottom:.5px solid var(--divider)}.composer-input label{display:block;margin-bottom:7px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}.composer-input textarea{width:100%;min-height:54px;border:0;border-bottom:.5px solid var(--divider);background:transparent;padding:5px 0;resize:vertical;outline:0;font-size:11px;line-height:1.65}.composer-input textarea:focus{border-bottom-color:var(--black)}
+.composer-input textarea:focus{border-bottom-color:var(--black)}
 .prompt-shell{min-height:0;overflow:auto}.prompt{width:100%;min-height:330px;height:100%;border:0;background:var(--white);padding:16px 12px 24px;font-family:var(--font-mono);font-size:11px;line-height:1.8;resize:none;outline:0;color:var(--black);white-space:pre-wrap}.prompt:focus{box-shadow:inset 0 -1px 0 var(--black)}
 .composer-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:0 10px;border-top:.5px solid var(--divider)}.primary-action{border:0;background:var(--black);color:var(--white);padding:9px 12px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}.composer-count{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;color:var(--muted)}
-.source-zone{display:none;margin-top:42px;background:var(--white);border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider)}.source-zone.open{display:block}.source-head{display:flex;justify-content:space-between;align-items:center;min-height:42px;padding:0 10px;border-bottom:.5px solid var(--divider)}.source-title{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.source-editor{width:100%;min-height:310px;border:0;padding:16px;font-family:var(--font-mono);font-size:12px;line-height:1.8;resize:vertical;outline:0}.source-foot{display:flex;gap:16px;align-items:center;padding:10px;border-top:.5px solid var(--divider)}
+
 .drop-zone{display:none;min-height:180px;place-items:center;background:var(--white);border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);text-align:center;margin-bottom:20px}.drop-zone.active{display:grid}.drop-title{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.drop-note{margin-top:8px;color:var(--mid);font-size:11px}
 .footer-strip{position:fixed;left:0;right:0;bottom:0;z-index:40;min-height:52px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px;padding:0 20px;background:var(--bone);border-top:.5px solid var(--divider)}.footer-left,.footer-right{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}.footer-right{color:var(--mid)}
 .toast{position:fixed;left:20px;bottom:66px;z-index:100;padding:7px 9px;background:var(--black);color:var(--white);font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;opacity:0;transform:translateY(5px);transition:.16s;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}
@@ -116,6 +116,336 @@ button.calendar-day:hover{background:#f7f7f7}
 .schedule-overflow-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}
 @media(max-width:1180px){.calendar-grid{grid-template-columns:1fr}.schedule-overflow-grid{grid-template-columns:1fr}}
 
+
+/* v1.4 compact tab interface */
+.page{padding-top:14px}
+.hero,.control-strip,.metrics{display:none!important}
+.drop-zone{min-height:32px;padding:6px 10px;margin:0 0 10px;border:.5px dashed var(--divider)}
+.drop-title{font-size:8px}
+.drop-note{font-size:9px}
+.section-tabs{display:flex;align-items:stretch;overflow-x:auto;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);margin-bottom:10px;background:var(--white);scrollbar-width:thin}
+.section-tab{flex:0 0 auto;border:0;border-right:.5px solid var(--divider);background:var(--white);padding:10px 14px;font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mid);cursor:pointer;white-space:nowrap}
+.section-tab:hover{background:#fafafa;color:var(--black)}
+.section-tab.active{background:var(--black);color:var(--white)}
+.section-tab .tab-jp{font-family:var(--font-body);font-size:10px;font-weight:400;letter-spacing:0;text-transform:none;margin-left:6px}
+.section-tools{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:0 0 10px}
+.workspace{min-height:600px}
+.schedule-entry{grid-template-columns:18px minmax(0,1fr);gap:8px}
+.schedule-entry-main{min-width:0}
+.schedule-entry-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.schedule-entry-title{font-size:10px;font-weight:600;line-height:1.5}
+.schedule-entry-datetime{font-family:var(--font-euro);font-size:8px;line-height:1.45;color:var(--mid);white-space:nowrap}
+.schedule-entry-note{margin-top:4px;font-size:9px;line-height:1.55;color:var(--mid);white-space:pre-wrap;overflow-wrap:anywhere}
+.schedule-entry-actions{margin-top:6px}
+@media(max-width:860px){
+  .section-tab .tab-jp{display:none}
+  .workspace{grid-template-columns:1fr}
+  .composer{position:static;max-height:none;border-left:0;border-top:.5px solid var(--divider)}
+}
+
+
+/* v1.5 secretary review ticker + cleaner browser */
+.header{
+  height:112px;
+  padding-bottom:28px;
+}
+.review-ticker{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:28px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+  padding:0 20px;
+  border-top:.5px solid var(--divider);
+  background:var(--bone);
+  overflow:hidden;
+}
+.review-ticker-label{
+  font-family:var(--font-euro);
+  font-size:7px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+
+
+.browser{
+  min-width:0;
+  border-top:0;
+}
+.composer{
+  top:112px;
+  max-height:calc(100vh - 164px);
+}
+.footer-left{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+@media(max-width:760px){
+  .header{min-height:96px;height:96px;padding-bottom:26px}
+  .review-ticker{height:26px;padding:0 14px;grid-template-columns:auto minmax(0,1fr)}
+  .review-ticker-index{display:none}
+  .review-ticker-text{font-size:9px}
+}
+
+
+/* v1.6 compact / marquee / free-only */
+.header{
+  height:72px;
+  min-height:72px;
+  padding:0 18px 22px;
+  gap:14px;
+}
+.header-center{font-size:7px}
+.review-ticker{
+  height:22px;
+  padding:0;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:10px;
+}
+.review-ticker-label{
+  height:22px;
+  display:flex;
+  align-items:center;
+  padding:0 10px 0 18px;
+  border-right:.5px solid var(--divider);
+  background:var(--bone);
+  z-index:2;
+}
+
+
+to{transform:translateX(calc(-100% - 100vw))}
+}
+.section-tools,.composer-mode{display:none!important}
+.section-tabs{margin-bottom:8px}
+.page{padding-top:10px}
+.composer{
+  top:72px;
+  max-height:calc(100vh - 124px);
+  grid-template-rows:auto auto minmax(180px,1fr) auto;
+}
+.item-notes-head{justify-content:flex-start}
+
+.schedule-entry-actions{display:none!important}
+@media(max-width:760px){
+  .header{height:68px;min-height:68px;padding:0 12px 20px}
+  .review-ticker{height:20px}
+  .review-ticker-label{height:20px;padding-left:12px;font-size:6px}
+  .review-ticker-viewport,
+  
+}
+
+
+/* v1.7 calm review / titleless sections */
+.review-ticker{
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:12px;
+  padding:0 18px;
+}
+.review-ticker-label{
+  height:auto;
+  display:block;
+  padding:0;
+  border-right:0;
+  background:transparent;
+}
+.review-ticker-text{
+  min-width:0;
+  font-size:10px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  opacity:1;
+  transform:translateY(0);
+  transition:opacity .22s ease,transform .22s ease;
+}
+.review-ticker-text.switching{
+  opacity:0;
+  transform:translateY(3px);
+}
+.review-ticker-index{
+  font-family:var(--font-euro);
+  font-size:7px;
+  color:var(--muted);
+  letter-spacing:.04em;
+  white-space:nowrap;
+}
+.section-head{display:none!important}
+.calendar-month-count{display:none!important}
+.section{border-top:0}
+@media(max-width:760px){
+  .review-ticker{padding:0 12px;grid-template-columns:auto minmax(0,1fr)}
+  .review-ticker-index{display:none}
+  .review-ticker-text{font-size:9px}
+}
+
+
+/* v1.8 alignment / relocated controls */
+.browser{border-top:0!important}
+.workspace{border-top:.5px solid var(--divider)}
+.composer-foot{
+  min-height:40px;
+  border-top:0!important;
+  border-bottom:.5px solid var(--divider);
+}
+.schedule-toolbar-bottom{
+  min-height:40px;
+  padding:8px 10px;
+  border-top:.5px solid var(--divider);
+  border-bottom:0;
+  background:var(--white);
+  justify-content:flex-end;
+}
+.schedule-toolbar-bottom .schedule-toolbar-actions{
+  margin-left:auto;
+}
+
+
+/* v1.9 simplified prompt controls */
+.flat-action{
+  border:0;
+  background:transparent;
+  padding:0;
+  margin:0 0 0 16px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.04em;
+  cursor:pointer;
+}
+.flat-action:first-child{margin-left:0}
+.flat-clear{color:var(--signal)}
+.flat-copy{color:var(--black)}
+.flat-action:hover{opacity:.58}
+.composer-foot{
+  min-height:34px;
+  padding:0 12px;
+}
+
+
+/* v1.10 composer flow fix */
+.composer{
+  display:flex!important;
+  flex-direction:column;
+  align-self:start;
+  overflow:hidden;
+  grid-template-rows:none!important;
+}
+.composer-foot{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:12px;
+  min-height:34px;
+  padding:0 12px;
+}
+.composer-foot .flat-clear{
+  justify-self:start;
+  margin:0;
+}
+.composer-foot .composer-count{
+  justify-self:center;
+  text-align:center;
+  white-space:nowrap;
+}
+.composer-foot .flat-copy{
+  justify-self:end;
+  margin:0;
+}
+.item-notes{
+  flex:0 1 auto;
+  max-height:250px;
+  overflow:auto;
+}
+.prompt-shell{
+  flex:1 1 220px;
+  min-height:150px;
+  overflow:hidden;
+}
+.prompt{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:0!important;
+  max-height:100%;
+  overflow:auto;
+}
+.composer:not(.has-selection) .prompt-shell{
+  flex:0 0 160px;
+  min-height:160px;
+}
+.composer.has-selection .prompt-shell{
+  flex:1 1 220px;
+  min-height:150px;
+}
+@media(max-width:1100px){
+  .composer{
+    overflow:visible;
+  }
+  .prompt-shell,
+  .composer:not(.has-selection) .prompt-shell,
+  .composer.has-selection .prompt-shell{
+    flex:none;
+    min-height:180px;
+    height:180px;
+  }
+}
+
+
+/* v1.11 full-height generated prompt */
+.workspace{
+  align-items:stretch;
+}
+.composer{
+  align-self:stretch!important;
+  height:calc(100vh - 124px);
+  min-height:520px;
+  max-height:calc(100vh - 124px);
+}
+.item-notes{
+  flex:0 0 auto;
+  max-height:240px;
+}
+.prompt-shell{
+  flex:1 1 0!important;
+  min-height:0!important;
+  height:auto!important;
+}
+.prompt{
+  height:100%!important;
+  min-height:100%!important;
+  max-height:none!important;
+  resize:none;
+}
+.composer:not(.has-selection) .prompt-shell,
+.composer.has-selection .prompt-shell{
+  flex:1 1 0!important;
+  min-height:0!important;
+  height:auto!important;
+}
+@media(max-width:1100px){
+  .composer{
+    height:auto;
+    min-height:520px;
+    max-height:none;
+  }
+  .prompt-shell,
+  .composer:not(.has-selection) .prompt-shell,
+  .composer.has-selection .prompt-shell{
+    flex:1 1 420px!important;
+    min-height:420px!important;
+    height:auto!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -127,70 +457,41 @@ button.calendar-day:hover{background:#f7f7f7}
     <button class="ghost" id="pasteBtn">PASTE</button>
     <button class="ghost danger" id="clearBtn">CLEAR</button>
   </div>
+  <div class="review-ticker" id="reviewTicker" aria-live="polite">
+    <div class="review-ticker-label">SECRETARY REVIEW</div>
+    <div class="review-ticker-text" id="reviewTickerText">MDを読み込むと、最新の秘書レビューを表示します。</div>
+    <div class="review-ticker-index" id="reviewTickerIndex">—</div>
+  </div>
 </header>
 
 <main class="page">
-  <section class="hero">
-    <div class="meta">LIVING CONTEXT / SUMMARY INTERFACE</div>
-    <h1 class="wordmark">CONTEXT LENS</h1>
-    <p class="hero-copy">蓄積サマリーをセクション別に読みやすく表示し、P項目・S予定・日別ログを選択して、そのままChatGPTへ相談・更新指示できる文章へ変換します。Markdownはブラウザ内だけで処理されます。</p>
-  </section>
-
   <div class="drop-zone" id="dropZone">
     <div><div class="drop-title">DROP MARKDOWN FILE</div><div class="drop-note">living-context-summary_*.md をここへドロップ</div></div>
   </div>
 
-  <section class="control-strip">
-    <div class="control-group"><span class="control-label">SEARCH</span><input id="searchInput" class="text-input" type="search" placeholder="P073 / Tesla / SMDM ..."></div>
-    <div class="control-group"><span class="control-label">SECTION</span><select id="sectionFilter"><option value="ALL">ALL</option></select></div>
-    <label class="toggle"><input type="checkbox" id="logsToggle" checked> DAILY LOG</label>
-    <div class="spacer"></div>
-    <button class="ghost" id="selectVisibleBtn">SELECT VISIBLE</button>
-    <button class="ghost" id="clearSelectionBtn">CLEAR SELECTION</button>
-    <button class="ghost" id="sourceToggleBtn">SOURCE</button>
-  </section>
-
-  <section class="metrics">
-    <div class="metric"><div class="metric-label">SECTIONS</div><div class="metric-value" id="metricSections">0</div></div>
-    <div class="metric"><div class="metric-label">ITEMS</div><div class="metric-value" id="metricItems">0</div></div>
-    <div class="metric"><div class="metric-label">SCHEDULES</div><div class="metric-value" id="metricSchedules">0</div></div>
-    <div class="metric"><div class="metric-label">SELECTED</div><div class="metric-value" id="metricSelected">0</div></div>
-  </section>
-
+  <nav class="section-tabs" id="sectionTabs" aria-label="LIVING CONTEXT sections"></nav>
   <section class="workspace">
     <div class="browser">
-      <div class="panel-head"><div class="panel-index">A</div><div class="panel-title">SUMMARY <span class="jp">蓄積サマリー</span></div><div class="panel-meta" id="fileMeta">NO FILE</div></div>
       <div id="summaryView"></div>
     </div>
 
     <aside class="composer">
-      <div class="panel-head"><div class="panel-index">B</div><div class="panel-title">PROMPT <span class="jp">ChatGPT入力用</span></div><div class="panel-meta" id="modeMeta">CONSULT</div></div>
-      <div class="composer-mode">
-        <button class="ghost active" data-mode="consult">CONSULT / 相談</button>
-        <button class="ghost" data-mode="update">UPDATE / 更新</button>
-        <button class="ghost" data-mode="verify">VERIFY / 確認</button>
-        <button class="ghost" data-mode="free">FREE / 自由</button>
+      <div class="panel-head"><div class="panel-index">B</div><div class="panel-title">PROMPT <span class="jp">ChatGPT入力用</span></div></div>
+      <div class="composer-foot">
+        <button class="flat-action flat-clear" id="clearInputsBtn">CLEAR INPUTS</button>
+        <span class="composer-count" id="composerCount">0 ITEMS</span>
+        <button class="flat-action flat-copy" id="copyPromptBtn">COPY ALL</button>
       </div>
       <div class="item-notes" id="itemNotes">
-        <div class="item-notes-head"><div><span class="item-notes-title">ITEM NOTES / 各項目への追記</span><span class="item-notes-help">　選択項目ごとに入力</span></div><button class="ghost danger" id="clearNotesBtn">CLEAR NOTES</button></div>
+        <div class="item-notes-head"><div><span class="item-notes-title">ITEM NOTES / 各項目への追記</span><span class="item-notes-help">　選択項目ごとに入力</span></div></div>
         <div id="itemNotesList"></div>
       </div>
       <div class="prompt-shell"><textarea id="promptOutput" class="prompt" spellcheck="false" readonly></textarea></div>
-      <div>
-        <div class="composer-input"><label for="customInstruction">CUSTOM INSTRUCTION / 追加指示</label><textarea id="customInstruction" placeholder="例：この件について今後の対応方針を整理してください。"></textarea></div>
-        <div class="composer-foot"><span class="composer-count" id="composerCount">0 ITEMS</span><div><button class="ghost" id="copyPromptBtn">COPY ALL</button> <button class="primary-action" id="copyOpenBtn">COPY & OPEN CHATGPT</button></div></div>
-      </div>
     </aside>
-  </section>
-
-  <section class="source-zone" id="sourceZone">
-    <div class="source-head"><div class="source-title">SOURCE MARKDOWN</div><div><button class="ghost" id="loadSourceBtn">LOAD</button> <button class="ghost" id="closeSourceBtn">CLOSE</button></div></div>
-    <textarea class="source-editor" id="sourceEditor" spellcheck="false" placeholder="ここに living-context-summary_*.md の全文を貼り付けて LOAD を押してください。"></textarea>
-    <div class="source-foot"><span class="control-label">LOCAL STORAGE</span><span style="color:var(--mid);font-size:11px">最後に読み込んだMarkdownはこのブラウザ内に保存されます。</span></div>
   </section>
 </main>
 
-<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.3 · DATE ADD · 3-MONTH CALENDAR · MULTI ITEM NOTES</div></footer>
+<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.11 · FULL HEIGHT PROMPT</div></footer>
 <div class="toast" id="toast">COPIED</div>
 <input class="file-input" type="file" id="fileInput" accept=".md,.markdown,text/markdown,text/plain">
 
@@ -198,7 +499,7 @@ button.calendar-day:hover{background:#f7f7f7}
 (() => {
   const STORAGE_KEY = 'context-lens-source-v1';
   const NOTES_KEY = 'context-lens-item-notes-v1';
-  const state = { source:'', fileName:'', sections:[], logs:[], selected:new Set(), notes:new Map(), mode:'consult', query:'', section:'ALL', showLogs:true, calendarOffset:0 };
+  const state = { source:'', fileName:'', sections:[], logs:[], selected:new Set(), notes:new Map(), mode:'free', query:'', section:'T10', showLogs:true, calendarOffset:0, reviewItems:[], reviewIndex:0, reviewTimer:null };
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const normalize = s => String(s ?? '').replace(/\r\n/g,'\n');
@@ -215,6 +516,88 @@ button.calendar-day:hover{background:#f7f7f7}
   function isSeparator(line){ return /^\s*\|?\s*:?-{3,}/.test(line); }
   function cleanHeading(s){ return s.replace(/^#+\s*/,'').trim(); }
   function keyFor(sectionCode, id, idx){ return `${sectionCode}::${id || idx}`; }
+
+  function extractSecretaryReview(text){
+    const lines=normalize(text).split('\n');
+    let start=-1;
+    for(let i=0;i<lines.length;i++){
+      if(/^###\s+.*秘書レビュー\s*$/.test(lines[i].trim())){
+        start=i+1;
+        break;
+      }
+    }
+    if(start<0) return [];
+    const items=[];
+    let current='';
+    for(let i=start;i<lines.length;i++){
+      const line=lines[i];
+      if(/^#{2,3}\s+/.test(line.trim())) break;
+      const m=line.match(/^\s*[-*]\s+(.+)$/);
+      if(m){
+        if(current) items.push(current.trim());
+        current=m[1].trim();
+        continue;
+      }
+      if(current && line.trim() && !/^`/.test(line.trim())){
+        current += ' ' + line.trim();
+      }
+    }
+    if(current) items.push(current.trim());
+    return items.filter(Boolean);
+  }
+
+  function latestSecretaryReview(){
+    for(let i=state.logs.length-1;i>=0;i--){
+      const items=extractSecretaryReview(state.logs[i].text);
+      if(items.length) return items;
+    }
+    return [];
+  }
+
+  function stopReviewTicker(){
+    if(state.reviewTimer){
+      clearInterval(state.reviewTimer);
+      state.reviewTimer=null;
+    }
+  }
+
+  function showReviewTickerItem(index,animate=false){
+    const el=$('reviewTickerText');
+    const idx=$('reviewTickerIndex');
+    if(!el||!idx) return;
+    const items=state.reviewItems;
+    if(!items.length){
+      el.textContent=state.source?'最新ログに秘書レビューはありません。':'MDを読み込むと、最新の秘書レビューを表示します。';
+      idx.textContent='—';
+      return;
+    }
+    state.reviewIndex=((index%items.length)+items.length)%items.length;
+    const apply=()=>{
+      el.textContent=items[state.reviewIndex];
+      idx.textContent=`${state.reviewIndex+1} / ${items.length}`;
+      el.classList.remove('switching');
+    };
+    if(animate){
+      el.classList.add('switching');
+      setTimeout(apply,220);
+    }else{
+      apply();
+    }
+  }
+
+  function startReviewTicker(){
+    stopReviewTicker();
+    state.reviewItems=latestSecretaryReview();
+    state.reviewIndex=0;
+    showReviewTickerItem(0,false);
+    if(state.reviewItems.length>1){
+      state.reviewTimer=setInterval(()=>{
+        showReviewTickerItem(state.reviewIndex+1,true);
+      },7000);
+    }
+  }
+
+  function showReviewTicker(){ startReviewTicker(); }
 
   function parseMarkdown(md){
     const src = normalize(md);
@@ -296,9 +679,10 @@ button.calendar-day:hover{background:#f7f7f7}
     });
   }
   function getVisible(){
-    const q=state.query.trim().toLowerCase();
-    const filtered=state.sections.map(sec=>({ ...sec, items:sec.items.filter(it => (state.section==='ALL'||state.section===sec.code) && (!q||itemSearchText(it,sec).includes(q))) })).filter(sec=>sec.items.length);
-    return sectionDisplayOrder(filtered);
+    if(state.section==='LOG') return [];
+    const ordered=sectionDisplayOrder(state.sections);
+    const target=ordered.find(sec=>sec.code===state.section) || ordered[0];
+    return target?[target]:[];
   }
 
   function render(){
@@ -306,28 +690,28 @@ button.calendar-day:hover{background:#f7f7f7}
     if(!state.source){
       view.innerHTML='<div class="empty"><strong>NO SUMMARY LOADED</strong>IMPORT MD または PASTE から蓄積サマリーを読み込んでください。</div>';
     } else if(!visible.length && !(state.showLogs && state.logs.length)){
-      view.innerHTML='<div class="empty"><strong>NO RESULTS</strong>検索条件に一致する項目がありません。</div>';
+      view.innerHTML='<div class="empty"><strong>NO CONTENT</strong>このタブに表示できる項目がありません。</div>';
     } else {
       let html='';
       visible.forEach(sec=>{
         if(sec.code==='T10') html += renderScheduleCalendar(sec);
         else {
-          html += `<section class="section"><div class="section-head"><div class="section-code">${esc(sec.code)}</div><div class="section-title">${esc(sec.title)}</div><div class="section-count">${sec.items.length} ITEMS</div></div>`;
+          html += `<section class="section">`;
           sec.items.forEach(it=>html += renderItem(sec,it));
           html += '</section>';
         }
       });
-      if(state.showLogs && state.logs.length && (state.section==='ALL'||state.section==='LOG')){
+      if(state.showLogs && state.logs.length && state.section==='LOG'){
         const filteredLogs=state.logs.filter(l=>!state.query || [l.title,l.text].join(' ').toLowerCase().includes(state.query.toLowerCase()));
         if(filteredLogs.length){
-          html += `<section class="section"><div class="section-head"><div class="section-code">LOG</div><div class="section-title">直近日別ログ</div><div class="section-count">${filteredLogs.length} DAYS</div></div>`;
+          html += `<section class="section">`;
           filteredLogs.forEach(log=>html += renderLog(log));
           html += '</section>';
         }
       }
       view.innerHTML=html;
     }
-    bindRowEvents(); renderItemNotes(); updateMetrics(); updateComposer(); updateSectionOptions();
+    bindRowEvents(); renderItemNotes(); updateMetrics(); updateComposer(); updateSectionTabs();
   }
 
 
@@ -355,14 +739,20 @@ button.calendar-day:hover{background:#f7f7f7}
   function scheduleItemKey(it){ return keyFor('T10',it.id,it.index); }
   function renderScheduleEntry(it){
     const d=scheduleDateInfo(it), key=scheduleItemKey(it), selected=state.selected.has(key);
-    const dateLabel=d.kind==='date'?`${d.month}/${d.day}`:(d.kind==='month'?'日付未定':'未定');
+    const datePart=d.kind==='date'?`${d.month}/${d.day}`:(d.kind==='month'?`${d.year}/${d.month} 日付未定`:'日付未定');
     const time=scheduleTime(it);
-    const hidden=new Set(['予定番号','日付・時期','日付','時刻','予定・期限']);
-    const details=nonEmptyFields(it).filter(f=>!hidden.has(f.label)).map(f=>`<div class="schedule-field"><b>${esc(f.label)}</b>${esc(f.value)}</div>`).join('');
+    const dt=[datePart,time && time!=='未確認'?time:''].filter(Boolean).join(' ');
+    const note=scheduleNote(it);
     return `<div class="schedule-entry ${selected?'selected':''}" data-key="${esc(key)}">
       <input class="row-check" type="checkbox" ${selected?'checked':''} aria-label="${esc(it.id||scheduleTitle(it))}を選択">
-      <div class="schedule-entry-date">${esc(dateLabel)}${time?`<span class="schedule-entry-time">${esc(time)}</span>`:''}</div>
-      <div><div class="schedule-entry-title">${esc(scheduleTitle(it))}</div>${details}<div class="schedule-entry-actions"><button class="ghost row-consult">ASK</button><button class="ghost row-update">UPDATE</button><button class="ghost row-copy">COPY</button></div></div>
+      <div class="schedule-entry-main">
+        <div class="schedule-entry-head">
+          <div class="schedule-entry-title">${esc(scheduleTitle(it))}</div>
+          <div class="schedule-entry-datetime">${esc(dt)}</div>
+        </div>
+        ${note?`<div class="schedule-entry-note">${esc(note)}</div>`:''}
+        <div class="schedule-entry-actions"><button class="ghost row-consult">ASK</button><button class="ghost row-update">UPDATE</button><button class="ghost row-copy">COPY</button></div>
+      </div>
     </div>`;
   }
   function renderMonthCalendar(date, items){
@@ -383,14 +773,14 @@ button.calendar-day:hover{background:#f7f7f7}
       cells+=`<button class="calendar-day ${ev.length?'has-events':''} ${isToday?'today':''} ${addTarget?'add-target':''}" data-cal-date="${iso}" ${ev.length?`data-cal-keys="${esc(keys)}"`:''} type="button" title="${iso} に予定を追加">${day}${dots}</button>`;
     }
     const list=monthItems.length?monthItems.map(renderScheduleEntry).join(''):'<div class="schedule-empty">この月の予定はありません。</div>';
-    return `<div class="calendar-month"><div class="calendar-month-head"><div class="calendar-month-title">${y}.${String(m).padStart(2,'0')}</div><div class="calendar-month-count">${monthItems.length} ITEMS</div></div><div class="calendar-weekdays">${['MON','TUE','WED','THU','FRI','SAT','SUN'].map(x=>`<div class="calendar-weekday">${x}</div>`).join('')}</div><div class="calendar-days">${cells}</div><div class="month-schedule-list"><div class="month-list-head">SCHEDULES / 予定</div>${list}</div></div>`;
+    return `<div class="calendar-month"><div class="calendar-month-head"><div class="calendar-month-title">${y}.${String(m).padStart(2,'0')}</div></div><div class="calendar-weekdays">${['MON','TUE','WED','THU','FRI','SAT','SUN'].map(x=>`<div class="calendar-weekday">${x}</div>`).join('')}</div><div class="calendar-days">${cells}</div><div class="month-schedule-list"><div class="month-list-head">SCHEDULES / 予定</div>${list}</div></div>`;
   }
   function renderScheduleCalendar(sec){
     const now=new Date(); const base=new Date(now.getFullYear(),now.getMonth(),1); const start=shiftMonth(base,state.calendarOffset);
     const months=[0,1,2].map(i=>shiftMonth(start,i));
     const shown=new Set(months.map(d=>ymKey(d.getFullYear(),d.getMonth()+1)));
     const overflow=sec.items.filter(it=>{ const d=scheduleDateInfo(it); return d.kind==='unknown' || !shown.has(d.year?ymKey(d.year,d.month):''); }).sort(scheduleSort);
-    return `<section class="section"><div class="section-head"><div class="section-code">${esc(sec.code)}</div><div class="section-title">${esc(sec.title)}</div><div class="section-count">${sec.items.length} ITEMS</div></div><div class="schedule-toolbar"><div class="schedule-toolbar-copy">3か月表示 · 日付セルを押すと、その日付への新規予定追加欄を作成</div><div class="schedule-toolbar-actions"><button class="ghost cal-prev">PREV 3M</button><button class="ghost cal-today">TODAY</button><button class="ghost cal-next">NEXT 3M</button></div></div><div class="schedule-calendar-wrap"><div class="calendar-grid">${months.map(d=>renderMonthCalendar(d,sec.items)).join('')}</div>${overflow.length?`<div class="schedule-overflow"><div class="schedule-overflow-head">OUTSIDE / 表示期間外・日付未定</div><div class="schedule-overflow-grid">${overflow.map(renderScheduleEntry).join('')}</div></div>`:''}</div></section>`;
+    return `<section class="section"><div class="schedule-calendar-wrap"><div class="calendar-grid">${months.map(d=>renderMonthCalendar(d,sec.items)).join('')}</div>${overflow.length?`<div class="schedule-overflow"><div class="schedule-overflow-head">OUTSIDE / 表示期間外・日付未定</div><div class="schedule-overflow-grid">${overflow.map(renderScheduleEntry).join('')}</div></div>`:''}</div><div class="schedule-toolbar schedule-toolbar-bottom"><div class="schedule-toolbar-actions"><button class="ghost cal-prev">PREV 3M</button><button class="ghost cal-today">TODAY</button><button class="ghost cal-next">NEXT 3M</button></div></div></section>`;
   }
 
   function renderItem(sec,it){
@@ -416,14 +806,13 @@ button.calendar-day:hover{background:#f7f7f7}
     document.querySelectorAll('[data-key]').forEach(row=>{
       const key=row.dataset.key;
       row.querySelector('.row-check')?.addEventListener('change',e=>{ toggleSelection(key,e.target.checked); });
-      row.querySelector('.row-consult')?.addEventListener('click',()=>{ addSelection(key); setMode('consult'); render(); focusItemNote(key); });
-      row.querySelector('.row-update')?.addEventListener('click',()=>{ addSelection(key); setMode('update'); render(); focusItemNote(key); });
+      row.querySelector('.row-consult')?.addEventListener('click',()=>{ addSelection(key); render(); focusItemNote(key); });
+      row.querySelector('.row-update')?.addEventListener('click',()=>{ addSelection(key); render(); focusItemNote(key); });
       row.querySelector('.row-copy')?.addEventListener('click',()=>copyText(contextTextForKey(key)));
     });
     document.querySelectorAll('[data-cal-date]').forEach(btn=>btn.addEventListener('click',()=>{
       const key=`DATE::${btn.dataset.calDate}`;
       state.selected.add(key);
-      setMode('update');
       render();
       focusItemNote(key);
       toast(`${btn.dataset.calDate} · ADD SCHEDULE`);
@@ -482,10 +871,8 @@ button.calendar-day:hover{background:#f7f7f7}
     }).join('');
     list.querySelectorAll('.item-note-text').forEach(ta=>ta.addEventListener('input',e=>{ state.notes.set(e.target.dataset.key,e.target.value); saveNotes(); updateComposer(); }));
   }
-
-  function setMode(mode){ state.mode=mode; document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode)); $('modeMeta').textContent=mode.toUpperCase(); updateComposer(); }
   function buildPrompt(){
-    const contexts=selectedContexts(); const custom=$('customInstruction').value.trim();
+    const contexts=selectedContexts();
     if(!contexts.length) return '左側の項目を選択すると、ChatGPTへ貼り付ける文章がここに生成されます。';
     const keys=[...state.selected];
     const body=contexts.map((c,i)=>{
@@ -493,70 +880,78 @@ button.calendar-day:hover{background:#f7f7f7}
       const noteBlock=note?`\n\n【この項目への追記・指示】\n${note}`:'\n\n【この項目への追記・指示】\n（なし）';
       return `${contexts.length>1?`【対象${i+1}】\n`:''}${c.text}${noteBlock}`;
     }).join('\n\n--------------------\n\n');
-    const customLine=custom?`\n\n【全体への追加指示】\n${custom}`:'';
     const hasDateTarget=keys.some(k=>k.startsWith('DATE::'));
-    if(state.mode==='update' && hasDateTarget) return `以下のLIVING CONTEXT更新を反映してください。DATE対象はT10｜今後の予定・期限への新規予定追加です。各DATE対象の「この項目への追記・指示」から予定内容を読み取り、既存予定を上書きせず新しい行として追加してください。予定番号は現在のT10を確認して次の未使用S番号を付与し、日付・時期は指定日のYYYY-MM-DD形式を使用してください。時刻・種別・分野・関連項目・現在の確認事項は、追記内容から明確に分かる範囲だけ記載し、不明なものは推測せず「未確認」等として扱ってください。通常項目が同時に選択されている場合は、それぞれの追記も対応する項目へ反映し、必要に応じて関連項目や日別ログとの整合も取ってください。\n\n${body}${customLine}`;
-    if(state.mode==='update') return `以下のLIVING CONTEXT項目について更新があります。各対象の「この項目への追記・指示」を、それぞれ対応する項目へ反映してください。必要に応じて関連項目、T10、日別ログ等も整合させてください。追記が空欄の項目は現在記録の参照対象として扱ってください。\n\n${body}${customLine}`;
-    if(state.mode==='verify') return `以下のLIVING CONTEXT項目について、各対象の「この項目への追記・指示」も踏まえて、現在の状態・未解決点・次に確認すべきことを整理してください。記録にないことは推測せず、必要なら確認事項として分けてください。\n\n${body}${customLine}`;
-    if(state.mode==='free') return `${body}${custom?`\n\n【全体への追加指示】\n${custom}`:''}`;
-    return `以下のLIVING CONTEXT項目について相談したいです。各対象の「この項目への追記・指示」を踏まえ、現在の記録を前提に状況を整理したうえで実用的に一緒に考えてください。\n\n${body}${customLine}`;
+    if(hasDateTarget){
+      return `以下のLIVING CONTEXT更新を反映してください。DATE対象はT10｜今後の予定・期限への新規予定追加です。各DATE対象の「この項目への追記・指示」から予定内容を読み取り、既存予定を上書きせず新しい行として追加してください。予定番号は現在のT10を確認して次の未使用S番号を付与し、日付・時期は指定日のYYYY-MM-DD形式を使用してください。時刻・種別・分野・関連項目・現在の確認事項は、追記内容から明確に分かる範囲だけ記載し、不明なものは推測せず「未確認」等として扱ってください。通常項目が同時に選択されている場合は、それぞれの追記も対応する項目へ反映し、必要に応じて関連項目や日別ログとの整合も取ってください。\n\n${body}`;
+    }
+    return `${body}`;
   }
-  function updateComposer(){ const p=buildPrompt(); $('promptOutput').value=p; const n=state.selected.size; $('composerCount').textContent=`${n} ITEM${n===1?'':'S'}`; $('metricSelected').textContent=n; }
+  function updateComposer(){
+    const p=buildPrompt();
+    $('promptOutput').value=p;
+    const n=state.selected.size;
+    $('composerCount').textContent=`${n} ITEM${n===1?'':'S'}`;
+    document.querySelector('.composer')?.classList.toggle('has-selection',n>0);
+  }
 
   function updateMetrics(){
     const allItems=state.sections.reduce((a,s)=>a+s.items.length,0);
-    const schedules=(state.sections.find(s=>s.code==='T10')?.items.length)||0;
-    $('metricSections').textContent=state.sections.length;
-    $('metricItems').textContent=allItems;
-    $('metricSchedules').textContent=schedules;
-    $('metricSelected').textContent=state.selected.size;
-    $('fileMeta').textContent=state.fileName || (state.source?'PASTED SOURCE':'NO FILE');
-    $('footerStatus').textContent=state.source?`${allItems} ITEMS · ${state.sections.length} SECTIONS · ${state.selected.size} SELECTED`:'READY · IMPORT A SUMMARY MD';
+    const fileLabel=state.fileName || (state.source?'PASTED MARKDOWN':'NO FILE');
+    $('footerStatus').textContent=state.source?`${fileLabel} · ${allItems} ITEMS · ${state.sections.length} SECTIONS · ${state.selected.size} SELECTED`:'NO FILE · READY TO IMPORT';
   }
-  function updateSectionOptions(){
-    const sel=$('sectionFilter'); const current=state.section;
-    const orderedCodes=sectionDisplayOrder(state.sections).map(s=>s.code);
-    const opts=['ALL',...orderedCodes,...(state.logs.length?['LOG']:[])];
-    const unique=[...new Set(opts)];
-    sel.innerHTML=unique.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
-    sel.value=unique.includes(current)?current:'ALL';
+  function updateSectionTabs(){
+    const nav=$('sectionTabs');
+    if(!nav) return;
+    const ordered=sectionDisplayOrder(state.sections);
+    const tabs=[...ordered.map(s=>({code:s.code,title:s.title})), ...(state.logs.length?[{code:'LOG',title:'直近日別ログ'}]:[])];
+    if(!tabs.length){ nav.innerHTML=''; return; }
+    if(!tabs.some(t=>t.code===state.section)) state.section=tabs[0].code;
+    nav.innerHTML=tabs.map(t=>`<button class="section-tab ${state.section===t.code?'active':''}" data-section-tab="${esc(t.code)}">${esc(t.code)}<span class="tab-jp">${esc(t.title)}</span></button>`).join('');
+    nav.querySelectorAll('[data-section-tab]').forEach(btn=>btn.addEventListener('click',()=>{
+      state.section=btn.dataset.sectionTab;
+      render();
+    }));
   }
 
   function loadSource(source,fileName=''){
     if(!source.trim()){ toast('EMPTY SOURCE'); return; }
     const parsed=parseMarkdown(source);
-    state.source=normalize(source); state.fileName=fileName; state.sections=parsed.sections; state.logs=parsed.logs; state.selected.clear(); state.section='ALL'; state.query=''; state.calendarOffset=0;
-    $('searchInput').value=''; $('sourceEditor').value=state.source;
+    state.source=normalize(source); state.fileName=fileName; state.sections=parsed.sections; state.logs=parsed.logs; state.selected.clear(); state.section=parsed.sections.some(s=>s.code==='T10')?'T10':(sectionDisplayOrder(parsed.sections)[0]?.code||'LOG'); state.query=''; state.calendarOffset=0;
     try{ localStorage.setItem(STORAGE_KEY,JSON.stringify({source:state.source,fileName:state.fileName})); }catch{}
-    render(); toast('LOADED');
+    render();
+    startReviewTicker();
+    toast('LOADED');
   }
 
   $('importBtn').addEventListener('click',()=> $('fileInput').click());
   $('fileInput').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return; loadSource(await f.text(),f.name); e.target.value=''; });
-  $('pasteBtn').addEventListener('click',()=>{ $('sourceZone').classList.add('open'); $('sourceEditor').focus(); });
-  $('sourceToggleBtn').addEventListener('click',()=> $('sourceZone').classList.toggle('open'));
-  $('closeSourceBtn').addEventListener('click',()=> $('sourceZone').classList.remove('open'));
-  $('loadSourceBtn').addEventListener('click',()=> loadSource($('sourceEditor').value,'PASTED MARKDOWN'));
-  $('clearBtn').addEventListener('click',()=>{ if(!confirm('読み込んだサマリーをこのブラウザからクリアしますか？'))return; state.source='';state.fileName='';state.sections=[];state.logs=[];state.selected.clear();state.notes.clear();$('sourceEditor').value='';try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(NOTES_KEY)}catch{}render();toast('CLEARED'); });
-  $('searchInput').addEventListener('input',e=>{state.query=e.target.value;render();});
-  $('sectionFilter').addEventListener('change',e=>{state.section=e.target.value;render();});
-  $('logsToggle').addEventListener('change',e=>{state.showLogs=e.target.checked;render();});
-  $('selectVisibleBtn').addEventListener('click',()=>{ getVisible().forEach(sec=>sec.items.forEach(it=>state.selected.add(keyFor(sec.code,it.id,it.index)))); if(state.showLogs&&(state.section==='ALL'||state.section==='LOG')) state.logs.filter(l=>!state.query||[l.title,l.text].join(' ').toLowerCase().includes(state.query.toLowerCase())).forEach(l=>state.selected.add(`LOG::${l.id}`)); render(); });
-  $('clearSelectionBtn').addEventListener('click',()=>{state.selected.clear();render();});
-  $('clearNotesBtn').addEventListener('click',()=>{ [...state.selected].forEach(k=>state.notes.delete(k)); saveNotes(); renderItemNotes(); updateComposer(); toast('NOTES CLEARED'); });
-  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
-  $('customInstruction').addEventListener('input',updateComposer);
+  $('pasteBtn').addEventListener('click',async()=>{
+    try{
+      const clip=await navigator.clipboard.readText();
+      if(!clip.trim()) return toast('CLIPBOARD EMPTY');
+      loadSource(clip,'PASTED MARKDOWN');
+    }catch{
+      toast('CLIPBOARD BLOCKED');
+    }
+  });
+  $('clearBtn').addEventListener('click',()=>{ if(!confirm('読み込んだサマリーをこのブラウザからクリアしますか？'))return; stopReviewTicker();state.source='';state.fileName='';state.sections=[];state.logs=[];state.selected.clear();state.notes.clear();state.reviewItems=[];state.reviewIndex=0;try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(NOTES_KEY)}catch{}render();showReviewTicker();toast('CLEARED'); });
   $('copyPromptBtn').addEventListener('click',()=>copyText($('promptOutput').value));
-  $('copyOpenBtn').addEventListener('click',async()=>{ await copyText($('promptOutput').value); window.open('https://chatgpt.com/','_blank','noopener'); });
+  $('clearInputsBtn').addEventListener('click',()=>{
+    state.notes.clear();
+    state.selected.clear();
+    saveNotes();
+    render();
+    toast('INPUTS & SELECTION CLEARED');
+  });
 
-  document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); $('searchInput').focus(); $('searchInput').select(); } if(e.key==='Escape'){ state.selected.clear(); render(); } });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ state.selected.clear(); render(); } });
   window.addEventListener('dragenter',e=>{e.preventDefault();$('dropZone').classList.add('active')});
   window.addEventListener('dragover',e=>e.preventDefault());
   window.addEventListener('dragleave',e=>{if(e.target===document.documentElement||e.target===document.body)$('dropZone').classList.remove('active')});
   window.addEventListener('drop',async e=>{ e.preventDefault(); $('dropZone').classList.remove('active'); const f=[...e.dataTransfer.files].find(x=>/\.md$|\.markdown$/i.test(x.name)||x.type.startsWith('text/')); if(f) loadSource(await f.text(),f.name); });
 
   try{ const savedNotes=JSON.parse(localStorage.getItem(NOTES_KEY)||'{}'); state.notes=new Map(Object.entries(savedNotes||{})); }catch{}
-  try{ const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'); if(saved?.source) loadSource(saved.source,saved.fileName||'SAVED MARKDOWN'); else render(); }catch{ render(); }
+  try{ const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'); if(saved?.source) loadSource(saved.source,saved.fileName||'SAVED MARKDOWN'); else { render(); showReviewTicker(); } }catch{ render(); showReviewTicker(); }
 })();
 </script>
 </body>
