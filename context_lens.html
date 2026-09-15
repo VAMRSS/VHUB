@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CONTEXT LENS — LIVING CONTEXT SUMMARY VIEWER</title>
+<style>
+:root{
+  --bone:#f6f6f6;--white:#ffffff;--black:#0a0a0a;--divider:#e6e6e6;
+  --muted:#b2b2b2;--mid:#6e6e6e;--signal:#c81f3a;--signal-soft:rgba(200,31,58,.16);
+  --green:#168a52;--green-soft:rgba(22,138,82,.16);
+  --font-euro:"Eurostile","Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;
+  --font-body:"Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;
+  --font-mono:"BIZ UDPGothic","Noto Sans Mono CJK JP","Yu Gothic UI",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bone);color:var(--black)}
+body{font-family:var(--font-body);font-size:12px;line-height:1.65}
+button,input,select,textarea{font:inherit;border-radius:0}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:1px solid var(--black);outline-offset:-1px}
+.header{position:sticky;top:0;z-index:50;height:86px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;padding:0 20px;background:var(--white);border-bottom:.5px solid var(--divider)}
+.brand{display:flex;align-items:center;gap:9px;min-width:0;font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.signal-block{width:9px;height:9px;background:var(--signal);flex:0 0 auto}
+.header-center{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:center;white-space:nowrap}
+.header-actions{justify-self:end;display:flex;align-items:center;gap:14px;white-space:nowrap}
+.ghost{appearance:none;border:0;background:transparent;color:var(--black);padding:0;font-family:var(--font-euro);font-size:8px;line-height:1.1;font-weight:400;letter-spacing:.04em;text-transform:uppercase}
+.ghost:hover{color:#666}.ghost.active{font-weight:700}.ghost.danger{color:var(--signal)}
+.page{width:100%;padding:34px 20px 110px}
+.hero{margin-bottom:42px}.meta{margin-bottom:7px;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+.wordmark{margin:0;font-family:var(--font-euro);font-size:30px;line-height:1;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}
+.hero-copy{max-width:860px;margin:14px 0 0;color:#343434;font-size:12px;line-height:1.75}
+.control-strip{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;padding:10px 0;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);margin-bottom:20px}
+.control-group{display:flex;align-items:center;gap:8px}.control-label{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}.spacer{flex:1}
+.text-input{width:260px;max-width:48vw;border:0;border-bottom:.5px solid var(--divider);background:transparent;color:var(--black);padding:5px 0;outline:0}.text-input:focus{border-bottom-color:var(--black)}
+select{border:0;background:transparent;color:var(--black);padding:0 18px 0 0;min-height:22px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}
+.toggle{display:flex;align-items:center;gap:7px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;cursor:pointer}.toggle input{width:12px;height:12px;accent-color:var(--signal)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:42px;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider)}
+.metric{padding:10px 10px 11px;min-width:0}.metric+.metric{border-left:.5px solid var(--divider)}.metric-label{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--mid)}.metric-value{margin-top:5px;font-family:var(--font-euro);font-size:22px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:0;background:var(--white);border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);min-height:520px}
+.browser{min-width:0}.composer{min-width:0;border-left:.5px solid var(--divider);display:grid;grid-template-rows:auto auto auto minmax(180px,1fr) auto;align-content:start;position:sticky;top:86px;max-height:calc(100vh - 138px)}
+.panel-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;min-height:42px;padding:0 10px;border-bottom:.5px solid var(--divider)}
+.panel-index,.panel-title,.panel-meta{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}.panel-index,.panel-title{font-weight:700}.panel-title .jp{font-family:var(--font-body);font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;margin-left:7px}.panel-meta{color:var(--muted);text-align:right}
+.section{border-bottom:.5px solid var(--divider)}.section:last-child{border-bottom:0}
+.section-head{display:grid;grid-template-columns:74px minmax(0,1fr) auto;align-items:baseline;gap:10px;padding:18px 10px 8px;background:var(--bone);border-bottom:.5px solid var(--divider)}
+.section-code{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.section-title{font-size:15px;line-height:1.35;font-weight:500}.section-count{font-family:var(--font-euro);font-size:8px;color:var(--muted);letter-spacing:.04em}
+.item{display:grid;grid-template-columns:30px 66px minmax(160px,.72fr) minmax(260px,1.65fr) 128px;min-height:64px;border-bottom:.5px solid var(--divider);background:var(--white)}.item:last-child{border-bottom:0}.item:hover{background:#fbfbfb}.item.selected{box-shadow:inset 3px 0 0 var(--signal);background:linear-gradient(90deg,var(--signal-soft),transparent 90px)}
+.cell{padding:10px;min-width:0}.cell+.cell{border-left:.5px solid var(--divider)}.select-cell{display:flex;justify-content:center;align-items:flex-start;padding-top:14px}.select-cell input{width:12px;height:12px;accent-color:var(--signal)}
+.item-id{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;white-space:nowrap}.item-cat{margin-top:5px;color:var(--mid);font-size:10px;line-height:1.45}.item-title{font-weight:600;font-size:12px;line-height:1.55}.item-body{color:#343434;font-size:11px;line-height:1.7;overflow-wrap:anywhere}.item-next{margin-top:7px;padding-top:7px;border-top:.5px solid var(--divider);color:#444;font-size:10px;line-height:1.65}.next-label{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-right:6px}.item-actions{display:flex;flex-direction:column;align-items:flex-start;gap:8px}.item-actions .ghost{font-size:8px}.action-red{color:var(--signal)}
+.log-item{display:grid;grid-template-columns:110px minmax(0,1fr) 118px;border-bottom:.5px solid var(--divider)}.log-date{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;padding:10px}.log-body{padding:10px;border-left:.5px solid var(--divider);font-size:11px;line-height:1.75;white-space:pre-wrap}.log-actions{padding:10px;border-left:.5px solid var(--divider);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.empty{padding:42px 10px;border-bottom:.5px solid var(--divider);font-size:12px;color:#777;text-align:center}.empty strong{display:block;color:var(--black);font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
+.composer-mode{display:flex;gap:12px;flex-wrap:wrap;padding:10px;border-bottom:.5px solid var(--divider)}
+.item-notes{display:none;border-bottom:.5px solid var(--divider);background:#fbfbfb;max-height:250px;overflow:auto}
+.item-notes.open{display:block}
+.item-notes-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px;padding:0 10px;background:#fbfbfb;border-bottom:.5px solid var(--divider)}
+.item-notes-title{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.item-notes-help{font-size:9px;color:var(--mid)}
+.item-note{padding:10px;border-bottom:.5px solid var(--divider);background:var(--white)}
+.item-note:last-child{border-bottom:0}
+.item-note-meta{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;min-width:0}
+.item-note-id{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+.item-note-label{font-size:10px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-note-section{margin-left:auto;font-family:var(--font-euro);font-size:7px;letter-spacing:.04em;color:var(--muted);white-space:nowrap}
+.item-note textarea{width:100%;min-height:58px;border:0;border-bottom:.5px solid var(--divider);background:transparent;padding:4px 0;resize:vertical;outline:0;font-size:11px;line-height:1.65}
+.item-note textarea:focus{border-bottom-color:var(--black)}
+.item-note textarea:not(:placeholder-shown){border-bottom-color:var(--signal)}
+
+.composer-input{padding:12px 10px;border-bottom:.5px solid var(--divider)}.composer-input label{display:block;margin-bottom:7px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}.composer-input textarea{width:100%;min-height:54px;border:0;border-bottom:.5px solid var(--divider);background:transparent;padding:5px 0;resize:vertical;outline:0;font-size:11px;line-height:1.65}.composer-input textarea:focus{border-bottom-color:var(--black)}
+.prompt-shell{min-height:0;overflow:auto}.prompt{width:100%;min-height:330px;height:100%;border:0;background:var(--white);padding:16px 12px 24px;font-family:var(--font-mono);font-size:11px;line-height:1.8;resize:none;outline:0;color:var(--black);white-space:pre-wrap}.prompt:focus{box-shadow:inset 0 -1px 0 var(--black)}
+.composer-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:0 10px;border-top:.5px solid var(--divider)}.primary-action{border:0;background:var(--black);color:var(--white);padding:9px 12px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}.composer-count{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;color:var(--muted)}
+.source-zone{display:none;margin-top:42px;background:var(--white);border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider)}.source-zone.open{display:block}.source-head{display:flex;justify-content:space-between;align-items:center;min-height:42px;padding:0 10px;border-bottom:.5px solid var(--divider)}.source-title{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.source-editor{width:100%;min-height:310px;border:0;padding:16px;font-family:var(--font-mono);font-size:12px;line-height:1.8;resize:vertical;outline:0}.source-foot{display:flex;gap:16px;align-items:center;padding:10px;border-top:.5px solid var(--divider)}
+.drop-zone{display:none;min-height:180px;place-items:center;background:var(--white);border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);text-align:center;margin-bottom:20px}.drop-zone.active{display:grid}.drop-title{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.drop-note{margin-top:8px;color:var(--mid);font-size:11px}
+.footer-strip{position:fixed;left:0;right:0;bottom:0;z-index:40;min-height:52px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px;padding:0 20px;background:var(--bone);border-top:.5px solid var(--divider)}.footer-left,.footer-right{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}.footer-right{color:var(--mid)}
+.toast{position:fixed;left:20px;bottom:66px;z-index:100;padding:7px 9px;background:var(--black);color:var(--white);font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;opacity:0;transform:translateY(5px);transition:.16s;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}
+.file-input{display:none}.hidden{display:none!important}
+@media(max-width:1100px){.workspace{grid-template-columns:1fr}.composer{border-left:0;border-top:.5px solid var(--divider);position:static;max-height:none}.item-notes{max-height:none}.prompt{min-height:260px}.item{grid-template-columns:30px 66px minmax(140px,.75fr) minmax(220px,1.5fr) 116px}}
+@media(max-width:760px){.header{grid-template-columns:1fr auto;height:auto;min-height:72px;padding:14px}.header-center{display:none}.page{padding:28px 14px 100px}.wordmark{font-size:26px}.metrics{grid-template-columns:repeat(2,1fr)}.metric:nth-child(3){border-left:0;border-top:.5px solid var(--divider)}.metric:nth-child(4){border-top:.5px solid var(--divider)}.item{grid-template-columns:30px 58px minmax(0,1fr)}.item .body-cell{grid-column:2 / -1;border-left:.5px solid var(--divider);border-top:.5px solid var(--divider)}.item .action-cell{grid-column:2 / -1;border-left:.5px solid var(--divider);border-top:.5px solid var(--divider);flex-direction:row;flex-wrap:wrap}.log-item{grid-template-columns:90px 1fr}.log-actions{grid-column:2;border-top:.5px solid var(--divider);flex-direction:row;flex-wrap:wrap}.text-input{width:180px;max-width:60vw}.footer-strip{padding:0 14px}.footer-right{display:none}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand"><span class="signal-block"></span><span>CONTEXT LENS / LIVING CONTEXT</span></div>
+  <div class="header-center">MARKDOWN SUMMARY / LOCAL PROCESSING</div>
+  <div class="header-actions">
+    <button class="ghost" id="importBtn">IMPORT MD</button>
+    <button class="ghost" id="pasteBtn">PASTE</button>
+    <button class="ghost danger" id="clearBtn">CLEAR</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="meta">LIVING CONTEXT / SUMMARY INTERFACE</div>
+    <h1 class="wordmark">CONTEXT LENS</h1>
+    <p class="hero-copy">蓄積サマリーをセクション別に読みやすく表示し、P項目・S予定・日別ログを選択して、そのままChatGPTへ相談・更新指示できる文章へ変換します。Markdownはブラウザ内だけで処理されます。</p>
+  </section>
+
+  <div class="drop-zone" id="dropZone">
+    <div><div class="drop-title">DROP MARKDOWN FILE</div><div class="drop-note">living-context-summary_*.md をここへドロップ</div></div>
+  </div>
+
+  <section class="control-strip">
+    <div class="control-group"><span class="control-label">SEARCH</span><input id="searchInput" class="text-input" type="search" placeholder="P073 / Tesla / SMDM ..."></div>
+    <div class="control-group"><span class="control-label">SECTION</span><select id="sectionFilter"><option value="ALL">ALL</option></select></div>
+    <label class="toggle"><input type="checkbox" id="logsToggle" checked> DAILY LOG</label>
+    <div class="spacer"></div>
+    <button class="ghost" id="selectVisibleBtn">SELECT VISIBLE</button>
+    <button class="ghost" id="clearSelectionBtn">CLEAR SELECTION</button>
+    <button class="ghost" id="sourceToggleBtn">SOURCE</button>
+  </section>
+
+  <section class="metrics">
+    <div class="metric"><div class="metric-label">SECTIONS</div><div class="metric-value" id="metricSections">0</div></div>
+    <div class="metric"><div class="metric-label">ITEMS</div><div class="metric-value" id="metricItems">0</div></div>
+    <div class="metric"><div class="metric-label">SCHEDULES</div><div class="metric-value" id="metricSchedules">0</div></div>
+    <div class="metric"><div class="metric-label">SELECTED</div><div class="metric-value" id="metricSelected">0</div></div>
+  </section>
+
+  <section class="workspace">
+    <div class="browser">
+      <div class="panel-head"><div class="panel-index">A</div><div class="panel-title">SUMMARY <span class="jp">蓄積サマリー</span></div><div class="panel-meta" id="fileMeta">NO FILE</div></div>
+      <div id="summaryView"></div>
+    </div>
+
+    <aside class="composer">
+      <div class="panel-head"><div class="panel-index">B</div><div class="panel-title">PROMPT <span class="jp">ChatGPT入力用</span></div><div class="panel-meta" id="modeMeta">CONSULT</div></div>
+      <div class="composer-mode">
+        <button class="ghost active" data-mode="consult">CONSULT / 相談</button>
+        <button class="ghost" data-mode="update">UPDATE / 更新</button>
+        <button class="ghost" data-mode="verify">VERIFY / 確認</button>
+        <button class="ghost" data-mode="free">FREE / 自由</button>
+      </div>
+      <div class="item-notes" id="itemNotes">
+        <div class="item-notes-head"><div><span class="item-notes-title">ITEM NOTES / 各項目への追記</span><span class="item-notes-help">　選択項目ごとに入力</span></div><button class="ghost danger" id="clearNotesBtn">CLEAR NOTES</button></div>
+        <div id="itemNotesList"></div>
+      </div>
+      <div class="prompt-shell"><textarea id="promptOutput" class="prompt" spellcheck="false" readonly></textarea></div>
+      <div>
+        <div class="composer-input"><label for="customInstruction">CUSTOM INSTRUCTION / 追加指示</label><textarea id="customInstruction" placeholder="例：この件について今後の対応方針を整理してください。"></textarea></div>
+        <div class="composer-foot"><span class="composer-count" id="composerCount">0 ITEMS</span><div><button class="ghost" id="copyPromptBtn">COPY ALL</button> <button class="primary-action" id="copyOpenBtn">COPY & OPEN CHATGPT</button></div></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="source-zone" id="sourceZone">
+    <div class="source-head"><div class="source-title">SOURCE MARKDOWN</div><div><button class="ghost" id="loadSourceBtn">LOAD</button> <button class="ghost" id="closeSourceBtn">CLOSE</button></div></div>
+    <textarea class="source-editor" id="sourceEditor" spellcheck="false" placeholder="ここに living-context-summary_*.md の全文を貼り付けて LOAD を押してください。"></textarea>
+    <div class="source-foot"><span class="control-label">LOCAL STORAGE</span><span style="color:var(--mid);font-size:11px">最後に読み込んだMarkdownはこのブラウザ内に保存されます。</span></div>
+  </section>
+</main>
+
+<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.1 · MULTI ITEM NOTES · CTRL / ⌘ + K SEARCH</div></footer>
+<div class="toast" id="toast">COPIED</div>
+<input class="file-input" type="file" id="fileInput" accept=".md,.markdown,text/markdown,text/plain">
+
+<script>
+(() => {
+  const STORAGE_KEY = 'context-lens-source-v1';
+  const NOTES_KEY = 'context-lens-item-notes-v1';
+  const state = { source:'', fileName:'', sections:[], logs:[], selected:new Set(), notes:new Map(), mode:'consult', query:'', section:'ALL', showLogs:true };
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const normalize = s => String(s ?? '').replace(/\r\n/g,'\n');
+
+  function toast(text='COPIED') { const el=$('toast'); el.textContent=text; el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),1400); }
+  async function copyText(text){
+    try { await navigator.clipboard.writeText(text); toast('COPIED'); }
+    catch { const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('COPIED'); }
+  }
+
+  function splitTableLine(line){
+    return line.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(v=>v.trim());
+  }
+  function isSeparator(line){ return /^\s*\|?\s*:?-{3,}/.test(line); }
+  function cleanHeading(s){ return s.replace(/^#+\s*/,'').trim(); }
+  function keyFor(sectionCode, id, idx){ return `${sectionCode}::${id || idx}`; }
+
+  function parseMarkdown(md){
+    const src = normalize(md);
+    const lines = src.split('\n');
+    const sections=[]; const logs=[];
+    let i=0;
+    while(i<lines.length){
+      const line=lines[i];
+      const secMatch=line.match(/^##\s+(T\d+)｜(.+)$/);
+      if(secMatch){
+        const code=secMatch[1], title=secMatch[2].trim();
+        const block=[]; i++;
+        while(i<lines.length && !/^##\s+T\d+｜/.test(lines[i]) && !/^#\s+直近日別ログ/.test(lines[i])){ block.push(lines[i]); i++; }
+        sections.push(parseSection(code,title,block));
+        continue;
+      }
+      if(/^#\s+直近日別ログ/.test(line)){
+        i++;
+        while(i<lines.length){
+          const dateMatch=lines[i].match(/^##\s+(\d{4}-\d{2}-\d{2}[^\n]*)$/);
+          if(dateMatch){
+            const title=dateMatch[1].trim(), body=[]; i++;
+            while(i<lines.length && !/^##\s+\d{4}-\d{2}-\d{2}/.test(lines[i])){ body.push(lines[i]); i++; }
+            logs.push({id:title.split(/[（(]/)[0].trim(), title, text:body.join('\n').trim()});
+            continue;
+          }
+          i++;
+        }
+        break;
+      }
+      i++;
+    }
+    return {sections,logs};
+  }
+
+  function parseSection(code,title,block){
+    const firstHeaderIndex=block.findIndex((l,idx)=>l.trim().startsWith('|') && idx+1<block.length && isSeparator(block[idx+1]));
+    const items=[];
+    if(firstHeaderIndex>=0){
+      const headers=splitTableLine(block[firstHeaderIndex]);
+      let r=firstHeaderIndex+2, idx=0;
+      while(r<block.length){
+        const line=block[r];
+        if(!line.trim().startsWith('|')){ r++; continue; }
+        const cells=splitTableLine(line); const obj={};
+        headers.forEach((h,j)=>obj[h]=cells[j] ?? '');
+        const id=(cells[0]||'').trim();
+        const titleValue=pick(obj,['項目','予定・期限','テーマ','決定内容','概要','確認済み情報','問い','内容']) || cells[3] || cells[2] || '';
+        const category=pick(obj,['分野','種別','カテゴリ']) || '';
+        const status=pick(obj,['現在の状態','状態','理由・判断軸','現在の確認事項','評価','確認内容']) || '';
+        const next=pick(obj,['次の一歩','次の対応','現在の確認事項']) || '';
+        const updated=pick(obj,['最終更新日','更新日','日付','日付・時期','完了・節目日']) || '';
+        items.push({id,title:titleValue,category,status,next,updated,raw:line,obj,index:idx++});
+        r++;
+      }
+    } else {
+      const text=block.join('\n').trim();
+      if(text) items.push({id:code,title,category:'',status:text,next:'',updated:'',raw:text,obj:{},index:0,plain:true});
+    }
+    return {code,title,items};
+  }
+  function pick(obj, keys){ for(const k of keys){ if(obj[k]) return obj[k]; } return ''; }
+
+  function itemSearchText(item,section){ return [section.code,section.title,item.id,item.title,item.category,item.status,item.next,item.updated,item.raw].join(' ').toLowerCase(); }
+  function getVisible(){
+    const q=state.query.trim().toLowerCase();
+    return state.sections.map(sec=>({ ...sec, items:sec.items.filter(it => (state.section==='ALL'||state.section===sec.code) && (!q||itemSearchText(it,sec).includes(q))) })).filter(sec=>sec.items.length);
+  }
+
+  function render(){
+    const view=$('summaryView'); const visible=getVisible();
+    if(!state.source){
+      view.innerHTML='<div class="empty"><strong>NO SUMMARY LOADED</strong>IMPORT MD または PASTE から蓄積サマリーを読み込んでください。</div>';
+    } else if(!visible.length && !(state.showLogs && state.logs.length)){
+      view.innerHTML='<div class="empty"><strong>NO RESULTS</strong>検索条件に一致する項目がありません。</div>';
+    } else {
+      let html='';
+      visible.forEach(sec=>{
+        html += `<section class="section"><div class="section-head"><div class="section-code">${esc(sec.code)}</div><div class="section-title">${esc(sec.title)}</div><div class="section-count">${sec.items.length} ITEMS</div></div>`;
+        sec.items.forEach(it=>html += renderItem(sec,it));
+        html += '</section>';
+      });
+      if(state.showLogs && state.logs.length && (state.section==='ALL'||state.section==='LOG')){
+        const filteredLogs=state.logs.filter(l=>!state.query || [l.title,l.text].join(' ').toLowerCase().includes(state.query.toLowerCase()));
+        if(filteredLogs.length){
+          html += `<section class="section"><div class="section-head"><div class="section-code">LOG</div><div class="section-title">直近日別ログ</div><div class="section-count">${filteredLogs.length} DAYS</div></div>`;
+          filteredLogs.forEach(log=>html += renderLog(log));
+          html += '</section>';
+        }
+      }
+      view.innerHTML=html;
+    }
+    bindRowEvents(); renderItemNotes(); updateMetrics(); updateComposer(); updateSectionOptions();
+  }
+
+  function renderItem(sec,it){
+    const key=keyFor(sec.code,it.id,it.index); const selected=state.selected.has(key);
+    const displayStatus=it.status || Object.values(it.obj).filter(Boolean).slice(2,5).join(' / ');
+    return `<article class="item ${selected?'selected':''}" data-key="${esc(key)}">
+      <div class="cell select-cell"><input class="row-check" type="checkbox" ${selected?'checked':''} aria-label="${esc(it.id||it.title)}を選択"></div>
+      <div class="cell"><div class="item-id">${esc(it.id || sec.code)}</div><div class="item-cat">${esc(it.category||it.updated||'')}</div></div>
+      <div class="cell"><div class="item-title">${esc(it.title || sec.title)}</div>${it.updated?`<div class="item-cat">${esc(it.updated)}</div>`:''}</div>
+      <div class="cell body-cell"><div class="item-body">${esc(displayStatus || it.raw)}</div>${it.next?`<div class="item-next"><span class="next-label">NEXT</span>${esc(it.next)}</div>`:''}</div>
+      <div class="cell action-cell item-actions"><button class="ghost row-consult">ASK</button><button class="ghost row-update">UPDATE</button><button class="ghost row-copy">COPY</button></div>
+    </article>`;
+  }
+  function renderLog(log){
+    const key=`LOG::${log.id}`; const selected=state.selected.has(key);
+    return `<article class="log-item ${selected?'selected':''}" data-key="${esc(key)}"><div class="log-date">${esc(log.title)}</div><div class="log-body">${esc(log.text)}</div><div class="log-actions"><label class="toggle"><input class="row-check" type="checkbox" ${selected?'checked':''}> SELECT</label><button class="ghost row-consult">ASK</button><button class="ghost row-copy">COPY</button></div></article>`;
+  }
+
+  function bindRowEvents(){
+    document.querySelectorAll('[data-key]').forEach(row=>{
+      const key=row.dataset.key;
+      row.querySelector('.row-check')?.addEventListener('change',e=>{ toggleSelection(key,e.target.checked); });
+      row.querySelector('.row-consult')?.addEventListener('click',()=>{ addSelection(key); setMode('consult'); render(); focusItemNote(key); });
+      row.querySelector('.row-update')?.addEventListener('click',()=>{ addSelection(key); setMode('update'); render(); focusItemNote(key); });
+      row.querySelector('.row-copy')?.addEventListener('click',()=>copyText(contextTextForKey(key)));
+    });
+  }
+  function toggleSelection(key,on){ if(on) state.selected.add(key); else state.selected.delete(key); render(); }
+  function addSelection(key){ state.selected.add(key); }
+  function focusItemNote(key){ requestAnimationFrame(()=>{ const el=[...document.querySelectorAll('.item-note-text')].find(x=>x.dataset.key===key); el?.focus(); }); }
+  function saveNotes(){ try{ localStorage.setItem(NOTES_KEY,JSON.stringify(Object.fromEntries(state.notes))); }catch{} }
+
+  function contextForKey(key){
+    const [group,id]=key.split('::');
+    if(group==='LOG'){ const l=state.logs.find(x=>x.id===id); return l?{label:`日別ログ ${l.title}`,text:l.text}:null; }
+    const sec=state.sections.find(s=>s.code===group); if(!sec) return null;
+    const it=sec.items.find(x=>(x.id||String(x.index))===id) || sec.items.find(x=>String(x.index)===id); if(!it) return null;
+    let text=`[${sec.code}｜${sec.title}]\n`;
+    if(it.id) text += `${it.id}｜${it.title || ''}\n`;
+    else text += `${it.title || ''}\n`;
+    if(it.category) text += `分野：${it.category}\n`;
+    if(it.status) text += `現在：${it.status}\n`;
+    if(it.next) text += `次：${it.next}\n`;
+    if(it.updated) text += `更新：${it.updated}\n`;
+    if(!it.status && !it.next) text += `${it.raw}\n`;
+    return {label:it.id||it.title,text:text.trim()};
+  }
+  function contextTextForKey(key){ return contextForKey(key)?.text || ''; }
+  function selectedContexts(){ return [...state.selected].map(contextForKey).filter(Boolean); }
+  function noteForKey(key){ return state.notes.get(key) || ''; }
+  function renderItemNotes(){
+    const shell=$('itemNotes'), list=$('itemNotesList');
+    const keys=[...state.selected];
+    if(!keys.length){ shell.classList.remove('open'); list.innerHTML=''; return; }
+    shell.classList.add('open');
+    list.innerHTML=keys.map(key=>{
+      const c=contextForKey(key); if(!c) return '';
+      const [group]=key.split('::');
+      return `<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc((c.text.split('\n')[1]||c.label).replace(/^.*?｜/,''))}</span><span class="item-note-section">${esc(group)}</span></div><textarea class="item-note-text" data-key="${esc(key)}" placeholder="この項目への追記・質問・更新内容を入力…">${esc(noteForKey(key))}</textarea></div>`;
+    }).join('');
+    list.querySelectorAll('.item-note-text').forEach(ta=>ta.addEventListener('input',e=>{ state.notes.set(e.target.dataset.key,e.target.value); saveNotes(); updateComposer(); }));
+  }
+
+  function setMode(mode){ state.mode=mode; document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode)); $('modeMeta').textContent=mode.toUpperCase(); updateComposer(); }
+  function buildPrompt(){
+    const contexts=selectedContexts(); const custom=$('customInstruction').value.trim();
+    if(!contexts.length) return '左側の項目を選択すると、ChatGPTへ貼り付ける文章がここに生成されます。';
+    const keys=[...state.selected];
+    const body=contexts.map((c,i)=>{
+      const note=noteForKey(keys[i]).trim();
+      const noteBlock=note?`\n\n【この項目への追記・指示】\n${note}`:'\n\n【この項目への追記・指示】\n（なし）';
+      return `${contexts.length>1?`【対象${i+1}】\n`:''}${c.text}${noteBlock}`;
+    }).join('\n\n--------------------\n\n');
+    const customLine=custom?`\n\n【全体への追加指示】\n${custom}`:'';
+    if(state.mode==='update') return `以下のLIVING CONTEXT項目について更新があります。各対象の「この項目への追記・指示」を、それぞれ対応する項目へ反映してください。必要に応じて関連項目、T10、日別ログ等も整合させてください。追記が空欄の項目は現在記録の参照対象として扱ってください。\n\n${body}${customLine}`;
+    if(state.mode==='verify') return `以下のLIVING CONTEXT項目について、各対象の「この項目への追記・指示」も踏まえて、現在の状態・未解決点・次に確認すべきことを整理してください。記録にないことは推測せず、必要なら確認事項として分けてください。\n\n${body}${customLine}`;
+    if(state.mode==='free') return `${body}${custom?`\n\n【全体への追加指示】\n${custom}`:''}`;
+    return `以下のLIVING CONTEXT項目について相談したいです。各対象の「この項目への追記・指示」を踏まえ、現在の記録を前提に状況を整理したうえで実用的に一緒に考えてください。\n\n${body}${customLine}`;
+  }
+  function updateComposer(){ const p=buildPrompt(); $('promptOutput').value=p; const n=state.selected.size; $('composerCount').textContent=`${n} ITEM${n===1?'':'S'}`; $('metricSelected').textContent=n; }
+
+  function updateMetrics(){
+    const allItems=state.sections.reduce((a,s)=>a+s.items.length,0);
+    const schedules=(state.sections.find(s=>s.code==='T10')?.items.length)||0;
+    $('metricSections').textContent=state.sections.length;
+    $('metricItems').textContent=allItems;
+    $('metricSchedules').textContent=schedules;
+    $('metricSelected').textContent=state.selected.size;
+    $('fileMeta').textContent=state.fileName || (state.source?'PASTED SOURCE':'NO FILE');
+    $('footerStatus').textContent=state.source?`${allItems} ITEMS · ${state.sections.length} SECTIONS · ${state.selected.size} SELECTED`:'READY · IMPORT A SUMMARY MD';
+  }
+  function updateSectionOptions(){
+    const sel=$('sectionFilter'); const current=state.section;
+    const opts=['ALL',...state.sections.map(s=>s.code),...(state.logs.length?['LOG']:[])];
+    const unique=[...new Set(opts)];
+    sel.innerHTML=unique.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    sel.value=unique.includes(current)?current:'ALL';
+  }
+
+  function loadSource(source,fileName=''){
+    if(!source.trim()){ toast('EMPTY SOURCE'); return; }
+    const parsed=parseMarkdown(source);
+    state.source=normalize(source); state.fileName=fileName; state.sections=parsed.sections; state.logs=parsed.logs; state.selected.clear(); state.section='ALL'; state.query='';
+    $('searchInput').value=''; $('sourceEditor').value=state.source;
+    try{ localStorage.setItem(STORAGE_KEY,JSON.stringify({source:state.source,fileName:state.fileName})); }catch{}
+    render(); toast('LOADED');
+  }
+
+  $('importBtn').addEventListener('click',()=> $('fileInput').click());
+  $('fileInput').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return; loadSource(await f.text(),f.name); e.target.value=''; });
+  $('pasteBtn').addEventListener('click',()=>{ $('sourceZone').classList.add('open'); $('sourceEditor').focus(); });
+  $('sourceToggleBtn').addEventListener('click',()=> $('sourceZone').classList.toggle('open'));
+  $('closeSourceBtn').addEventListener('click',()=> $('sourceZone').classList.remove('open'));
+  $('loadSourceBtn').addEventListener('click',()=> loadSource($('sourceEditor').value,'PASTED MARKDOWN'));
+  $('clearBtn').addEventListener('click',()=>{ if(!confirm('読み込んだサマリーをこのブラウザからクリアしますか？'))return; state.source='';state.fileName='';state.sections=[];state.logs=[];state.selected.clear();state.notes.clear();$('sourceEditor').value='';try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(NOTES_KEY)}catch{}render();toast('CLEARED'); });
+  $('searchInput').addEventListener('input',e=>{state.query=e.target.value;render();});
+  $('sectionFilter').addEventListener('change',e=>{state.section=e.target.value;render();});
+  $('logsToggle').addEventListener('change',e=>{state.showLogs=e.target.checked;render();});
+  $('selectVisibleBtn').addEventListener('click',()=>{ getVisible().forEach(sec=>sec.items.forEach(it=>state.selected.add(keyFor(sec.code,it.id,it.index)))); if(state.showLogs&&(state.section==='ALL'||state.section==='LOG')) state.logs.filter(l=>!state.query||[l.title,l.text].join(' ').toLowerCase().includes(state.query.toLowerCase())).forEach(l=>state.selected.add(`LOG::${l.id}`)); render(); });
+  $('clearSelectionBtn').addEventListener('click',()=>{state.selected.clear();render();});
+  $('clearNotesBtn').addEventListener('click',()=>{ [...state.selected].forEach(k=>state.notes.delete(k)); saveNotes(); renderItemNotes(); updateComposer(); toast('NOTES CLEARED'); });
+  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+  $('customInstruction').addEventListener('input',updateComposer);
+  $('copyPromptBtn').addEventListener('click',()=>copyText($('promptOutput').value));
+  $('copyOpenBtn').addEventListener('click',async()=>{ await copyText($('promptOutput').value); window.open('https://chatgpt.com/','_blank','noopener'); });
+
+  document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); $('searchInput').focus(); $('searchInput').select(); } if(e.key==='Escape'){ state.selected.clear(); render(); } });
+  window.addEventListener('dragenter',e=>{e.preventDefault();$('dropZone').classList.add('active')});
+  window.addEventListener('dragover',e=>e.preventDefault());
+  window.addEventListener('dragleave',e=>{if(e.target===document.documentElement||e.target===document.body)$('dropZone').classList.remove('active')});
+  window.addEventListener('drop',async e=>{ e.preventDefault(); $('dropZone').classList.remove('active'); const f=[...e.dataTransfer.files].find(x=>/\.md$|\.markdown$/i.test(x.name)||x.type.startsWith('text/')); if(f) loadSource(await f.text(),f.name); });
+
+  try{ const savedNotes=JSON.parse(localStorage.getItem(NOTES_KEY)||'{}'); state.notes=new Map(Object.entries(savedNotes||{})); }catch{}
+  try{ const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'); if(saved?.source) loadSource(saved.source,saved.fileName||'SAVED MARKDOWN'); else render(); }catch{ render(); }
+})();
+</script>
+</body>
+</html>
