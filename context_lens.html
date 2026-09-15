@@ -46,7 +46,7 @@ select{border:0;background:transparent;color:var(--black);padding:0 18px 0 0;min
 .section-code{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.section-title{font-size:15px;line-height:1.35;font-weight:500}.section-count{font-family:var(--font-euro);font-size:8px;color:var(--muted);letter-spacing:.04em}
 .item{display:grid;grid-template-columns:30px 66px minmax(160px,.72fr) minmax(260px,1.65fr) 128px;min-height:64px;border-bottom:.5px solid var(--divider);background:var(--white)}.item:last-child{border-bottom:0}.item:hover{background:#fbfbfb}.item.selected{box-shadow:inset 3px 0 0 var(--signal);background:linear-gradient(90deg,var(--signal-soft),transparent 90px)}
 .cell{padding:10px;min-width:0}.cell+.cell{border-left:.5px solid var(--divider)}.select-cell{display:flex;justify-content:center;align-items:flex-start;padding-top:14px}.select-cell input{width:12px;height:12px;accent-color:var(--signal)}
-.item-id{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;white-space:nowrap}.item-cat{margin-top:5px;color:var(--mid);font-size:10px;line-height:1.45}.item-title{font-weight:600;font-size:12px;line-height:1.55}.item-body{color:#343434;font-size:11px;line-height:1.7;overflow-wrap:anywhere}.item-next{margin-top:7px;padding-top:7px;border-top:.5px solid var(--divider);color:#444;font-size:10px;line-height:1.65}.next-label{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-right:6px}.item-actions{display:flex;flex-direction:column;align-items:flex-start;gap:8px}.item-actions .ghost{font-size:8px}.action-red{color:var(--signal)}
+.item-id{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;white-space:nowrap}.item-cat{margin-top:5px;color:var(--mid);font-size:10px;line-height:1.45}.item-title{font-weight:600;font-size:12px;line-height:1.55}.item-body{color:#343434;font-size:11px;line-height:1.7;overflow-wrap:anywhere}.field-list{display:grid;gap:7px}.field-row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:10px;align-items:start}.field-label{font-family:var(--font-euro);font-size:7px;line-height:1.5;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding-top:2px;overflow-wrap:anywhere}.field-value{font-size:11px;line-height:1.65;color:#343434;white-space:pre-wrap;overflow-wrap:anywhere}.field-row.emphasis .field-value{color:var(--black)}.item-next{margin-top:7px;padding-top:7px;border-top:.5px solid var(--divider);color:#444;font-size:10px;line-height:1.65}.next-label{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-right:6px}.item-actions{display:flex;flex-direction:column;align-items:flex-start;gap:8px}.item-actions .ghost{font-size:8px}.action-red{color:var(--signal)}
 .log-item{display:grid;grid-template-columns:110px minmax(0,1fr) 118px;border-bottom:.5px solid var(--divider)}.log-date{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;padding:10px}.log-body{padding:10px;border-left:.5px solid var(--divider);font-size:11px;line-height:1.75;white-space:pre-wrap}.log-actions{padding:10px;border-left:.5px solid var(--divider);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .empty{padding:42px 10px;border-bottom:.5px solid var(--divider);font-size:12px;color:#777;text-align:center}.empty strong{display:block;color:var(--black);font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
 .composer-mode{display:flex;gap:12px;flex-wrap:wrap;padding:10px;border-bottom:.5px solid var(--divider)}
@@ -95,6 +95,7 @@ select{border:0;background:transparent;color:var(--black);padding:0 18px 0 0;min
 button.calendar-day:hover{background:#f7f7f7}
 .calendar-day.today{box-shadow:inset 0 0 0 1px var(--black)}
 .calendar-day.has-events{font-weight:700;background:linear-gradient(180deg,var(--signal-soft),transparent 75%)}
+.calendar-day.add-target{box-shadow:inset 0 0 0 1px var(--signal);background:var(--signal-soft)}
 .calendar-dots{position:absolute;left:5px;bottom:5px;display:flex;gap:2px;align-items:center}
 .calendar-dot{width:4px;height:4px;background:var(--signal)}
 .calendar-more{font-size:7px;color:var(--signal);line-height:1}
@@ -106,7 +107,7 @@ button.calendar-day:hover{background:#f7f7f7}
 .schedule-entry-date{font-family:var(--font-euro);font-size:8px;font-weight:700;line-height:1.45}
 .schedule-entry-time{display:block;margin-top:2px;font-weight:400;color:var(--mid)}
 .schedule-entry-title{font-size:10px;font-weight:600;line-height:1.5}
-.schedule-entry-meta{margin-top:3px;font-size:9px;line-height:1.5;color:var(--mid)}
+.schedule-entry-meta{margin-top:3px;font-size:9px;line-height:1.5;color:var(--mid)}.schedule-field{margin-top:3px;font-size:9px;line-height:1.5;color:var(--mid)}.schedule-field b{font-family:var(--font-euro);font-size:7px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-right:5px}
 .schedule-entry-actions{margin-top:5px;display:flex;gap:10px;flex-wrap:wrap}
 .schedule-entry-actions .ghost{font-size:7px}
 .schedule-empty{padding:9px 0 1px;font-size:9px;color:var(--muted)}
@@ -189,7 +190,7 @@ button.calendar-day:hover{background:#f7f7f7}
   </section>
 </main>
 
-<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.2 · 3-MONTH CALENDAR · MULTI ITEM NOTES</div></footer>
+<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.3 · DATE ADD · 3-MONTH CALENDAR · MULTI ITEM NOTES</div></footer>
 <div class="toast" id="toast">COPIED</div>
 <input class="file-input" type="file" id="fileInput" accept=".md,.markdown,text/markdown,text/plain">
 
@@ -261,26 +262,43 @@ button.calendar-day:hover{background:#f7f7f7}
         const cells=splitTableLine(line); const obj={};
         headers.forEach((h,j)=>obj[h]=cells[j] ?? '');
         const id=(cells[0]||'').trim();
-        const titleValue=pick(obj,['項目','予定・期限','テーマ','決定内容','概要','確認済み情報','問い','内容']) || cells[3] || cells[2] || '';
+        const titleValue=pick(obj,['項目','予定・期限','テーマ','決定・方針','決定内容','概要','確認済み情報','問い','内容','完了・節目']) || cells[3] || cells[2] || '';
         const category=pick(obj,['分野','種別','カテゴリ']) || '';
-        const status=pick(obj,['現在の状態','状態','理由・判断軸','現在の確認事項','評価','確認内容']) || '';
-        const next=pick(obj,['次の一歩','次の対応','現在の確認事項']) || '';
+        const status=pick(obj,['現在の状態','状態','現在の確認事項','評価','確認内容']) || '';
+        const next=pick(obj,['次の一歩','次の対応']) || '';
         const updated=pick(obj,['最終更新日','更新日','日付','日付・時期','完了・節目日']) || '';
-        items.push({id,title:titleValue,category,status,next,updated,raw:line,obj,index:idx++});
+        items.push({id,title:titleValue,category,status,next,updated,raw:line,obj,headers,index:idx++});
         r++;
       }
     } else {
       const text=block.join('\n').trim();
-      if(text) items.push({id:code,title,category:'',status:text,next:'',updated:'',raw:text,obj:{},index:0,plain:true});
+      if(text) items.push({id:code,title,category:'',status:text,next:'',updated:'',raw:text,obj:{},headers:[],index:0,plain:true});
     }
     return {code,title,items};
   }
   function pick(obj, keys){ for(const k of keys){ if(obj[k]) return obj[k]; } return ''; }
-
-  function itemSearchText(item,section){ return [section.code,section.title,item.id,item.title,item.category,item.status,item.next,item.updated,item.raw].join(' ').toLowerCase(); }
+  function nonEmptyFields(it){
+    return (it.headers||Object.keys(it.obj||{})).map(h=>({label:h,value:(it.obj?.[h]??'').trim()})).filter(f=>f.label && f.value);
+  }
+  function idFieldNames(){ return new Set(['項目番号','予定番号','ID','番号','No.','No']); }
+  function titleFieldNames(){ return new Set(['項目','予定・期限','テーマ','決定・方針','決定内容','概要','確認済み情報','問い','内容','完了・節目']); }
+  function metaFieldNames(){ return new Set(['分野','種別','カテゴリ','最終更新日','更新日','日付','日付・時期','完了・節目日']); }
+  function detailFields(it){
+    const ids=idFieldNames(), titles=titleFieldNames(), metas=metaFieldNames();
+    return nonEmptyFields(it).filter(f=>!ids.has(f.label) && !titles.has(f.label) && !metas.has(f.label));
+  }
+  function itemSearchText(item,section){ return [section.code,section.title,item.id,item.title,...Object.entries(item.obj||{}).flat(),item.raw].join(' ').toLowerCase(); }
+  function sectionDisplayOrder(sections){
+    return [...sections].sort((a,b)=>{
+      if(a.code==='T10' && b.code!=='T10') return -1;
+      if(b.code==='T10' && a.code!=='T10') return 1;
+      return 0;
+    });
+  }
   function getVisible(){
     const q=state.query.trim().toLowerCase();
-    return state.sections.map(sec=>({ ...sec, items:sec.items.filter(it => (state.section==='ALL'||state.section===sec.code) && (!q||itemSearchText(it,sec).includes(q))) })).filter(sec=>sec.items.length);
+    const filtered=state.sections.map(sec=>({ ...sec, items:sec.items.filter(it => (state.section==='ALL'||state.section===sec.code) && (!q||itemSearchText(it,sec).includes(q))) })).filter(sec=>sec.items.length);
+    return sectionDisplayOrder(filtered);
   }
 
   function render(){
@@ -339,12 +357,12 @@ button.calendar-day:hover{background:#f7f7f7}
     const d=scheduleDateInfo(it), key=scheduleItemKey(it), selected=state.selected.has(key);
     const dateLabel=d.kind==='date'?`${d.month}/${d.day}`:(d.kind==='month'?'日付未定':'未定');
     const time=scheduleTime(it);
-    const rel=(it.obj?.['関連項目']||'').trim();
-    const note=scheduleNote(it);
+    const hidden=new Set(['予定番号','日付・時期','日付','時刻','予定・期限']);
+    const details=nonEmptyFields(it).filter(f=>!hidden.has(f.label)).map(f=>`<div class="schedule-field"><b>${esc(f.label)}</b>${esc(f.value)}</div>`).join('');
     return `<div class="schedule-entry ${selected?'selected':''}" data-key="${esc(key)}">
       <input class="row-check" type="checkbox" ${selected?'checked':''} aria-label="${esc(it.id||scheduleTitle(it))}を選択">
       <div class="schedule-entry-date">${esc(dateLabel)}${time?`<span class="schedule-entry-time">${esc(time)}</span>`:''}</div>
-      <div><div class="schedule-entry-title">${esc(scheduleTitle(it))}</div>${rel?`<div class="schedule-entry-meta">${esc(rel)}</div>`:''}${note?`<div class="schedule-entry-meta">${esc(note)}</div>`:''}<div class="schedule-entry-actions"><button class="ghost row-consult">ASK</button><button class="ghost row-update">UPDATE</button><button class="ghost row-copy">COPY</button></div></div>
+      <div><div class="schedule-entry-title">${esc(scheduleTitle(it))}</div>${details}<div class="schedule-entry-actions"><button class="ghost row-consult">ASK</button><button class="ghost row-update">UPDATE</button><button class="ghost row-copy">COPY</button></div></div>
     </div>`;
   }
   function renderMonthCalendar(date, items){
@@ -360,7 +378,9 @@ button.calendar-day:hover{background:#f7f7f7}
       const ev=exactByDay.get(day)||[]; const keys=ev.map(scheduleItemKey).join(',');
       const isToday=today.getFullYear()===y && today.getMonth()+1===m && today.getDate()===day;
       const dots=ev.length?`<span class="calendar-dots">${ev.slice(0,3).map(()=>'<span class="calendar-dot"></span>').join('')}${ev.length>3?`<span class="calendar-more">+${ev.length-3}</span>`:''}</span>`:'';
-      cells+=`<button class="calendar-day ${ev.length?'has-events':''} ${isToday?'today':''}" ${ev.length?`data-cal-keys="${esc(keys)}"`:''} type="button">${day}${dots}</button>`;
+      const iso=`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const addTarget=state.selected.has(`DATE::${iso}`);
+      cells+=`<button class="calendar-day ${ev.length?'has-events':''} ${isToday?'today':''} ${addTarget?'add-target':''}" data-cal-date="${iso}" ${ev.length?`data-cal-keys="${esc(keys)}"`:''} type="button" title="${iso} に予定を追加">${day}${dots}</button>`;
     }
     const list=monthItems.length?monthItems.map(renderScheduleEntry).join(''):'<div class="schedule-empty">この月の予定はありません。</div>';
     return `<div class="calendar-month"><div class="calendar-month-head"><div class="calendar-month-title">${y}.${String(m).padStart(2,'0')}</div><div class="calendar-month-count">${monthItems.length} ITEMS</div></div><div class="calendar-weekdays">${['MON','TUE','WED','THU','FRI','SAT','SUN'].map(x=>`<div class="calendar-weekday">${x}</div>`).join('')}</div><div class="calendar-days">${cells}</div><div class="month-schedule-list"><div class="month-list-head">SCHEDULES / 予定</div>${list}</div></div>`;
@@ -370,17 +390,20 @@ button.calendar-day:hover{background:#f7f7f7}
     const months=[0,1,2].map(i=>shiftMonth(start,i));
     const shown=new Set(months.map(d=>ymKey(d.getFullYear(),d.getMonth()+1)));
     const overflow=sec.items.filter(it=>{ const d=scheduleDateInfo(it); return d.kind==='unknown' || !shown.has(d.year?ymKey(d.year,d.month):''); }).sort(scheduleSort);
-    return `<section class="section"><div class="section-head"><div class="section-code">${esc(sec.code)}</div><div class="section-title">${esc(sec.title)}</div><div class="section-count">${sec.items.length} ITEMS</div></div><div class="schedule-toolbar"><div class="schedule-toolbar-copy">3か月表示 · 日付セルを押すとその日の予定をまとめて選択</div><div class="schedule-toolbar-actions"><button class="ghost cal-prev">PREV 3M</button><button class="ghost cal-today">TODAY</button><button class="ghost cal-next">NEXT 3M</button></div></div><div class="schedule-calendar-wrap"><div class="calendar-grid">${months.map(d=>renderMonthCalendar(d,sec.items)).join('')}</div>${overflow.length?`<div class="schedule-overflow"><div class="schedule-overflow-head">OUTSIDE / 表示期間外・日付未定</div><div class="schedule-overflow-grid">${overflow.map(renderScheduleEntry).join('')}</div></div>`:''}</div></section>`;
+    return `<section class="section"><div class="section-head"><div class="section-code">${esc(sec.code)}</div><div class="section-title">${esc(sec.title)}</div><div class="section-count">${sec.items.length} ITEMS</div></div><div class="schedule-toolbar"><div class="schedule-toolbar-copy">3か月表示 · 日付セルを押すと、その日付への新規予定追加欄を作成</div><div class="schedule-toolbar-actions"><button class="ghost cal-prev">PREV 3M</button><button class="ghost cal-today">TODAY</button><button class="ghost cal-next">NEXT 3M</button></div></div><div class="schedule-calendar-wrap"><div class="calendar-grid">${months.map(d=>renderMonthCalendar(d,sec.items)).join('')}</div>${overflow.length?`<div class="schedule-overflow"><div class="schedule-overflow-head">OUTSIDE / 表示期間外・日付未定</div><div class="schedule-overflow-grid">${overflow.map(renderScheduleEntry).join('')}</div></div>`:''}</div></section>`;
   }
 
   function renderItem(sec,it){
     const key=keyFor(sec.code,it.id,it.index); const selected=state.selected.has(key);
-    const displayStatus=it.status || Object.values(it.obj).filter(Boolean).slice(2,5).join(' / ');
+    const fields=detailFields(it);
+    const fieldHtml=fields.length
+      ? `<div class="field-list">${fields.map(f=>`<div class="field-row ${['現在の状態','状態','決定・方針','理由・判断軸','メモ','次の一歩','現在の確認事項'].includes(f.label)?'emphasis':''}"><div class="field-label">${esc(f.label)}</div><div class="field-value">${esc(f.value)}</div></div>`).join('')}</div>`
+      : `<div class="item-body">${esc(it.status || it.raw)}</div>`;
     return `<article class="item ${selected?'selected':''}" data-key="${esc(key)}">
       <div class="cell select-cell"><input class="row-check" type="checkbox" ${selected?'checked':''} aria-label="${esc(it.id||it.title)}を選択"></div>
-      <div class="cell"><div class="item-id">${esc(it.id || sec.code)}</div><div class="item-cat">${esc(it.category||it.updated||'')}</div></div>
+      <div class="cell"><div class="item-id">${esc(it.id || sec.code)}</div><div class="item-cat">${esc(it.category||'')}</div></div>
       <div class="cell"><div class="item-title">${esc(it.title || sec.title)}</div>${it.updated?`<div class="item-cat">${esc(it.updated)}</div>`:''}</div>
-      <div class="cell body-cell"><div class="item-body">${esc(displayStatus || it.raw)}</div>${it.next?`<div class="item-next"><span class="next-label">NEXT</span>${esc(it.next)}</div>`:''}</div>
+      <div class="cell body-cell">${fieldHtml}</div>
       <div class="cell action-cell item-actions"><button class="ghost row-consult">ASK</button><button class="ghost row-update">UPDATE</button><button class="ghost row-copy">COPY</button></div>
     </article>`;
   }
@@ -397,7 +420,14 @@ button.calendar-day:hover{background:#f7f7f7}
       row.querySelector('.row-update')?.addEventListener('click',()=>{ addSelection(key); setMode('update'); render(); focusItemNote(key); });
       row.querySelector('.row-copy')?.addEventListener('click',()=>copyText(contextTextForKey(key)));
     });
-    document.querySelectorAll('[data-cal-keys]').forEach(btn=>btn.addEventListener('click',()=>{ btn.dataset.calKeys.split(',').filter(Boolean).forEach(k=>state.selected.add(k)); render(); }));
+    document.querySelectorAll('[data-cal-date]').forEach(btn=>btn.addEventListener('click',()=>{
+      const key=`DATE::${btn.dataset.calDate}`;
+      state.selected.add(key);
+      setMode('update');
+      render();
+      focusItemNote(key);
+      toast(`${btn.dataset.calDate} · ADD SCHEDULE`);
+    }));
     document.querySelector('.cal-prev')?.addEventListener('click',()=>{state.calendarOffset-=3;render();});
     document.querySelector('.cal-today')?.addEventListener('click',()=>{state.calendarOffset=0;render();});
     document.querySelector('.cal-next')?.addEventListener('click',()=>{state.calendarOffset+=3;render();});
@@ -409,17 +439,27 @@ button.calendar-day:hover{background:#f7f7f7}
 
   function contextForKey(key){
     const [group,id]=key.split('::');
+    if(group==='DATE'){
+      const sec=state.sections.find(s=>s.code==='T10');
+      const sameDay=(sec?.items||[]).filter(it=>scheduleDateInfo(it).kind==='date' && scheduleDateInfo(it).raw===id).sort(scheduleSort);
+      const existing=sameDay.length
+        ? sameDay.map(it=>`- ${it.id||'予定'}｜${scheduleTime(it)||'時刻未確認'}｜${scheduleTitle(it)}`).join('\n')
+        : 'なし';
+      return {
+        label:`ADD ${id}`,
+        text:`[T10｜今後の予定・期限]\n追加対象日：${id}\n操作：この日付に新しい予定を追加\n既存予定：\n${existing}`
+      };
+    }
     if(group==='LOG'){ const l=state.logs.find(x=>x.id===id); return l?{label:`日別ログ ${l.title}`,text:l.text}:null; }
     const sec=state.sections.find(s=>s.code===group); if(!sec) return null;
     const it=sec.items.find(x=>(x.id||String(x.index))===id) || sec.items.find(x=>String(x.index)===id); if(!it) return null;
     let text=`[${sec.code}｜${sec.title}]\n`;
-    if(it.id) text += `${it.id}｜${it.title || ''}\n`;
-    else text += `${it.title || ''}\n`;
-    if(it.category) text += `分野：${it.category}\n`;
-    if(it.status) text += `現在：${it.status}\n`;
-    if(it.next) text += `次：${it.next}\n`;
-    if(it.updated) text += `更新：${it.updated}\n`;
-    if(!it.status && !it.next) text += `${it.raw}\n`;
+    const fields=nonEmptyFields(it);
+    if(fields.length){
+      fields.forEach(f=>{ text += `${f.label}：${f.value}\n`; });
+    } else {
+      text += `${it.raw}\n`;
+    }
     return {label:it.id||it.title,text:text.trim()};
   }
   function contextTextForKey(key){ return contextForKey(key)?.text || ''; }
@@ -432,8 +472,13 @@ button.calendar-day:hover{background:#f7f7f7}
     shell.classList.add('open');
     list.innerHTML=keys.map(key=>{
       const c=contextForKey(key); if(!c) return '';
-      const [group]=key.split('::');
-      return `<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc((c.text.split('\n')[1]||c.label).replace(/^.*?｜/,''))}</span><span class="item-note-section">${esc(group)}</span></div><textarea class="item-note-text" data-key="${esc(key)}" placeholder="この項目への追記・質問・更新内容を入力…">${esc(noteForKey(key))}</textarea></div>`;
+      const [group,id]=key.split('::');
+      const isDate=group==='DATE';
+      const label=isDate?`${id} に予定を追加`:(c.text.split('\n')[1]||c.label).replace(/^.*?｜/,'');
+      const placeholder=isDate
+        ? '追加する予定を入力… 例：10:00 保険打合せ／P135／本人分と子ども分の方針確認'
+        : 'この項目への追記・質問・更新内容を入力…';
+      return `<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc(label)}</span><span class="item-note-section">${esc(isDate?'T10 ADD':group)}</span></div><textarea class="item-note-text" data-key="${esc(key)}" placeholder="${esc(placeholder)}">${esc(noteForKey(key))}</textarea></div>`;
     }).join('');
     list.querySelectorAll('.item-note-text').forEach(ta=>ta.addEventListener('input',e=>{ state.notes.set(e.target.dataset.key,e.target.value); saveNotes(); updateComposer(); }));
   }
@@ -449,6 +494,8 @@ button.calendar-day:hover{background:#f7f7f7}
       return `${contexts.length>1?`【対象${i+1}】\n`:''}${c.text}${noteBlock}`;
     }).join('\n\n--------------------\n\n');
     const customLine=custom?`\n\n【全体への追加指示】\n${custom}`:'';
+    const hasDateTarget=keys.some(k=>k.startsWith('DATE::'));
+    if(state.mode==='update' && hasDateTarget) return `以下のLIVING CONTEXT更新を反映してください。DATE対象はT10｜今後の予定・期限への新規予定追加です。各DATE対象の「この項目への追記・指示」から予定内容を読み取り、既存予定を上書きせず新しい行として追加してください。予定番号は現在のT10を確認して次の未使用S番号を付与し、日付・時期は指定日のYYYY-MM-DD形式を使用してください。時刻・種別・分野・関連項目・現在の確認事項は、追記内容から明確に分かる範囲だけ記載し、不明なものは推測せず「未確認」等として扱ってください。通常項目が同時に選択されている場合は、それぞれの追記も対応する項目へ反映し、必要に応じて関連項目や日別ログとの整合も取ってください。\n\n${body}${customLine}`;
     if(state.mode==='update') return `以下のLIVING CONTEXT項目について更新があります。各対象の「この項目への追記・指示」を、それぞれ対応する項目へ反映してください。必要に応じて関連項目、T10、日別ログ等も整合させてください。追記が空欄の項目は現在記録の参照対象として扱ってください。\n\n${body}${customLine}`;
     if(state.mode==='verify') return `以下のLIVING CONTEXT項目について、各対象の「この項目への追記・指示」も踏まえて、現在の状態・未解決点・次に確認すべきことを整理してください。記録にないことは推測せず、必要なら確認事項として分けてください。\n\n${body}${customLine}`;
     if(state.mode==='free') return `${body}${custom?`\n\n【全体への追加指示】\n${custom}`:''}`;
@@ -468,7 +515,8 @@ button.calendar-day:hover{background:#f7f7f7}
   }
   function updateSectionOptions(){
     const sel=$('sectionFilter'); const current=state.section;
-    const opts=['ALL',...state.sections.map(s=>s.code),...(state.logs.length?['LOG']:[])];
+    const orderedCodes=sectionDisplayOrder(state.sections).map(s=>s.code);
+    const opts=['ALL',...orderedCodes,...(state.logs.length?['LOG']:[])];
     const unique=[...new Set(opts)];
     sel.innerHTML=unique.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
     sel.value=unique.includes(current)?current:'ALL';
