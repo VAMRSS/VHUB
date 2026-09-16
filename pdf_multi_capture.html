@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Capture / Multi Screenshot</title>
+<title>Multi Capture / PDF Screenshot</title>
 
 
 <style>
@@ -113,32 +113,7 @@ input:focus-visible{
 
 .page{
   width:100%;
-  padding:34px 20px 110px;
-}
-.hero{margin-bottom:34px}
-.meta{
-  margin-bottom:7px;
-  font-family:var(--font-euro);
-  font-size:8px;
-  line-height:1.1;
-  letter-spacing:.04em;
-  text-transform:uppercase;
-}
-.wordmark{
-  margin:0;
-  font-family:var(--font-euro);
-  font-size:30px;
-  line-height:1;
-  font-weight:700;
-  letter-spacing:1.2px;
-  text-transform:uppercase;
-}
-.hero-copy{
-  margin:14px 0 0;
-  max-width:900px;
-  font-size:12px;
-  line-height:1.75;
-  color:#343434;
+  padding:20px 20px 110px;
 }
 .control-strip{
   display:flex;
@@ -605,13 +580,13 @@ select{
   <div class="brand-cluster">
     <div class="brand-mark">
       <span class="signal-block"></span>
-      <strong>PDF CAPTURE</strong>
+      <strong>MULTI CAPTURE</strong>
     </div>
     <span class="sep">/</span>
     <button id="headerImport" class="ghost positive" type="button">IMPORT</button>
   </div>
 
-  <div class="header-center">MULTI SCREENSHOT / LOCAL PROCESSING</div>
+  <div class="header-center">LOCAL PROCESSING / BROWSER ONLY</div>
 
   <div class="header-actions">
     <button id="headerExport" class="ghost" type="button" disabled>EXPORT</button>
@@ -621,15 +596,6 @@ select{
 </header>
 
 <main class="page">
-  <section class="hero">
-    <div class="meta">PDF TOOL / 01</div>
-    <h1 class="wordmark">MULTI CAPTURE</h1>
-    <p class="hero-copy">
-      PDFを1ページずつ表示し、ドラッグ操作で複数の切り出し範囲を登録します。
-      EDITモードでは位置・サイズ・削除を調整でき、最後に指定解像度でPNGを書き出します。
-    </p>
-  </section>
-
   <section class="control-strip">
     <div class="control-group">
       <span class="control-label">PAGE</span>
@@ -692,8 +658,8 @@ select{
           <div class="drop-inner">
             <h2 class="drop-title">DROP PDF HERE</h2>
             <p class="drop-copy">
-              PDFファイルをこの領域へドラッグ＆ドロップしてください。<br>
-              またはクリックしてファイルを選択します。
+              PDFを1ページずつ表示し、ドラッグで複数の切り出し範囲を登録します。<br>
+              PDFファイルをこの領域へドラッグ＆ドロップするか、クリックして選択してください。
             </p>
             <span class="drop-action">IMPORT PDF</span>
           </div>
@@ -788,7 +754,7 @@ select{
 
 <footer class="footer-strip">
   <div id="footerMain" class="footer-main">WAITING · DELETE TO REMOVE SELECTED CAPTURE</div>
-  <div class="footer-side">PDF CAPTURE / V2.2</div>
+  <div class="footer-side">MULTI CAPTURE / V2.3</div>
 </footer>
 
 <div id="toast" class="toast">READY</div>
