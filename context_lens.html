@@ -446,6 +446,50 @@ to{transform:translateX(calc(-100% - 100vw))}
   }
 }
 
+
+/* v1.12 AI secretary review answer section */
+.review-answer-item{
+  display:grid;
+  grid-template-columns:30px 54px minmax(0,1fr);
+  min-height:58px;
+  border-bottom:.5px solid var(--divider);
+  background:var(--white);
+}
+.review-answer-item:last-child{border-bottom:0}
+.review-answer-item:hover{background:#fbfbfb}
+.review-answer-item.selected{
+  box-shadow:inset 3px 0 0 var(--signal);
+  background:linear-gradient(90deg,var(--signal-soft),transparent 90px);
+}
+.review-answer-check,
+.review-answer-id,
+.review-answer-body{
+  padding:10px;
+}
+.review-answer-id{
+  border-left:.5px solid var(--divider);
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.04em;
+}
+.review-answer-body{
+  border-left:.5px solid var(--divider);
+  font-size:11px;
+  line-height:1.7;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.review-answer-empty{
+  padding:28px 14px;
+  font-size:11px;
+  color:var(--mid);
+}
+.section-tab.review-tab.active{
+  background:var(--signal);
+  color:var(--white);
+}
+
 </style>
 </head>
 <body>
@@ -491,7 +535,7 @@ to{transform:translateX(calc(-100% - 100vw))}
   </section>
 </main>
 
-<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.11 · FULL HEIGHT PROMPT</div></footer>
+<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.12 · AI REVIEW ANSWERS</div></footer>
 <div class="toast" id="toast">COPIED</div>
 <input class="file-input" type="file" id="fileInput" accept=".md,.markdown,text/markdown,text/plain">
 
@@ -516,6 +560,15 @@ to{transform:translateX(calc(-100% - 100vw))}
   function isSeparator(line){ return /^\s*\|?\s*:?-{3,}/.test(line); }
   function cleanHeading(s){ return s.replace(/^#+\s*/,'').trim(); }
   function keyFor(sectionCode, id, idx){ return `${sectionCode}::${id || idx}`; }
+  function simpleHash(str){
+    let h=2166136261;
+    for(const ch of String(str??'')){
+      h^=ch.charCodeAt(0);
+      h=Math.imul(h,16777619);
+    }
+    return (h>>>0).toString(36);
+  }
+  function reviewKey(text){ return `REVIEW::${simpleHash(text)}`; }
 
   function extractSecretaryReview(text){
     const lines=normalize(text).split('\n');
@@ -546,12 +599,16 @@ to{transform:translateX(calc(-100% - 100vw))}
     return items.filter(Boolean);
   }
 
-  function latestSecretaryReview(){
+  function latestSecretaryReviewData(){
     for(let i=state.logs.length-1;i>=0;i--){
       const items=extractSecretaryReview(state.logs[i].text);
-      if(items.length) return items;
+      if(items.length) return {items,log:state.logs[i]};
     }
-    return [];
+    return {items:[],log:null};
+  }
+
+  function latestSecretaryReview(){
+    return latestSecretaryReviewData().items;
   }
 
   function stopReviewTicker(){
@@ -679,16 +736,32 @@ to{transform:translateX(calc(-100% - 100vw))}
     });
   }
   function getVisible(){
-    if(state.section==='LOG') return [];
+    if(state.section==='LOG' || state.section==='REVIEW') return [];
     const ordered=sectionDisplayOrder(state.sections);
     const target=ordered.find(sec=>sec.code===state.section) || ordered[0];
     return target?[target]:[];
+  }
+
+  function renderReviewAnswers(){
+    const data=latestSecretaryReviewData();
+    if(!data.items.length) return '<div class="review-answer-empty">最新ログにAI秘書レビューはありません。</div>';
+    return `<section class="section">${data.items.map((item,i)=>{
+      const key=reviewKey(item);
+      const selected=state.selected.has(key);
+      return `<article class="review-answer-item ${selected?'selected':''}" data-key="${esc(key)}">
+        <div class="review-answer-check"><input class="row-check" type="checkbox" ${selected?'checked':''} aria-label="AI秘書レビュー ${i+1} を選択"></div>
+        <div class="review-answer-id">R${String(i+1).padStart(2,'0')}</div>
+        <div class="review-answer-body">${esc(item)}</div>
+      </article>`;
+    }).join('')}</section>`;
   }
 
   function render(){
     const view=$('summaryView'); const visible=getVisible();
     if(!state.source){
       view.innerHTML='<div class="empty"><strong>NO SUMMARY LOADED</strong>IMPORT MD または PASTE から蓄積サマリーを読み込んでください。</div>';
+    } else if(state.section==='REVIEW'){
+      view.innerHTML=renderReviewAnswers();
     } else if(!visible.length && !(state.showLogs && state.logs.length)){
       view.innerHTML='<div class="empty"><strong>NO CONTENT</strong>このタブに表示できる項目がありません。</div>';
     } else {
@@ -828,6 +901,16 @@ to{transform:translateX(calc(-100% - 100vw))}
 
   function contextForKey(key){
     const [group,id]=key.split('::');
+    if(group==='REVIEW'){
+      const data=latestSecretaryReviewData();
+      const index=data.items.findIndex(item=>simpleHash(item)===id);
+      if(index<0) return null;
+      const item=data.items[index];
+      return {
+        label:`R${String(index+1).padStart(2,'0')}`,
+        text:`[AI秘書レビュー]\n${data.log?`対象ログ：${data.log.title}\n`:''}レビュー内容：${item}`
+      };
+    }
     if(group==='DATE'){
       const sec=state.sections.find(s=>s.code==='T10');
       const sameDay=(sec?.items||[]).filter(it=>scheduleDateInfo(it).kind==='date' && scheduleDateInfo(it).raw===id).sort(scheduleSort);
@@ -863,11 +946,19 @@ to{transform:translateX(calc(-100% - 100vw))}
       const c=contextForKey(key); if(!c) return '';
       const [group,id]=key.split('::');
       const isDate=group==='DATE';
-      const label=isDate?`${id} に予定を追加`:(c.text.split('\n')[1]||c.label).replace(/^.*?｜/,'');
+      const isReview=group==='REVIEW';
+      const label=isDate
+        ? `${id} に予定を追加`
+        : isReview
+          ? (c.text.split('レビュー内容：')[1]||c.label)
+          : (c.text.split('\n')[1]||c.label).replace(/^.*?｜/,'');
       const placeholder=isDate
         ? '追加する予定を入力… 例：10:00 保険打合せ／P135／本人分と子ども分の方針確認'
-        : 'この項目への追記・質問・更新内容を入力…';
-      return `<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc(label)}</span><span class="item-note-section">${esc(isDate?'T10 ADD':group)}</span></div><textarea class="item-note-text" data-key="${esc(key)}" placeholder="${esc(placeholder)}">${esc(noteForKey(key))}</textarea></div>`;
+        : isReview
+          ? 'このレビューへの回答・追記・修正指示を入力…'
+          : 'この項目への追記・質問・更新内容を入力…';
+      const sectionLabel=isDate?'T10 ADD':(isReview?'AI REVIEW':group);
+      return `<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc(label)}</span><span class="item-note-section">${esc(sectionLabel)}</span></div><textarea class="item-note-text" data-key="${esc(key)}" placeholder="${esc(placeholder)}">${esc(noteForKey(key))}</textarea></div>`;
     }).join('');
     list.querySelectorAll('.item-note-text').forEach(ta=>ta.addEventListener('input',e=>{ state.notes.set(e.target.dataset.key,e.target.value); saveNotes(); updateComposer(); }));
   }
@@ -881,8 +972,12 @@ to{transform:translateX(calc(-100% - 100vw))}
       return `${contexts.length>1?`【対象${i+1}】\n`:''}${c.text}${noteBlock}`;
     }).join('\n\n--------------------\n\n');
     const hasDateTarget=keys.some(k=>k.startsWith('DATE::'));
+    const hasReviewTarget=keys.some(k=>k.startsWith('REVIEW::'));
     if(hasDateTarget){
-      return `以下のLIVING CONTEXT更新を反映してください。DATE対象はT10｜今後の予定・期限への新規予定追加です。各DATE対象の「この項目への追記・指示」から予定内容を読み取り、既存予定を上書きせず新しい行として追加してください。予定番号は現在のT10を確認して次の未使用S番号を付与し、日付・時期は指定日のYYYY-MM-DD形式を使用してください。時刻・種別・分野・関連項目・現在の確認事項は、追記内容から明確に分かる範囲だけ記載し、不明なものは推測せず「未確認」等として扱ってください。通常項目が同時に選択されている場合は、それぞれの追記も対応する項目へ反映し、必要に応じて関連項目や日別ログとの整合も取ってください。\n\n${body}`;
+      return `以下のLIVING CONTEXT更新を反映してください。DATE対象はT10｜今後の予定・期限への新規予定追加です。各DATE対象の「この項目への追記・指示」から予定内容を読み取り、既存予定を上書きせず新しい行として追加してください。予定番号は現在のT10を確認して次の未使用S番号を付与し、日付・時期は指定日のYYYY-MM-DD形式を使用してください。時刻・種別・分野・関連項目・現在の確認事項は、追記内容から明確に分かる範囲だけ記載し、不明なものは推測せず「未確認」等として扱ってください。通常項目やAI秘書レビューが同時に選択されている場合は、それぞれの追記も対応するLIVING CONTEXTへ反映し、必要に応じて関連項目や日別ログとの整合も取ってください。\n\n${body}`;
+    }
+    if(hasReviewTarget){
+      return `以下はAI秘書レビューに対する回答・追記・修正指示です。各レビュー項目の「この項目への追記・指示」を読み取り、関連するLIVING CONTEXTのT項目・P項目・S予定・日別ログへ必要な内容を反映してください。レビュー文そのものを機械的に書き換えることを目的とせず、ユーザーの回答によって現在状態・判断・予定・確認事項が変わる場合に、対応する記録を更新してください。判断できない内容は推測せず、そのまま確認事項として扱ってください。\n\n${body}`;
     }
     return `${body}`;
   }
@@ -903,10 +998,12 @@ to{transform:translateX(calc(-100% - 100vw))}
     const nav=$('sectionTabs');
     if(!nav) return;
     const ordered=sectionDisplayOrder(state.sections);
-    const tabs=[...ordered.map(s=>({code:s.code,title:s.title})), ...(state.logs.length?[{code:'LOG',title:'直近日別ログ'}]:[])];
+    const t10=ordered.filter(s=>s.code==='T10').map(s=>({code:s.code,title:s.title}));
+    const rest=ordered.filter(s=>s.code!=='T10').map(s=>({code:s.code,title:s.title}));
+    const tabs=[...t10,{code:'REVIEW',title:'AI秘書レビュー'},...rest,...(state.logs.length?[{code:'LOG',title:'直近日別ログ'}]:[])];
     if(!tabs.length){ nav.innerHTML=''; return; }
     if(!tabs.some(t=>t.code===state.section)) state.section=tabs[0].code;
-    nav.innerHTML=tabs.map(t=>`<button class="section-tab ${state.section===t.code?'active':''}" data-section-tab="${esc(t.code)}">${esc(t.code)}<span class="tab-jp">${esc(t.title)}</span></button>`).join('');
+    nav.innerHTML=tabs.map(t=>`<button class="section-tab ${t.code==='REVIEW'?'review-tab':''} ${state.section===t.code?'active':''}" data-section-tab="${esc(t.code)}">${esc(t.code==='REVIEW'?'AI':t.code)}<span class="tab-jp">${esc(t.title)}</span></button>`).join('');
     nav.querySelectorAll('[data-section-tab]').forEach(btn=>btn.addEventListener('click',()=>{
       state.section=btn.dataset.sectionTab;
       render();
