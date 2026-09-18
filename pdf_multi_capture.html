@@ -574,19 +574,19 @@ select{
 </head>
 
 <body>
-<input id="pdfInput" class="hidden-file" type="file" accept=".pdf,application/pdf">
+<input id="pdfInput" class="hidden-file" type="file" multiple accept=".pdf,application/pdf,image/png,image/jpeg,image/webp,image/gif,image/bmp,image/tiff">
 
 <header class="header">
   <div class="brand-cluster">
     <div class="brand-mark">
       <span class="signal-block"></span>
-      <strong>MULTI CAPTURE</strong>
+      <strong>DOCUMENT CAPTURE</strong>
     </div>
     <span class="sep">/</span>
     <button id="headerImport" class="ghost positive" type="button">IMPORT</button>
   </div>
 
-  <div class="header-center">LOCAL PROCESSING / BROWSER ONLY</div>
+  <div class="header-center">PDF + IMAGE / LOCAL PROCESSING</div>
 
   <div class="header-actions">
     <button id="headerExport" class="ghost" type="button" disabled>EXPORT</button>
@@ -649,19 +649,19 @@ select{
     <div class="viewer-panel">
       <div class="panel-head">
         <div class="panel-index">A</div>
-        <div class="panel-title">DOCUMENT VIEWER</div>
+        <div class="panel-title">DOCUMENT / IMAGE VIEWER</div>
         <div id="fileMeta" class="panel-meta">NO FILE</div>
       </div>
 
       <div id="viewerShell" class="viewer-shell">
         <button id="dropScreen" class="drop-screen" type="button">
           <div class="drop-inner">
-            <h2 class="drop-title">DROP PDF HERE</h2>
+            <h2 class="drop-title">DROP FILES HERE</h2>
             <p class="drop-copy">
-              PDFを1ページずつ表示し、ドラッグで複数の切り出し範囲を登録します。<br>
-              PDFファイルをこの領域へドラッグ＆ドロップするか、クリックして選択してください。
+              PDFまたは複数の画像を読み込み、ドラッグで複数の切り出し範囲を登録します。<br>
+              PDF・JPEG・PNG・WebP等をドラッグ＆ドロップするか、クリックして選択してください。
             </p>
-            <span class="drop-action">IMPORT PDF</span>
+            <span class="drop-action">IMPORT FILES</span>
           </div>
         </button>
 
@@ -746,7 +746,7 @@ select{
       <div class="log-row">
         <div class="log-time">--:--:--</div>
         <div class="log-kind">WAITING</div>
-        <div class="log-message">PDFを読み込むと操作ログを表示します。</div>
+        <div class="log-message">PDFまたは画像を読み込むと操作ログを表示します。</div>
       </div>
     </div>
   </section>
@@ -754,7 +754,7 @@ select{
 
 <footer class="footer-strip">
   <div id="footerMain" class="footer-main">WAITING · DELETE TO REMOVE SELECTED CAPTURE</div>
-  <div class="footer-side">MULTI CAPTURE / V2.3</div>
+  <div class="footer-side">DOCUMENT CAPTURE / V2.5</div>
 </footer>
 
 <div id="toast" class="toast">READY</div>
@@ -775,8 +775,8 @@ var overlay = $("#overlay");
 var canvasWrap = $("#canvasWrap");
 var ctx = pdfCanvas.getContext("2d");
 
-var pdfDoc = null;
-var pdfBytes = null;
+var sources = [];
+var pages = [];
 var currentFile = null;
 var pageNum = 1;
 var zoom = 1;
@@ -926,8 +926,8 @@ headerImport.addEventListener("click", openFilePicker);
 dropScreen.addEventListener("click", openFilePicker);
 
 pdfInput.addEventListener("change", function(){
-  if(pdfInput.files && pdfInput.files[0]){
-    loadPdf(pdfInput.files[0]);
+  if(pdfInput.files && pdfInput.files.length){
+    loadFiles(Array.from(pdfInput.files));
   }
 });
 
@@ -946,117 +946,203 @@ pdfInput.addEventListener("change", function(){
   });
 });
 viewerShell.addEventListener("drop",function(e){
-  var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-  if(file){
-    loadPdf(file);
+  var files = e.dataTransfer && e.dataTransfer.files
+    ? Array.from(e.dataTransfer.files)
+    : [];
+  if(files.length){
+    loadFiles(files);
   }
 });
 
-async function loadPdf(file){
-  if(!file) return;
-
-  var isPdf =
-    file.type === "application/pdf" ||
-    /\.pdf$/i.test(file.name || "");
-
-  if(!isPdf){
-    setStatus("ERROR","PDFファイルを選択してください。","error");
-    showToast("PDF ONLY");
+function isPdfFile(file){
+  return file && (file.type==="application/pdf" || /\.pdf$/i.test(file.name||""));
+}
+function isImageFile(file){
+  return file && (/^image\//i.test(file.type||"") ||
+    /\.(png|jpe?g|webp|gif|bmp|tiff?)$/i.test(file.name||""));
+}
+function readFileAsDataUrl(file){
+  return new Promise(function(resolve,reject){
+    var r=new FileReader();
+    r.onload=function(){resolve(r.result);};
+    r.onerror=function(){reject(r.error||new Error("画像の読み込みに失敗しました。"));};
+    r.readAsDataURL(file);
+  });
+}
+function loadImageElement(url){
+  return new Promise(function(resolve,reject){
+    var img=new Image();
+    img.onload=function(){resolve(img);};
+    img.onerror=function(){reject(new Error("画像をデコードできませんでした。"));};
+    img.src=url;
+  });
+}
+async function addPdfSource(file){
+  var lib=await ensurePdfJs();
+  var pdf=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+  var idx=sources.length;
+  sources.push({type:"pdf",file:file,name:file.name,pdf:pdf});
+  for(var i=1;i<=pdf.numPages;i++){
+    pages.push({type:"pdf",sourceIndex:idx,sourceName:file.name,pdfPage:i,label:file.name+" / P"+i});
+  }
+  return pdf.numPages;
+}
+async function addImageSource(file){
+  var img=await loadImageElement(await readFileAsDataUrl(file));
+  var idx=sources.length;
+  sources.push({type:"image",file:file,name:file.name,image:img});
+  pages.push({type:"image",sourceIndex:idx,sourceName:file.name,label:file.name});
+  return 1;
+}
+async function loadFiles(files){
+  files=(files||[]).filter(function(f){return isPdfFile(f)||isImageFile(f);});
+  if(!files.length){
+    setStatus("ERROR","PDFまたは画像ファイルを選択してください。","error");
+    showToast("UNSUPPORTED");
     return;
   }
 
-  setStatus("RUNNING","PDFエンジンを準備しています。","running");
+  setStatus("RUNNING","ファイルを読み込んでいます。","running");
 
   try{
-    var lib = await ensurePdfJs();
+    sources=[];
+    pages=[];
+    captures=[];
+    captureSerial=1;
+    selectedId=null;
+    pageNum=1;
+    currentFile=files[0];
 
-    setStatus("RUNNING","PDFを読み込んでいます。","running");
+    var importedFiles=0;
+    var importedPages=0;
+    var errors=[];
 
-    var buffer = await file.arrayBuffer();
-    pdfBytes = new Uint8Array(buffer);
-    currentFile = file;
+    for(var i=0;i<files.length;i++){
+      try{
+        importedPages += isPdfFile(files[i])
+          ? await addPdfSource(files[i])
+          : await addImageSource(files[i]);
+        importedFiles++;
+      }catch(err){
+        console.error(err);
+        errors.push(files[i].name+": "+(err&&err.message?err.message:err));
+      }
+    }
 
-    pdfDoc = await lib.getDocument({
-      data: pdfBytes
-    }).promise;
+    if(!pages.length){
+      throw new Error(errors.join(" / ")||"読み込めるファイルがありません。");
+    }
 
-    pageNum = 1;
-    captures = [];
-    captureSerial = 1;
-    selectedId = null;
+    $("#fileMeta").textContent=importedFiles===1
+      ? pages[0].sourceName
+      : importedFiles+" FILES / "+importedPages+" PAGES";
+    $("#metricPages").textContent=String(pages.length);
+    $("#metricPage").textContent="1";
 
-    $("#fileMeta").textContent = file.name;
-    $("#metricPages").textContent = String(pdfDoc.numPages);
-    $("#metricPage").textContent = "1";
+    $("#headerExport").disabled=false;
+    $("#headerClear").disabled=false;
+    $("#controlExport").disabled=false;
 
-    $("#headerExport").disabled = false;
-    $("#headerClear").disabled = false;
-    $("#controlExport").disabled = false;
+    dropScreen.style.display="none";
+    stage.style.display="block";
 
-    dropScreen.style.display = "none";
-    stage.style.display = "block";
+    addLog("IMPORTED",importedFiles+" files / "+importedPages+" pages");
+    if(errors.length) addLog("WARNING",errors.join(" / "));
 
-    addLog("IMPORTED", file.name + " / " + pdfDoc.numPages + " pages");
-    setStatus("READY","PDFを読み込みました。ドラッグして範囲を追加できます。","ready");
+    setStatus("READY",importedFiles+" 件のファイルを読み込みました。","ready");
     showToast("IMPORTED");
 
     await renderPage();
     updateUi();
   }catch(err){
     console.error(err);
-    setStatus("ERROR","PDFを開けませんでした: " + (err && err.message ? err.message : err),"error");
-    addLog("ERROR",String(err && err.message ? err.message : err));
+    setStatus("ERROR","ファイルを開けませんでした: "+(err&&err.message?err.message:err),"error");
+    addLog("ERROR",String(err&&err.message?err.message:err));
     showToast("ERROR");
   }
 }
 
 async function renderPage(){
-  if(!pdfDoc) return;
-  var token = ++renderToken;
+  if(!pages.length) return;
+  var token=++renderToken;
   setStatus("RUNNING","ページを描画しています。","running");
 
   try{
-    var page = await pdfDoc.getPage(pageNum);
-    var base = page.getViewport({scale:1});
+    var info=pages[pageNum-1];
+    var available=Math.max(360,viewerShell.clientWidth-48);
+    var cssWidth,cssHeight;
 
-    var available = Math.max(360, viewerShell.clientWidth - 48);
-    var fitScale = Math.min(1.35, available / base.width);
-    var scale = fitScale * zoom;
-    var viewport = page.getViewport({scale:scale});
+    if(info.type==="pdf"){
+      var src=sources[info.sourceIndex];
+      var page=await src.pdf.getPage(info.pdfPage);
+      var base=page.getViewport({scale:1});
+      info.pdfWidth=base.width;
+      info.pdfHeight=base.height;
+      var viewport=page.getViewport({
+        scale:Math.min(1.35,available/base.width)*zoom
+      });
 
-    var dpr = window.devicePixelRatio || 1;
-    pdfCanvas.width = Math.round(viewport.width * dpr);
-    pdfCanvas.height = Math.round(viewport.height * dpr);
-    pdfCanvas.style.width = viewport.width + "px";
-    pdfCanvas.style.height = viewport.height + "px";
+      cssWidth=viewport.width;
+      cssHeight=viewport.height;
 
-    canvasWrap.style.width = viewport.width + "px";
-    canvasWrap.style.height = viewport.height + "px";
-    overlay.style.width = viewport.width + "px";
-    overlay.style.height = viewport.height + "px";
+      var dpr=window.devicePixelRatio||1;
+      pdfCanvas.width=Math.round(cssWidth*dpr);
+      pdfCanvas.height=Math.round(cssHeight*dpr);
+      pdfCanvas.style.width=cssWidth+"px";
+      pdfCanvas.style.height=cssHeight+"px";
 
-    var transform = dpr !== 1 ? [dpr,0,0,dpr,0,0] : null;
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.clearRect(0,0,pdfCanvas.width,pdfCanvas.height);
 
-    await page.render({
-      canvasContext:ctx,
-      viewport:viewport,
-      transform:transform
-    }).promise;
+      await page.render({
+        canvasContext:ctx,
+        viewport:viewport,
+        transform:dpr!==1?[dpr,0,0,dpr,0,0]:null
+      }).promise;
+    }else{
+      var img=sources[info.sourceIndex].image;
+      var scale=Math.min(1.35,available/img.naturalWidth)*zoom;
 
-    if(token !== renderToken) return;
+      cssWidth=img.naturalWidth*scale;
+      cssHeight=img.naturalHeight*scale;
 
-    $("#pageCounter").textContent = pageNum + " / " + pdfDoc.numPages;
-    $("#metricPage").textContent = String(pageNum);
-    $("#prevPage").disabled = pageNum <= 1;
-    $("#nextPage").disabled = pageNum >= pdfDoc.numPages;
+      var dprImg=window.devicePixelRatio||1;
+      pdfCanvas.width=Math.max(1,Math.round(cssWidth*dprImg));
+      pdfCanvas.height=Math.max(1,Math.round(cssHeight*dprImg));
+      pdfCanvas.style.width=cssWidth+"px";
+      pdfCanvas.style.height=cssHeight+"px";
 
-    selectedId = null;
+      ctx.setTransform(dprImg,0,0,dprImg,0,0);
+      ctx.clearRect(0,0,cssWidth,cssHeight);
+      ctx.drawImage(img,0,0,cssWidth,cssHeight);
+    }
+
+    if(token!==renderToken) return;
+
+    canvasWrap.style.width=cssWidth+"px";
+    canvasWrap.style.height=cssHeight+"px";
+    overlay.style.width=cssWidth+"px";
+    overlay.style.height=cssHeight+"px";
+
+    $("#pageCounter").textContent=pageNum+" / "+pages.length;
+    $("#metricPage").textContent=String(pageNum);
+    $("#prevPage").disabled=pageNum<=1;
+    $("#nextPage").disabled=pageNum>=pages.length;
+    $("#fileMeta").textContent=info.label;
+
+    selectedId=null;
     renderBoxes();
     renderCaptureList();
-    setStatus("READY","ページ " + pageNum + " を表示しています。","ready");
+
+    setStatus(
+      "READY",
+      (info.type==="pdf"?"PDF ":"IMAGE ")+pageNum+" / "+pages.length+
+      " · 範囲を選択すると出力サイズを表示します。",
+      "ready"
+    );
   }catch(err){
     console.error(err);
-    setStatus("ERROR","ページ描画に失敗しました: " + err.message,"error");
+    setStatus("ERROR","ページ描画に失敗しました: "+err.message,"error");
   }
 }
 
@@ -1064,6 +1150,57 @@ function getDpi(){
   var v = Math.round(Number($("#dpiInput").value) || 300);
   v = clamp(v,72,1200);
   return v;
+}
+
+function getSelectedOutputInfo(){
+  if(!selectedId || !pages.length) return null;
+
+  var c=findCapture(selectedId);
+  if(!c) return null;
+
+  var info=pages[c.page-1];
+  if(!info) return null;
+
+  var dpi=getDpi();
+  var width=0;
+  var height=0;
+
+  if(info.type==="pdf"){
+    if(!info.pdfWidth || !info.pdfHeight) return null;
+    var scale=dpi/72;
+    width=Math.max(1,Math.round(info.pdfWidth*scale*c.w));
+    height=Math.max(1,Math.round(info.pdfHeight*scale*c.h));
+  }else{
+    var img=sources[info.sourceIndex] && sources[info.sourceIndex].image;
+    if(!img) return null;
+    var imageScale=dpi/96;
+    width=Math.max(1,Math.round(img.naturalWidth*imageScale*c.w));
+    height=Math.max(1,Math.round(img.naturalHeight*imageScale*c.h));
+  }
+
+  return {
+    width:width,
+    height:height,
+    dpi:dpi,
+    type:info.type
+  };
+}
+
+function updateOutputStatus(){
+  var out=getSelectedOutputInfo();
+  if(!out) return false;
+
+  $("#statusText").textContent="OUTPUT";
+  $("#statusDetail").textContent=
+    out.width+" × "+out.height+" PX / "+out.dpi+" DPI";
+
+  var line=$("#statusLine");
+  line.className="state-line ready";
+
+  $("#footerMain").textContent=
+    "OUTPUT "+out.width+" × "+out.height+" PX / "+out.dpi+" DPI";
+
+  return true;
 }
 
 function syncDpiPreset(){
@@ -1098,7 +1235,7 @@ function findCapture(id){
 
 function renderBoxes(){
   overlay.innerHTML = "";
-  if(!pdfDoc) return;
+  if(!pages.length) return;
 
   var W = overlay.clientWidth;
   var H = overlay.clientHeight;
@@ -1121,6 +1258,8 @@ function renderBoxes(){
 
     overlay.appendChild(box);
   });
+
+  updateOutputStatus();
 }
 
 function renderCaptureList(){
@@ -1156,6 +1295,7 @@ function renderCaptureList(){
       selectedId = c.id;
       renderBoxes();
       renderCaptureList();
+      updateOutputStatus();
     });
 
     row.querySelector(".capture-delete button").addEventListener("click",function(){
@@ -1181,7 +1321,7 @@ function clamp(v,min,max){
 }
 
 overlay.addEventListener("pointerdown",function(e){
-  if(!pdfDoc) return;
+  if(!pages.length) return;
 
   var p = getPointer(e);
   var box = e.target.closest(".capture-box");
@@ -1329,6 +1469,7 @@ overlay.addEventListener("pointerup",function(e){
     renderCaptureList();
   }
 
+  updateOutputStatus();
   interaction = null;
 });
 
@@ -1344,6 +1485,9 @@ function deleteCapture(id){
   if(selectedId === id) selectedId = null;
   renderBoxes();
   updateUi();
+  if(!selectedId && pages.length){
+    setStatus("READY","範囲を選択すると出力サイズを表示します。","ready");
+  }
   if(c) addLog("DELETED",c.name);
   showToast("DELETED");
 }
@@ -1358,18 +1502,21 @@ document.addEventListener("keydown",function(e){
     selectedId = null;
     renderBoxes();
     renderCaptureList();
+    if(pages.length){
+      setStatus("READY","範囲を選択すると出力サイズを表示します。","ready");
+    }
   }
 });
 
 $("#prevPage").addEventListener("click",async function(){
-  if(pdfDoc && pageNum > 1){
+  if(pages.length && pageNum > 1){
     pageNum -= 1;
     await renderPage();
   }
 });
 
 $("#nextPage").addEventListener("click",async function(){
-  if(pdfDoc && pageNum < pdfDoc.numPages){
+  if(pages.length && pageNum < pages.length){
     pageNum += 1;
     await renderPage();
   }
@@ -1377,17 +1524,19 @@ $("#nextPage").addEventListener("click",async function(){
 
 $("#zoomSelect").addEventListener("change",async function(e){
   zoom = Number(e.target.value);
-  if(pdfDoc) await renderPage();
+  if(pages.length) await renderPage();
 });
 
 $("#dpiInput").addEventListener("input",function(){
   syncDpiPreset();
+  updateOutputStatus();
 });
 
 $("#dpiInput").addEventListener("change",function(){
   this.value = String(getDpi());
   syncDpiPreset();
   updateUi();
+  updateOutputStatus();
 });
 
 $("#dpiPreset").addEventListener("change",function(){
@@ -1395,6 +1544,7 @@ $("#dpiPreset").addEventListener("change",function(){
     $("#dpiInput").value = this.value;
     syncDpiPreset();
     updateUi();
+    updateOutputStatus();
   }
 });
 
@@ -1548,8 +1698,8 @@ async function createZipBlob(entries){
 }
 
 async function exportAll(){
-  if(!pdfDoc){
-    showToast("NO PDF");
+  if(!pages.length){
+    showToast("NO FILE");
     return;
   }
   if(!captures.length){
@@ -1572,52 +1722,71 @@ async function exportAll(){
     var done = 0;
 
     for(var pageKey in groups){
-      var pg = Number(pageKey);
-      var page = await pdfDoc.getPage(pg);
-      var viewport = page.getViewport({scale:renderScale});
+      var pg=Number(pageKey);
+      var info=pages[pg-1];
 
-      var full = document.createElement("canvas");
-      full.width = Math.ceil(viewport.width);
-      full.height = Math.ceil(viewport.height);
-      var fullCtx = full.getContext("2d");
+      var full=document.createElement("canvas");
+      var fullCtx=full.getContext("2d");
+      var baseName=(info?info.sourceName:"document")
+        .replace(/\.(pdf|png|jpe?g|webp|gif|bmp|tiff?)$/i,"")
+        .replace(/[\\/:*?"<>|]/g,"_");
 
-      await page.render({
-        canvasContext:fullCtx,
-        viewport:viewport
-      }).promise;
+      if(info.type==="pdf"){
+        var src=sources[info.sourceIndex];
+        var ppage=await src.pdf.getPage(info.pdfPage);
+        var viewport=ppage.getViewport({scale:renderScale});
+
+        full.width=Math.max(1,Math.ceil(viewport.width));
+        full.height=Math.max(1,Math.ceil(viewport.height));
+
+        await ppage.render({
+          canvasContext:fullCtx,
+          viewport:viewport
+        }).promise;
+      }else{
+        var img=sources[info.sourceIndex].image;
+
+        // Browser画像は物理DPIが一定ではないため、96DPI相当を基準に
+        // 指定DPIへリサンプリングする。
+        var imageScale=dpi/96;
+
+        full.width=Math.max(1,Math.round(img.naturalWidth*imageScale));
+        full.height=Math.max(1,Math.round(img.naturalHeight*imageScale));
+        fullCtx.drawImage(img,0,0,full.width,full.height);
+      }
 
       for(var i=0;i<groups[pageKey].length;i++){
-        var c = groups[pageKey][i];
+        var c=groups[pageKey][i];
 
-        var sx = Math.round(c.x*full.width);
-        var sy = Math.round(c.y*full.height);
-        var sw = Math.max(1,Math.round(c.w*full.width));
-        var sh = Math.max(1,Math.round(c.h*full.height));
+        var sx=Math.round(c.x*full.width);
+        var sy=Math.round(c.y*full.height);
+        var sw=Math.max(1,Math.round(c.w*full.width));
+        var sh=Math.max(1,Math.round(c.h*full.height));
 
-        sx = clamp(sx,0,full.width-1);
-        sy = clamp(sy,0,full.height-1);
-        sw = Math.min(sw,full.width-sx);
-        sh = Math.min(sh,full.height-sy);
+        sx=clamp(sx,0,full.width-1);
+        sy=clamp(sy,0,full.height-1);
+        sw=Math.min(sw,full.width-sx);
+        sh=Math.min(sh,full.height-sy);
 
-        var crop = document.createElement("canvas");
-        crop.width = sw;
-        crop.height = sh;
+        var crop=document.createElement("canvas");
+        crop.width=sw;
+        crop.height=sh;
+
         crop.getContext("2d").drawImage(
-          full,
-          sx,sy,sw,sh,
-          0,0,sw,sh
+          full,sx,sy,sw,sh,0,0,sw,sh
         );
 
-        var blob = await canvasToBlob(crop);
-        var base = (currentFile ? currentFile.name : "document")
-          .replace(/\.pdf$/i,"")
-          .replace(/[\\/:*?"<>|]/g,"_");
-        var filename =
-          base+"_p"+String(pg).padStart(3,"0")+
-          "_"+c.name.replace(/\s+/g,"_")+".png";
+        var blob=await canvasToBlob(crop);
+        var suffix=info.type==="pdf"
+          ? "_p"+String(info.pdfPage).padStart(3,"0")
+          : "_img"+String(pg).padStart(3,"0");
 
-        zipEntries.push({name:filename,blob:blob});
-        done += 1;
+        zipEntries.push({
+          name:baseName+suffix+"_"+c.name.replace(/\s+/g,"_")+".png",
+          blob:blob
+        });
+
+        done++;
         setStatus(
           "RUNNING",
           done+" / "+captures.length+" 件を処理しています。",
@@ -1630,7 +1799,9 @@ async function exportAll(){
     var url = URL.createObjectURL(out);
     var a = document.createElement("a");
     a.href = url;
-    a.download = (currentFile ? currentFile.name.replace(/\.pdf$/i,"") : "document")+"_captures.zip";
+    a.download = (sources.length===1
+      ? sources[0].name.replace(/\.(pdf|png|jpe?g|webp|gif|bmp|tiff?)$/i,"")
+      : "document_capture")+"_captures.zip";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -1654,14 +1825,14 @@ $("#headerExport").addEventListener("click",exportAll);
 window.addEventListener("resize",function(){
   clearTimeout(window.__pdfCaptureResize);
   window.__pdfCaptureResize = setTimeout(function(){
-    if(pdfDoc) renderPage();
+    if(pages.length) renderPage();
   },180);
 });
 
 setMode("add");
 syncDpiPreset();
 updateUi();
-setStatus("WAITING","PDFを読み込んでください.","");
+setStatus("WAITING","PDFまたは画像を読み込んでください.","");
 })();
 </script>
 </body>
