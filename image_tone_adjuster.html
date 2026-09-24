@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IMAGE TONE</title>
+<style>
+:root{
+  --bone:#f6f6f6;
+  --white:#ffffff;
+  --black:#0a0a0a;
+  --divider:#e6e6e6;
+  --muted:#b2b2b2;
+  --mid:#6e6e6e;
+  --signal:#c81f3a;
+  --signal-soft:rgba(200,31,58,.16);
+  --green:#168a52;
+  --font-euro:"Eurostile","Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-body:"Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-mono:"BIZ UDPGothic","Noto Sans Mono CJK JP","Yu Gothic UI",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bone);color:var(--black)}
+body{font-family:var(--font-body);font-size:12px;line-height:1.65}
+button,select,textarea,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{
+  outline:1px solid var(--black);
+  outline-offset:-1px;
+}
+button:disabled,select:disabled,input:disabled{cursor:not-allowed;opacity:.35}
+
+.header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  height:86px;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:20px;
+  padding:0 20px;
+  background:var(--white);
+  border-bottom:.5px solid var(--divider);
+}
+.brand-cluster,.header-actions{display:flex;align-items:center;gap:10px;min-width:0}
+.header-actions{justify-content:flex-end}
+.brand-mark{display:flex;align-items:center;gap:7px;min-width:0;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.signal-block{width:9px;height:9px;background:var(--signal);flex:0 0 auto}
+.sep{color:var(--black);font-size:8px}
+.ghost{
+  appearance:none;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--black);
+  padding:0;
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  font-weight:400;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.ghost:hover:not(:disabled){color:#666}
+.ghost.active{font-weight:700}
+.ghost.danger{color:var(--signal)}
+.header-center{
+  text-align:center;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--muted);
+  white-space:nowrap;
+}
+
+.page{width:100%;padding:20px 20px 110px}
+.control-strip{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px 18px;
+  padding:10px 0;
+  border-top:.5px solid var(--divider);
+  border-bottom:.5px solid var(--divider);
+  margin-bottom:20px;
+}
+.control-group{display:flex;align-items:center;gap:8px;min-width:0}
+.control-label,.ui-label{
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.spacer{flex:1}
+.control-value{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;font-variant-numeric:tabular-nums;min-width:30px;text-align:right}
+.control-note{font-size:11px;color:var(--mid);white-space:nowrap}
+
+select{
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--black);
+  padding:0 18px 0 0;
+  min-height:22px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
+input[type="range"]{
+  width:220px;
+  max-width:28vw;
+  height:14px;
+  margin:0;
+  appearance:none;
+  background:transparent;
+}
+input[type="range"]::-webkit-slider-runnable-track{height:1px;background:var(--black)}
+input[type="range"]::-webkit-slider-thumb{
+  appearance:none;
+  width:10px;
+  height:14px;
+  margin-top:-6.5px;
+  border:1px solid var(--signal);
+  border-radius:0;
+  background:var(--white);
+  cursor:pointer;
+}
+input[type="range"]::-moz-range-track{height:1px;background:var(--black)}
+input[type="range"]::-moz-range-thumb{
+  width:9px;
+  height:13px;
+  border:1px solid var(--signal);
+  border-radius:0;
+  background:var(--white);
+  cursor:pointer;
+}
+#quality{width:120px;max-width:18vw}
+
+.workspace{
+  background:var(--white);
+  border-top:.5px solid var(--divider);
+  border-bottom:.5px solid var(--divider);
+}
+.viewer-head{
+  min-height:42px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto auto;
+  align-items:center;
+  gap:10px;
+  padding:0 10px;
+  border-bottom:.5px solid var(--divider);
+}
+.viewer-index,.viewer-title,.viewer-meta{
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.viewer-index,.viewer-title{font-weight:700}
+.viewer-title .jp{font-family:var(--font-body);font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;margin-left:7px}
+.viewer-meta{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw}
+.viewer{
+  position:relative;
+  min-height:520px;
+  height:calc(100vh - 86px - 20px - 43px - 20px - 42px - 34px - 110px);
+  max-height:720px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  background:var(--white);
+}
+.viewer.drag{box-shadow:inset 0 0 0 1px var(--signal)}
+canvas{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.empty{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:28px 10px;
+  text-align:center;
+  color:#777;
+  font-size:12px;
+  line-height:1.75;
+}
+.empty strong{display:block;margin-bottom:6px;color:var(--black);font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+.viewer-foot{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 10px;
+  border-top:.5px solid var(--divider);
+}
+.state{display:flex;align-items:center;gap:7px;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+.state-line{width:18px;height:1px;background:var(--muted)}
+.state-line.ready{background:var(--green)}
+.state-line.changed{background:var(--signal)}
+.viewer-help{font-size:11px;color:var(--mid)}
+
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  margin-top:42px;
+  border-top:.5px solid var(--divider);
+  border-bottom:.5px solid var(--divider);
+}
+.metric{min-width:0;padding:10px 10px 11px}
+.metric+.metric{border-left:.5px solid var(--divider)}
+.metric-label{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;color:var(--mid);margin-bottom:8px}
+.metric-value{font-family:var(--font-euro);font-size:22px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.metric-sub{margin-top:5px;font-size:11px;color:var(--mid);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.metric.changed .metric-value{color:var(--signal)}
+
+.footer-strip{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:40;
+  min-height:52px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:20px;
+  padding:0 20px;
+  background:var(--bone);
+  border-top:.5px solid var(--divider);
+}
+.footer-main,.footer-side{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+.footer-side{color:var(--muted)}
+.toast{
+  position:fixed;
+  left:20px;
+  bottom:66px;
+  z-index:100;
+  padding:7px 9px;
+  background:var(--black);
+  color:var(--white);
+  border-radius:0;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  opacity:0;
+  transform:translateY(5px);
+  transition:.16s;
+  pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+#fileInput{display:none}
+.quality-group[hidden]{display:none}
+
+@media(max-width:900px){
+  .header{grid-template-columns:1fr auto;height:auto;min-height:72px;padding:14px}
+  .header-center{display:none}
+  .page{padding:16px 14px 100px}
+  .footer-strip{padding:0 14px}
+  .control-strip{gap:10px 14px}
+  .control-group.tone-group{width:100%}
+  .control-group.tone-group input[type="range"]{flex:1;max-width:none;width:auto}
+  .viewer-head{grid-template-columns:auto 1fr auto}
+  .viewer-meta{display:none}
+  .viewer{height:52vh;min-height:360px}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metric:nth-child(3){border-left:0;border-top:.5px solid var(--divider)}
+  .metric:nth-child(4){border-top:.5px solid var(--divider)}
+}
+@media(max-width:560px){
+  .header-actions .sep{display:none}
+  .header-actions{gap:8px}
+  .brand-cluster>.sep,.brand-cluster>.ghost{display:none}
+  .control-note{display:none}
+  .metrics{grid-template-columns:1fr}
+  .metric+.metric{border-left:0;border-top:.5px solid var(--divider)}
+  .metric:nth-child(3){border-left:0}
+  .viewer-help{display:none}
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand-cluster">
+    <div class="brand-mark">
+      <span class="signal-block"></span>
+      <strong>IMAGE TONE</strong>
+    </div>
+    <span class="sep">/</span>
+    <button id="compareBtn" class="ghost" disabled>COMPARE</button>
+  </div>
+
+  <div class="header-center">LOCAL PROCESSING / BROWSER ONLY</div>
+
+  <div class="header-actions">
+    <button id="importBtn" class="ghost">IMPORT</button>
+    <span class="sep">/</span>
+    <button id="saveBtn" class="ghost active" disabled>EXPORT</button>
+    <span class="sep">/</span>
+    <button id="resetBtn" class="ghost danger" disabled>RESET</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="control-strip" aria-label="画像調整コントロール">
+    <div class="control-group tone-group">
+      <span class="control-label">TONE</span>
+      <span class="control-note">淡く</span>
+      <input id="tone" type="range" min="-100" max="100" value="0" step="1" disabled aria-label="濃淡" />
+      <span class="control-note">濃く</span>
+      <span id="toneValue" class="control-value">0</span>
+    </div>
+
+    <span class="spacer"></span>
+
+    <div class="control-group">
+      <span class="control-label">FORMAT</span>
+      <select id="format" disabled aria-label="書き出し形式">
+        <option value="image/png">PNG</option>
+        <option value="image/jpeg">JPEG</option>
+        <option value="image/webp">WEBP</option>
+      </select>
+    </div>
+
+    <div id="qualityWrap" class="control-group quality-group" hidden>
+      <span class="control-label">QUALITY</span>
+      <input id="quality" type="range" min="10" max="100" value="92" step="1" aria-label="書き出し品質" />
+      <span id="qualityValue" class="control-value">92%</span>
+    </div>
+  </section>
+
+  <section id="workspace" class="workspace">
+    <div class="viewer-head">
+      <div class="viewer-index">A</div>
+      <div class="viewer-title">PREVIEW <span class="jp">画像プレビュー</span></div>
+      <div id="viewerMeta" class="viewer-meta">NO IMAGE</div>
+      <button id="viewerImportBtn" class="ghost">IMPORT</button>
+    </div>
+
+    <div id="viewer" class="viewer">
+      <canvas id="preview"></canvas>
+      <div id="empty" class="empty">
+        <div>
+          <strong>DROP IMAGE / IMPORT</strong>
+          画像ファイルをドラッグ＆ドロップするか、IMPORTから読み込んでください。<br>
+          PNG / JPEG / WEBP などのブラウザ対応画像を使用できます。
+        </div>
+      </div>
+    </div>
+
+    <div class="viewer-foot">
+      <div class="state">
+        <span id="stateLine" class="state-line"></span>
+        <span id="stateText">WAITING</span>
+      </div>
+      <div class="viewer-help">COMPAREを押している間は元画像を表示</div>
+    </div>
+  </section>
+
+  <section class="metrics" aria-label="画像情報">
+    <div class="metric">
+      <div class="metric-label">FILE</div>
+      <div id="metricFile" class="metric-value">—</div>
+      <div id="metricFileSub" class="metric-sub">NO IMAGE</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">SIZE</div>
+      <div id="metricSize" class="metric-value">—</div>
+      <div class="metric-sub">ORIGINAL RESOLUTION</div>
+    </div>
+    <div id="metricToneBox" class="metric">
+      <div class="metric-label">TONE</div>
+      <div id="metricTone" class="metric-value">0</div>
+      <div class="metric-sub">-100 LIGHT / +100 DARK</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">OUTPUT</div>
+      <div id="metricFormat" class="metric-value">PNG</div>
+      <div id="metricQuality" class="metric-sub">LOSSLESS</div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer-strip">
+  <div id="footerStatus" class="footer-main">WAITING · IMPORT OR DROP IMAGE · CTRL / ⌘ + S TO EXPORT</div>
+  <div class="footer-side">IMAGE TONE / V1.1</div>
+</footer>
+
+<input id="fileInput" type="file" accept="image/*" />
+<div id="toast" class="toast"></div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const viewer = $('viewer');
+  const canvas = $('preview');
+  const ctx = canvas.getContext('2d', { willReadFrequently:true });
+  const empty = $('empty');
+  const fileInput = $('fileInput');
+  const importBtn = $('importBtn');
+  const viewerImportBtn = $('viewerImportBtn');
+  const tone = $('tone');
+  const toneValue = $('toneValue');
+  const compareBtn = $('compareBtn');
+  const resetBtn = $('resetBtn');
+  const saveBtn = $('saveBtn');
+  const format = $('format');
+  const quality = $('quality');
+  const qualityValue = $('qualityValue');
+  const qualityWrap = $('qualityWrap');
+  const viewerMeta = $('viewerMeta');
+  const stateLine = $('stateLine');
+  const stateText = $('stateText');
+  const footerStatus = $('footerStatus');
+  const metricFile = $('metricFile');
+  const metricFileSub = $('metricFileSub');
+  const metricSize = $('metricSize');
+  const metricToneBox = $('metricToneBox');
+  const metricTone = $('metricTone');
+  const metricFormat = $('metricFormat');
+  const metricQuality = $('metricQuality');
+  const toast = $('toast');
+
+  const sourceCanvas = document.createElement('canvas');
+  const sourceCtx = sourceCanvas.getContext('2d', { willReadFrequently:true });
+  let sourceImageData = null;
+  let previewSourceData = null;
+  let fileName = '';
+  let fullFileName = '';
+  let originalExt = '';
+  let renderQueued = false;
+  let comparing = false;
+  const maxPreviewPixels = 2_000_000;
+
+  const openPicker = () => fileInput.click();
+  importBtn.addEventListener('click', openPicker);
+  viewerImportBtn.addEventListener('click', openPicker);
+
+  fileInput.addEventListener('change', e => {
+    const file = e.target.files?.[0];
+    if (file) loadFile(file);
+    e.target.value = '';
+  });
+
+  ['dragenter','dragover'].forEach(type => viewer.addEventListener(type, e => {
+    e.preventDefault();
+    viewer.classList.add('drag');
+  }));
+  ['dragleave','drop'].forEach(type => viewer.addEventListener(type, e => {
+    e.preventDefault();
+    viewer.classList.remove('drag');
+  }));
+  viewer.addEventListener('drop', e => {
+    const file = [...(e.dataTransfer?.files || [])].find(f => f.type.startsWith('image/'));
+    if (file) loadFile(file);
+    else showToast('IMAGE FILE REQUIRED');
+  });
+
+  tone.addEventListener('input', () => {
+    updateToneLabels();
+    scheduleRender();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    if (!sourceImageData) return;
+    tone.value = 0;
+    updateToneLabels();
+    renderPreview(false);
+    showToast('RESET');
+  });
+
+  compareBtn.addEventListener('pointerdown', () => {
+    if (!previewSourceData) return;
+    comparing = true;
+    renderPreview(true);
+    stateText.textContent = 'ORIGINAL';
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(type => compareBtn.addEventListener(type, () => {
+    if (!comparing) return;
+    comparing = false;
+    renderPreview(false);
+  }));
+
+  format.addEventListener('change', () => {
+    updateQualityVisibility();
+    updateStatus();
+  });
+  quality.addEventListener('input', () => {
+    qualityValue.textContent = `${quality.value}%`;
+    updateStatus();
+  });
+  saveBtn.addEventListener('click', exportImage);
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      if (sourceImageData && !saveBtn.disabled) exportImage();
+    }
+    if (e.key === 'Escape' && sourceImageData) {
+      tone.value = 0;
+      updateToneLabels();
+      renderPreview(false);
+    }
+  });
+
+  async function loadFile(file){
+    if (!file.type.startsWith('image/')) {
+      showToast('IMAGE FILE REQUIRED');
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        if (!w || !h) throw new Error('Invalid image');
+
+        sourceCanvas.width = w;
+        sourceCanvas.height = h;
+        sourceCtx.clearRect(0,0,w,h);
+        sourceCtx.drawImage(img,0,0,w,h);
+        sourceImageData = sourceCtx.getImageData(0,0,w,h);
+
+        const scale = Math.min(1, Math.sqrt(maxPreviewPixels/(w*h)));
+        const pw = Math.max(1, Math.round(w*scale));
+        const ph = Math.max(1, Math.round(h*scale));
+        canvas.width = pw;
+        canvas.height = ph;
+        ctx.clearRect(0,0,pw,ph);
+        ctx.drawImage(sourceCanvas,0,0,pw,ph);
+        previewSourceData = ctx.getImageData(0,0,pw,ph);
+
+        fullFileName = file.name;
+        fileName = file.name.replace(/\.[^.]+$/, '') || 'image';
+        originalExt = (file.name.split('.').pop() || '').toLowerCase();
+        chooseInitialFormat(originalExt);
+
+        tone.value = 0;
+        updateToneLabels();
+        empty.style.display = 'none';
+        tone.disabled = false;
+        compareBtn.disabled = false;
+        resetBtn.disabled = false;
+        saveBtn.disabled = false;
+        format.disabled = false;
+
+        viewerMeta.textContent = `${file.name} / ${w} × ${h} PX`;
+        metricFile.textContent = trimMetric(fileName, 18);
+        metricFileSub.textContent = file.name;
+        metricSize.textContent = `${w}×${h}`;
+        stateLine.className = 'state-line ready';
+        stateText.textContent = 'READY';
+
+        updateQualityVisibility();
+        renderPreview(false);
+        updateStatus();
+        showToast('IMAGE LOADED');
+      } catch(err) {
+        console.error(err);
+        showToast('LOAD ERROR');
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      showToast('LOAD ERROR');
+    };
+    img.src = url;
+  }
+
+  function chooseInitialFormat(ext){
+    if (['jpg','jpeg'].includes(ext)) format.value = 'image/jpeg';
+    else if (ext === 'webp') format.value = 'image/webp';
+    else format.value = 'image/png';
+  }
+
+  function scheduleRender(){
+    if (renderQueued) return;
+    renderQueued = true;
+    requestAnimationFrame(() => {
+      renderQueued = false;
+      renderPreview(false);
+    });
+  }
+
+  function renderPreview(showOriginal){
+    if (!previewSourceData) return;
+    if (showOriginal) {
+      ctx.putImageData(previewSourceData,0,0);
+      return;
+    }
+    const amount = Number(tone.value);
+    const out = applyTone(previewSourceData, amount);
+    ctx.putImageData(out,0,0);
+    stateLine.className = amount === 0 ? 'state-line ready' : 'state-line changed';
+    stateText.textContent = amount === 0 ? 'READY' : 'CHANGED';
+    updateStatus();
+  }
+
+  function applyTone(imageData, amount){
+    const src = imageData.data;
+    const out = new ImageData(imageData.width, imageData.height);
+    const dst = out.data;
+    const lut = new Uint8ClampedArray(256);
+
+    if (amount >= 0) {
+      const f = 1 - amount/100;
+      for (let i=0;i<256;i++) lut[i] = Math.round(i*f);
+    } else {
+      const t = -amount/100;
+      for (let i=0;i<256;i++) lut[i] = Math.round(i + (255-i)*t);
+    }
+
+    for (let i=0;i<src.length;i+=4) {
+      dst[i] = lut[src[i]];
+      dst[i+1] = lut[src[i+1]];
+      dst[i+2] = lut[src[i+2]];
+      dst[i+3] = src[i+3];
+    }
+    return out;
+  }
+
+  function updateToneLabels(){
+    const v = Number(tone.value);
+    const text = v > 0 ? `+${v}` : String(v);
+    toneValue.textContent = text;
+    metricTone.textContent = text;
+    metricToneBox.classList.toggle('changed', v !== 0);
+  }
+
+  function updateQualityVisibility(){
+    const lossy = format.value !== 'image/png';
+    qualityWrap.hidden = !lossy;
+    metricFormat.textContent = formatLabel(format.value);
+    metricQuality.textContent = lossy ? `QUALITY ${quality.value}%` : 'LOSSLESS';
+  }
+
+  function updateStatus(){
+    if (!sourceImageData) return;
+    const amount = Number(tone.value);
+    const toneText = amount > 0 ? `+${amount}` : String(amount);
+    const qualityText = format.value === 'image/png' ? 'LOSSLESS' : `${quality.value}%`;
+    footerStatus.textContent = `${sourceCanvas.width} × ${sourceCanvas.height} PX · TONE ${toneText} · ${formatLabel(format.value)} ${qualityText} · CTRL / ⌘ + S TO EXPORT`;
+    metricFormat.textContent = formatLabel(format.value);
+    metricQuality.textContent = format.value === 'image/png' ? 'LOSSLESS' : `QUALITY ${quality.value}%`;
+  }
+
+  function exportImage(){
+    if (!sourceImageData || saveBtn.disabled) return;
+    saveBtn.disabled = true;
+    const oldText = saveBtn.textContent;
+    saveBtn.textContent = 'EXPORTING';
+
+    setTimeout(() => {
+      try {
+        const amount = Number(tone.value);
+        const outData = applyTone(sourceImageData, amount);
+        const outCanvas = document.createElement('canvas');
+        outCanvas.width = sourceCanvas.width;
+        outCanvas.height = sourceCanvas.height;
+        const outCtx = outCanvas.getContext('2d');
+        outCtx.putImageData(outData,0,0);
+
+        const mime = format.value;
+        const q = Number(quality.value)/100;
+        outCanvas.toBlob(blob => {
+          if (!blob) {
+            finishExport(false, oldText);
+            return;
+          }
+          const ext = mime === 'image/jpeg' ? 'jpg' : mime.split('/')[1];
+          const a = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          a.href = url;
+          a.download = `${fileName}_tone.${ext}`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          finishExport(true, oldText);
+        }, mime, q);
+      } catch(err) {
+        console.error(err);
+        finishExport(false, oldText);
+      }
+    },30);
+  }
+
+  function finishExport(ok, oldText){
+    saveBtn.disabled = false;
+    saveBtn.textContent = oldText;
+    showToast(ok ? 'EXPORTED' : 'EXPORT ERROR');
+  }
+
+  function formatLabel(mime){
+    if (mime === 'image/jpeg') return 'JPEG';
+    if (mime === 'image/webp') return 'WEBP';
+    return 'PNG';
+  }
+
+  function trimMetric(text,max){
+    return text.length > max ? `${text.slice(0,max-1)}…` : text;
+  }
+
+  function showToast(message){
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => toast.classList.remove('show'),1600);
+  }
+})();
+</script>
+</body>
+</html>
