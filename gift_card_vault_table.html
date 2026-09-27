@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gift Card Vault</title>
+<style>
+:root{
+  --app-max-width:100vw;
+  --bone:#f6f6f6;
+  --white:#ffffff;
+  --black:#0a0a0a;
+  --divider:#e6e6e6;
+  --muted:#b2b2b2;
+  --mid:#6e6e6e;
+  --signal:#c81f3a;
+  --green:#168a52;
+  --font-euro:"Eurostile","Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-body:"Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-mono:"BIZ UDPGothic","Noto Sans Mono CJK JP","Yu Gothic UI",monospace;
+}
+body[data-width-mode="fit"]{--app-max-width:100vw}
+body[data-width-mode="720"]{--app-max-width:720px}
+body[data-width-mode="960"]{--app-max-width:960px}
+body[data-width-mode="1200"]{--app-max-width:1200px}
+body[data-width-mode="1440"]{--app-max-width:1440px}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bone);color:var(--black)}
+body{font-family:var(--font-body);font-size:12px;line-height:1.65}
+button,select,textarea,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:1px solid var(--black);outline-offset:-1px}
+.header{
+  position:sticky;top:0;z-index:50;height:86px;display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:center;gap:20px;padding:0 20px;background:var(--white);border-bottom:.5px solid var(--divider)
+}
+.brand-cluster,.header-actions{display:flex;align-items:center;gap:10px;min-width:0}
+.header-actions{justify-content:flex-end}
+.brand-mark{display:flex;align-items:center;gap:7px;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.signal-block{width:9px;height:9px;background:var(--signal);flex:0 0 auto}
+.sep{color:var(--black);font-size:8px}
+.ghost{appearance:none;border:0;border-radius:0;background:transparent;color:var(--black);padding:0;font-family:var(--font-euro);font-size:8px;line-height:1.1;font-weight:400;letter-spacing:.04em;text-transform:uppercase}
+.ghost:hover{color:#666}.ghost.active{font-weight:700}.ghost.danger{color:var(--signal)}
+.header-center{text-align:center;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.app-shell{width:min(100%,var(--app-max-width));min-height:100vh;margin:0 auto}
+.page{width:100%;padding:20px 20px 110px}
+.control-strip{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;padding:10px 0;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);margin-bottom:20px}
+.control-group{display:flex;align-items:center;gap:8px}.control-label{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}.spacer{flex:1}
+.toggle{display:flex;align-items:center;gap:7px;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;cursor:pointer}
+.toggle input{width:12px;height:12px;margin:0;accent-color:var(--signal);cursor:pointer}
+select{border:0;border-radius:0;background:transparent;color:var(--black);padding:0 18px 0 0;min-height:22px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase}
+.search-input{width:210px;border:0;border-bottom:.5px solid var(--divider);border-radius:0;background:transparent;color:var(--black);padding:5px 0;outline:0;font-size:12px}
+.search-input:focus{border-bottom-color:var(--black)}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);background:var(--white);margin-bottom:42px}
+.metric{min-width:0;padding:10px 10px 11px}.metric + .metric{border-left:.5px solid var(--divider)}
+.metric-label{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;color:var(--mid);margin-bottom:8px}
+.metric-value{font-family:var(--font-euro);font-size:22px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric-sub{margin-top:6px;font-size:10px;color:var(--mid)}
+.record-head{display:flex;align-items:flex-end;gap:18px;margin-bottom:10px}.record-heading{margin:0;font-family:var(--font-euro);font-size:30px;line-height:1;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}.record-tools{display:flex;align-items:center;gap:10px;margin-left:auto}.panel-meta{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.table-shell{background:var(--white);border-top:.5px solid var(--divider);overflow-x:auto;overflow-y:visible}
+.gift-table{
+  --gift-columns:38px 170px 90px 110px 110px 120px 120px 170px 145px 180px minmax(260px,1fr) 100px 180px;
+  width:max(100%,1793px);
+  min-width:1793px;
+}
+.gift-row{
+  display:grid;
+  grid-template-columns:var(--gift-columns);
+  width:100%;
+  min-height:46px;
+  border-bottom:.5px solid var(--divider);
+}
+.gift-row > div{min-width:0;overflow:hidden;border-left:.5px solid var(--divider);display:flex;align-items:center;padding:0 8px}
+.gift-row > div:first-child{border-left:0}
+.gift-row.head{background:var(--bone);min-height:34px}
+.gift-row.head > div{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;color:var(--mid);white-space:nowrap}
+.cell-no{font-family:var(--font-euro);font-size:8px;color:var(--muted);justify-content:center}
+.cell-input,.cell-select,.cell-note{
+  display:block;width:100%;max-width:100%;min-width:0;border:0;border-radius:0;background:transparent;color:var(--black);outline:0;padding:10px 0
+}
+.cell-input:focus,.cell-select:focus,.cell-note:focus{box-shadow:inset 0 -1px 0 var(--black)}
+.cell-input[type="number"]{font-family:var(--font-euro);font-variant-numeric:tabular-nums;text-align:right}
+.cell-input[type="date"]{font-size:11px}
+.cell-select{padding-right:14px;font-size:8px;text-transform:uppercase}
+.secret-input{font-family:var(--font-mono);font-size:11px}
+.cell-note{resize:none;line-height:1.45;min-height:45px;max-height:86px;overflow:auto}
+.status-cell{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}.status-active{color:var(--green)}.status-expiring,.status-expired{color:var(--signal)}.status-used{color:var(--muted)}
+.action-cell{gap:8px;flex-wrap:wrap;align-content:center;overflow:visible!important}
+.empty{padding:28px 10px;border-bottom:.5px solid var(--divider);font-size:12px;color:#777}
+.add-row-line{display:flex;justify-content:flex-end;padding:10px 8px;border-bottom:.5px solid var(--divider)}
+.note-line{padding:10px 0 0;font-size:11px;line-height:1.75;color:#555}
+.footer-strip{position:fixed;left:0;right:0;bottom:0;z-index:40;width:100%;min-height:52px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:20px;padding:0 20px;background:var(--bone);border-top:.5px solid var(--divider)}
+.footer-main,.footer-side,.width-switcher{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}.footer-main{justify-self:start;min-width:0}.footer-width{justify-self:center}.footer-side{justify-self:end;min-width:0;color:var(--muted)}
+.width-switcher{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.width-btn{appearance:none;border:0;border-radius:0;background:transparent;color:var(--muted);padding:0;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit}.width-btn:hover{color:var(--black)}.width-btn.active{color:var(--black);font-weight:700}
+.toast{position:fixed;left:20px;bottom:66px;z-index:100;padding:7px 9px;background:var(--black);color:var(--white);border-radius:0;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;opacity:0;transform:translateY(5px);transition:.16s;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}
+.hidden-file{display:none}
+@media(max-width:900px){
+ .header{grid-template-columns:1fr auto;height:auto;min-height:72px;padding:14px}.header-center{display:none}.page{padding:16px 14px 100px}.metrics{grid-template-columns:repeat(2,1fr)}.metric:nth-child(odd){border-left:0}.metric:last-child{grid-column:1/-1;border-top:.5px solid var(--divider)}.record-head{align-items:flex-start;flex-direction:column}.record-tools{margin-left:0}.footer-strip{gap:10px;padding:0 14px}.footer-main,.footer-side{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.width-switcher{gap:4px}
+}
+</style>
+</head>
+<body data-width-mode="fit">
+<header class="header">
+  <div class="brand-cluster">
+    <div class="brand-mark"><span class="signal-block"></span><strong>GIFT CARD VAULT</strong></div>
+    <span class="sep">/</span>
+    <button class="ghost active" id="addBtn" type="button">ADD ROW</button>
+  </div>
+  <div class="header-center">LOCAL PROCESSING / BROWSER ONLY</div>
+  <div class="header-actions">
+    <button class="ghost" id="importBtn" type="button">IMPORT</button><span class="sep">/</span>
+    <button class="ghost" id="exportBtn" type="button">EXPORT</button><span class="sep">/</span>
+    <button class="ghost danger" id="clearBtn" type="button">CLEAR</button>
+  </div>
+</header>
+
+<div class="app-shell">
+<main class="page">
+  <section class="control-strip">
+    <div class="control-group"><span class="control-label">SEARCH</span><input class="search-input" id="searchInput" type="search" placeholder="名称 / ID / 保管場所 / メモ" /></div>
+    <div class="control-group"><span class="control-label">TYPE</span><select id="typeFilter"><option value="all">ALL</option><option value="physical">PHYSICAL</option><option value="web">WEB</option><option value="code">CODE</option><option value="other">OTHER</option></select></div>
+    <div class="control-group"><span class="control-label">STATUS</span><select id="statusFilter"><option value="all">ALL</option><option value="active">ACTIVE</option><option value="expiring">EXPIRING</option><option value="expired">EXPIRED</option><option value="used">USED</option></select></div>
+    <label class="toggle"><input id="showSecrets" type="checkbox" />SHOW ID / PW</label>
+    <div class="spacer"></div>
+    <button class="ghost" id="copySummaryBtn" type="button">COPY SUMMARY</button>
+  </section>
+
+  <section class="metrics" aria-label="Summary metrics">
+    <div class="metric"><div class="metric-label">CARDS</div><div class="metric-value" id="metricCount">0</div><div class="metric-sub">登録件数</div></div>
+    <div class="metric"><div class="metric-label">FACE VALUE</div><div class="metric-value" id="metricAmount">¥0</div><div class="metric-sub">額面総額</div></div>
+    <div class="metric"><div class="metric-label">BALANCE</div><div class="metric-value" id="metricBalance">¥0</div><div class="metric-sub">残高総額</div></div>
+    <div class="metric"><div class="metric-label">USED</div><div class="metric-value" id="metricUsed">¥0</div><div class="metric-sub">利用済み金額</div></div>
+    <div class="metric"><div class="metric-label">EXPIRING</div><div class="metric-value" id="metricExpiring">0</div><div class="metric-sub">90日以内</div></div>
+  </section>
+
+  <section class="record">
+    <div class="record-head">
+      <div class="panel-meta" id="resultMeta">0 RECORDS</div>
+      <div class="record-tools"><span class="panel-meta">DIRECT EDIT / AUTO SAVE</span></div>
+    </div>
+    <div class="table-shell">
+      <div class="gift-table" id="giftTable"></div>
+    </div>
+  </section>
+
+  <p class="note-line">表の各セルを直接編集すると自動保存されます。ID・PWは初期状態では伏字です。SHOW ID / PW で表示を切り替えられます。EXPORTファイルにはID・PWも含まれるため、ファイルの取扱いには注意してください。</p>
+</main>
+</div>
+
+<footer class="footer-strip">
+  <div class="footer-main" id="footerStatus">READY</div>
+  <div class="footer-width">
+    <nav class="width-switcher" aria-label="Application width">
+      <button class="width-btn active" data-width="fit">FIT</button><span class="sep">/</span>
+      <button class="width-btn" data-width="720">720</button><span class="sep">/</span>
+      <button class="width-btn" data-width="960">960</button><span class="sep">/</span>
+      <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
+      <button class="width-btn" data-width="1440">1440</button>
+    </nav>
+  </div>
+  <div class="footer-side">GIFT CARD VAULT / V1.6</div>
+</footer>
+<div class="toast" id="toast"></div>
+<input class="hidden-file" id="fileInput" type="file" accept="application/json,.json,.giftcards.json" />
+
+<script>
+(() => {
+  'use strict';
+  const STORAGE_KEY = 'gift-card-vault-data-v1';
+  const WIDTH_STORAGE_KEY = 'web-app-ui-width';
+  const VALID_WIDTHS = ['fit','720','960','1200','1440'];
+  const TYPES = ['physical','web','code','other'];
+  const $ = id => document.getElementById(id);
+  const state = { cards: [], filters: { search:'', type:'all', status:'all' }, showSecrets:false };
+  const table = $('giftTable');
+
+  function uid(){ return 'gc_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
+  function now(){ return new Date().toISOString(); }
+  function yen(n){ return new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0}).format(Number(n)||0); }
+  function esc(v){ return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function todayStart(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+  function expiryDays(card){ if(!card.expiryDate) return Infinity; const d=new Date(card.expiryDate+'T00:00:00'); return Math.floor((d-todayStart())/86400000); }
+  function getStatus(card){
+    const bal=Number(card.balance)||0;
+    if(bal<=0 && (Number(card.amount)||0)>0) return 'used';
+    const days=expiryDays(card);
+    if(days<0) return 'expired';
+    if(days<=90) return 'expiring';
+    return 'active';
+  }
+  function statusLabel(card){ return ({active:'ACTIVE',expiring:'EXPIRING',expired:'EXPIRED',used:'USED'})[getStatus(card)]; }
+  function normalize(c={}){
+    const stamp=now();
+    return {
+      id:String(c.id||uid()),
+      name:String(c.name||''),
+      type:TYPES.includes(c.type)?c.type:'other',
+      amount:Math.max(0,Number(c.amount)||0),
+      balance:Math.max(0,Number(c.balance)||0),
+      receivedDate:String(c.receivedDate||''),
+      expiryDate:String(c.expiryDate||''),
+      giftId:String(c.giftId||''),
+      password:String(c.password||''),
+      storage:String(c.storage||''),
+      note:String(c.note||''),
+      createdAt:String(c.createdAt||stamp),
+      updatedAt:String(c.updatedAt||stamp)
+    };
+  }
+  function safeLoad(){
+    try{
+      const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return [];
+      const parsed=JSON.parse(raw); const cards=Array.isArray(parsed)?parsed:parsed.cards;
+      return Array.isArray(cards)?cards.map(normalize):[];
+    }catch(e){ return []; }
+  }
+  function persist(showToast=false){
+    try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state.cards)); if(showToast) toast('SAVED'); }
+    catch(e){ toast('LOCAL SAVE FAILED'); }
+  }
+  function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),1400); }
+  function applyWidthMode(mode){
+    const value=VALID_WIDTHS.includes(mode)?mode:'fit'; document.body.dataset.widthMode=value;
+    document.querySelectorAll('.width-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.width===value));
+    try{localStorage.setItem(WIDTH_STORAGE_KEY,value)}catch(e){}
+  }
+  let savedWidth='fit'; try{savedWidth=localStorage.getItem(WIDTH_STORAGE_KEY)||'fit'}catch(e){} applyWidthMode(savedWidth);
+  document.querySelectorAll('.width-btn').forEach(btn=>btn.addEventListener('click',()=>applyWidthMode(btn.dataset.width)));
+
+  function filteredCards(){
+    const q=state.filters.search.trim().toLowerCase();
+    return state.cards.filter(c=>{
+      const qHit=!q || [c.name,c.giftId,c.password,c.storage,c.note].some(v=>String(v||'').toLowerCase().includes(q));
+      const tHit=state.filters.type==='all' || c.type===state.filters.type;
+      const sHit=state.filters.status==='all' || getStatus(c)===state.filters.status;
+      return qHit && tHit && sHit;
+    });
+  }
+  function renderMetrics(){
+    const totalAmount=state.cards.reduce((s,c)=>s+(Number(c.amount)||0),0);
+    const totalBalance=state.cards.reduce((s,c)=>s+(Number(c.balance)||0),0);
+    $('metricCount').textContent=state.cards.length.toLocaleString('ja-JP');
+    $('metricAmount').textContent=yen(totalAmount);
+    $('metricBalance').textContent=yen(totalBalance);
+    $('metricUsed').textContent=yen(Math.max(0,totalAmount-totalBalance));
+    $('metricExpiring').textContent=state.cards.filter(c=>getStatus(c)==='expiring').length.toLocaleString('ja-JP');
+    $('footerStatus').textContent=state.cards.length?`${state.cards.length} CARDS / ${yen(totalBalance)} BALANCE`:'READY';
+  }
+  function rowHtml(c,index){
+    const status=getStatus(c);
+    return `<div class="gift-row" data-id="${esc(c.id)}">
+      <div class="cell-no">${String(index+1).padStart(2,'0')}</div>
+      <div><input class="cell-input" data-field="name" value="${esc(c.name)}" placeholder="ギフトカード名" /></div>
+      <div><select class="cell-select" data-field="type">${TYPES.map(t=>`<option value="${t}"${c.type===t?' selected':''}>${t.toUpperCase()}</option>`).join('')}</select></div>
+      <div><input class="cell-input" data-field="amount" type="number" min="0" step="1" value="${Number(c.amount)||0}" /></div>
+      <div><input class="cell-input" data-field="balance" type="number" min="0" step="1" value="${Number(c.balance)||0}" /></div>
+      <div><input class="cell-input" data-field="receivedDate" type="date" value="${esc(c.receivedDate)}" /></div>
+      <div><input class="cell-input" data-field="expiryDate" type="date" value="${esc(c.expiryDate)}" /></div>
+      <div><input class="cell-input" data-field="giftId" type="${state.showSecrets?'text':'password'}" value="${esc(c.giftId)}" placeholder="ID / CODE" autocomplete="off" inputmode="text" /></div>
+      <div><input class="cell-input" data-field="password" type="${state.showSecrets?'text':'password'}" value="${esc(c.password)}" placeholder="PW / PIN" autocomplete="off" inputmode="text" /></div>
+      <div><input class="cell-input" data-field="storage" value="${esc(c.storage)}" placeholder="財布 / メール等" /></div>
+      <div><textarea class="cell-note" data-field="note" placeholder="メモ">${esc(c.note)}</textarea></div>
+      <div class="status-cell status-${status}" data-role="status">${statusLabel(c)}</div>
+      <div class="action-cell"><button class="ghost" data-action="copy-id">COPY ID</button><button class="ghost" data-action="copy-pw">COPY PW</button><button class="ghost danger" data-action="delete">DELETE</button></div>
+    </div>`;
+  }
+  function renderTable(){
+    const list=filteredCards();
+    $('resultMeta').textContent=`${list.length} RECORDS / ${state.cards.length} TOTAL`;
+    const head=`<div class="gift-row head"><div>NO.</div><div>NAME</div><div>TYPE</div><div>AMOUNT</div><div>BALANCE</div><div>RECEIVED</div><div>EXPIRY</div><div>ID / CODE</div><div>PW / PIN</div><div>STORAGE</div><div>NOTE</div><div>STATUS</div><div>ACTION</div></div>`;
+    const body=list.length?list.map((c,i)=>rowHtml(c,i)).join(''):`<div class="empty">データがありません。ADD ROW から追加してください。</div>`;
+    table.innerHTML=head+body+`<div class="add-row-line"><button class="ghost active" type="button" data-action="add-row">ADD ROW</button></div>`;
+  }
+  function render(){ renderMetrics(); renderTable(); }
+  function addRow(){
+    const c=normalize({type:'physical'}); state.cards.push(c); persist();
+    state.filters.search=''; state.filters.type='all'; state.filters.status='all';
+    $('searchInput').value=''; $('typeFilter').value='all'; $('statusFilter').value='all';
+    render();
+    const row=table.querySelector(`.gift-row[data-id="${CSS.escape(c.id)}"]`); row?.querySelector('[data-field="name"]')?.focus();
+    row?.scrollIntoView({block:'nearest'}); toast('ROW ADDED');
+  }
+  function updateStatusCell(row,card){
+    const el=row.querySelector('[data-role="status"]'); if(!el) return;
+    const status=getStatus(card); el.className=`status-cell status-${status}`; el.textContent=statusLabel(card);
+  }
+
+  table.addEventListener('input',e=>{
+    const input=e.target.closest('[data-field]'); if(!input) return;
+    const row=input.closest('.gift-row'); const card=state.cards.find(c=>c.id===row?.dataset.id); if(!card) return;
+    const field=input.dataset.field;
+    card[field]=(field==='amount'||field==='balance')?Math.max(0,Number(input.value)||0):input.value;
+    card.updatedAt=now(); persist(); renderMetrics(); updateStatusCell(row,card);
+  });
+  table.addEventListener('change',e=>{
+    const input=e.target.closest('[data-field]'); if(!input) return;
+    const row=input.closest('.gift-row'); const card=state.cards.find(c=>c.id===row?.dataset.id); if(!card) return;
+    const field=input.dataset.field;
+    card[field]=(field==='amount'||field==='balance')?Math.max(0,Number(input.value)||0):input.value;
+    card.updatedAt=now(); persist(); renderMetrics(); updateStatusCell(row,card);
+  });
+  table.addEventListener('click',async e=>{
+    const btn=e.target.closest('button[data-action]'); if(!btn) return;
+    if(btn.dataset.action==='add-row'){ addRow(); return; }
+    const row=btn.closest('.gift-row'); const card=state.cards.find(c=>c.id===row?.dataset.id); if(!card) return;
+    if(btn.dataset.action==='delete'){
+      if(!confirm(`「${card.name||'名称未入力'}」を削除しますか？`)) return;
+      state.cards=state.cards.filter(c=>c.id!==card.id); persist(); render(); toast('DELETED'); return;
+    }
+    const value=btn.dataset.action==='copy-id'?card.giftId:card.password;
+    if(!value){toast('EMPTY');return;}
+    try{await navigator.clipboard.writeText(value);toast(btn.dataset.action==='copy-id'?'ID COPIED':'PW COPIED')}catch(err){toast('COPY FAILED')}
+  });
+
+  $('addBtn').addEventListener('click',addRow);
+  $('searchInput').addEventListener('input',()=>{state.filters.search=$('searchInput').value;renderTable()});
+  $('typeFilter').addEventListener('change',()=>{state.filters.type=$('typeFilter').value;renderTable()});
+  $('statusFilter').addEventListener('change',()=>{state.filters.status=$('statusFilter').value;renderTable()});
+  $('showSecrets').addEventListener('change',()=>{state.showSecrets=$('showSecrets').checked;renderTable();toast(state.showSecrets?'ID / PW SHOWN':'ID / PW HIDDEN')});
+
+  $('clearBtn').addEventListener('click',()=>{
+    if(!state.cards.length){toast('NO DATA');return;}
+    if(!confirm('登録済みの全ギフトカード情報を削除します。元に戻せません。')) return;
+    state.cards=[]; persist(); render(); toast('CLEARED');
+  });
+  $('exportBtn').addEventListener('click',()=>{
+    const payload={app:'GIFT CARD VAULT',version:1.6,exportedAt:now(),currency:'JPY',cards:state.cards.map(normalize)};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}); const a=document.createElement('a'); const d=new Date();
+    const stamp=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    a.href=URL.createObjectURL(blob); a.download=`gift-card-vault_${stamp}.giftcards.json`; document.body.appendChild(a); a.click();
+    const u=a.href; a.remove(); setTimeout(()=>URL.revokeObjectURL(u),1000); toast('EXPORTED');
+  });
+  $('importBtn').addEventListener('click',()=>$('fileInput').click());
+  $('fileInput').addEventListener('change',async()=>{
+    const file=$('fileInput').files?.[0]; if(!file) return;
+    try{
+      const parsed=JSON.parse(await file.text()); const incoming=Array.isArray(parsed)?parsed:parsed.cards; if(!Array.isArray(incoming)) throw new Error('invalid');
+      const cleaned=incoming.map(normalize);
+      const replace=state.cards.length?confirm(`IMPORTする${cleaned.length}件で現在の${state.cards.length}件を置き換えますか？\nOK=置換 / キャンセル=追加`):true;
+      if(state.cards.length && !replace){ const ids=new Set(state.cards.map(c=>c.id)); cleaned.forEach(c=>{if(ids.has(c.id))c.id=uid()}); state.cards=state.cards.concat(cleaned); }
+      else state.cards=cleaned;
+      persist(); render(); toast('IMPORTED');
+    }catch(err){ alert('読み込めるGIFT CARD VAULT形式のJSONではありません。'); toast('IMPORT ERROR'); }
+    finally{$('fileInput').value='';}
+  });
+  $('copySummaryBtn').addEventListener('click',async()=>{
+    const list=filteredCards(); const total=list.reduce((s,c)=>s+(Number(c.balance)||0),0);
+    const text=['GIFT CARD SUMMARY',...list.map((c,i)=>`${i+1}. ${c.name||'(NO NAME)'} / ${yen(c.balance)} / ${c.storage||'-'} / ${statusLabel(c)}`),`TOTAL BALANCE: ${yen(total)}`].join('\n');
+    try{await navigator.clipboard.writeText(text);toast('SUMMARY COPIED')}catch(e){toast('COPY FAILED')}
+  });
+
+  state.cards=safeLoad(); render();
+})();
+</script>
+</body>
+</html>
