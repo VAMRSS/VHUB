@@ -1459,6 +1459,130 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
   font-weight:700;
 }
 
+
+/* v4.6 SEARCH correction selection */
+.search-results-head,
+.search-result-select{
+  grid-template-columns:30px 86px 78px minmax(0,1fr) 190px;
+}
+.search-result-select.selectable{cursor:pointer}
+.search-result-select.selectable.selected{
+  box-shadow:inset 3px 0 0 var(--signal);
+  background:linear-gradient(90deg,var(--signal-soft),transparent 110px);
+}
+.search-select-cell{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.search-select-cell.empty{color:transparent}
+@media(max-width:900px){
+  .search-results-head,
+  .search-result-select{
+    grid-template-columns:28px 72px 64px minmax(0,1fr);
+  }
+  .search-results-head>div:nth-child(5),
+  .search-result-select>div:nth-child(5){display:none}
+}
+
+
+/* v4.7 SEARCH blank-list correction selection */
+.history-memory-row.selectable{
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr);
+  cursor:pointer;
+}
+.history-memory-row.selectable.selected,
+.history-completed-row.selectable.selected{
+  box-shadow:inset 3px 0 0 var(--signal);
+  background:var(--signal-soft);
+}
+.history-browse-check{
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding-top:11px;
+  border-right:.5px solid var(--divider);
+}
+.history-memory-content{
+  min-width:0;
+}
+.history-completed-head,
+.history-completed-row{
+  display:grid;
+  grid-template-columns:30px 68px 92px 110px minmax(0,1fr);
+}
+.history-completed-head{
+  min-height:30px;
+  background:var(--bone);
+  border-bottom:.5px solid var(--divider);
+  font-family:var(--font-euro);
+  font-size:7px;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:var(--mid);
+}
+.history-completed-head>div,
+.history-completed-row>div{
+  min-width:0;
+  padding:8px 9px;
+}
+.history-completed-head>div+div,
+.history-completed-row>div+div{
+  border-left:.5px solid var(--divider);
+}
+.history-completed-row{
+  border-bottom:.5px solid var(--divider);
+  cursor:pointer;
+}
+.history-completed-id{
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+}
+.history-completed-meta{
+  font-size:9px;
+  line-height:1.55;
+  color:var(--mid);
+}
+.history-completed-summary{
+  font-size:10px;
+  line-height:1.65;
+  overflow-wrap:anywhere;
+}
+.history-completed-detail{
+  margin-top:7px;
+  border-top:.5px solid #ececec;
+}
+.history-completed-detail summary{
+  padding:6px 0 2px;
+  cursor:pointer;
+  font-family:var(--font-euro);
+  font-size:7px;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:var(--mid);
+}
+.history-completed-detail pre{
+  margin:0;
+  padding:7px 0 2px;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  font-family:var(--font-mono);
+  font-size:9px;
+  line-height:1.65;
+}
+@media(max-width:900px){
+  .history-completed-head,
+  .history-completed-row{
+    grid-template-columns:28px 62px 82px minmax(0,1fr);
+  }
+  .history-completed-head>div:nth-child(4),
+  .history-completed-row>div:nth-child(4){
+    display:none;
+  }
+}
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -1530,7 +1654,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V4.5 · TOOLBOX CHATGPT</div>
+  <div class="footer-side">CONTEXT LENS / V4.8 · LATEST AI REVIEW FIXS</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -1890,7 +2014,17 @@ function extractHeadingList(text,headingPatterns){
   return items;
 }
 function currentDailyLog(){
-  return state.summary.logs.length?state.summary.logs[state.summary.logs.length-1]:null;
+  const logs=state.summary.logs||[];
+  if(!logs.length)return null;
+  return logs.reduce((latest,log)=>{
+    if(!latest)return log;
+    const a=(String(latest.id||latest.title||'').match(/\d{4}-\d{2}-\d{2}/)||[''])[0];
+    const b=(String(log.id||log.title||'').match(/\d{4}-\d{2}-\d{2}/)||[''])[0];
+    if(!a&&b)return log;
+    if(a&&!b)return latest;
+    if(!a&&!b)return latest;
+    return b>a?log:latest;
+  },null);
 }
 function extractCurrentAIReview(text){
   const current=extractHeadingList(text,[/^###\s+AI REVIEW\s*$/i]);
@@ -2325,6 +2459,73 @@ function snippetAround(text,q){
 function searchKey(r){
   return`SEARCH::${r.type}::${simpleHash([r.type,r.id||'',r.title||'',r.source||'',r.snippet||''].join('|'))}`;
 }
+function parseCompletedIndex(md){
+  const lines=normalize(md).split('\n');
+  for(let i=0;i<lines.length-1;i++){
+    if(/項目番号/.test(lines[i])&&/完了・節目日/.test(lines[i])&&/概要/.test(lines[i])){
+      const t=parseTableAt(lines,i);if(!t)continue;
+      return t.rows.map((r,index)=>({
+        id:(r.obj['項目番号']||r.obj['P ID']||'').trim(),
+        date:(r.obj['完了・節目日']||r.obj['完了日']||'').trim(),
+        field:(r.obj['分野']||r.obj['分類']||'').trim(),
+        summary:(r.obj['概要']||r.obj['完了・節目']||'').trim(),
+        obj:r.obj,index
+      })).filter(x=>x.id||x.summary);
+    }
+  }
+  return[];
+}
+function completedDetailForPid(md,pid){
+  if(!pid)return'';
+  const lines=normalize(md).split('\n');
+  let start=-1;
+  const safe=String(pid).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const re=new RegExp('^####\\s+'+safe+'(?:\\s*[｜|]|\\s*$)');
+  for(let i=0;i<lines.length;i++){
+    if(re.test(lines[i].trim())){start=i;break}
+  }
+  if(start<0)return'';
+  const out=[lines[start].replace(/^####\s+/, '').trim()];
+  for(let i=start+1;i<lines.length;i++){
+    if(/^#{2,4}\s+/.test(lines[i].trim()))break;
+    out.push(lines[i]);
+  }
+  return out.join('\n').trim();
+}
+
+function memorySearchRecord(m,score=0){
+  return{
+    type:'MEMORY',
+    id:m.id,
+    title:m.title,
+    snippet:m.summary,
+    source:m.source,
+    score,
+    memory:m
+  };
+}
+function completedSearchRecord(file,item,score=0){
+  return{
+    type:'COMPLETED',
+    id:item.id,
+    title:item.summary||item.id,
+    snippet:item.summary,
+    source:file.name,
+    score,
+    file,
+    completed:item,
+    detail:completedDetailForPid(file.text,item.id)
+  };
+}
+function blankSearchSelectableResults(){
+  const out=state.memory.map(m=>memorySearchRecord(m,0));
+  const completed=state.active.COMPLETED;
+  if(completed){
+    parseCompletedIndex(completed.text).forEach(item=>out.push(completedSearchRecord(completed,item,0)));
+  }
+  return out;
+}
+
 function historyResults(q){
   q=q.trim();
   if(!q)return[];
@@ -2334,15 +2535,7 @@ function historyResults(q){
   state.memory.forEach(m=>{
     const score=memoryScore(m,q);
     if(score>0){
-      out.push({
-        type:'MEMORY',
-        id:m.id,
-        title:m.title,
-        snippet:m.summary,
-        source:m.source,
-        score:5000+score,
-        memory:m
-      });
+      out.push(memorySearchRecord(m,5000+score));
     }
   });
 
@@ -2361,17 +2554,18 @@ function historyResults(q){
     }
   });
 
-  // COMPLETED contains completed work / milestones.
+  // COMPLETED is searched per permanent P item so individual records can be corrected.
   const completed=state.active.COMPLETED;
-  if(completed&&completed.text.toLowerCase().includes(lower)){
-    out.push({
-      type:'COMPLETED',
-      id:'',
-      title:completed.name,
-      snippet:snippetAround(completed.text,q),
-      source:completed.name,
-      score:900,
-      file:completed
+  if(completed){
+    parseCompletedIndex(completed.text).forEach(item=>{
+      const hay=[item.id,item.date,item.field,item.summary].join('\n').toLowerCase();
+      if(!hay.includes(lower))return;
+      let score=900;
+      if(item.id.toLowerCase()===lower)score+=500;
+      else if(item.id.toLowerCase().includes(lower))score+=250;
+      if(item.summary.toLowerCase().includes(lower))score+=120;
+      if(item.field.toLowerCase().includes(lower))score+=60;
+      out.push(completedSearchRecord(completed,item,score));
     });
   }
 
@@ -2482,17 +2676,45 @@ function renderMemoryBrowse(file){
   const items=parseMemoryIndex(file.text);
   return`<div class="history-preview">
     <div class="history-preview-head"><span class="ui-label">MEMORY</span><span class="history-preview-name">${esc(file.name)}</span></div>
-    ${items.length?items.map(m=>`<article class="history-memory-row">
-      <div class="history-memory-main">
-        <div class="history-memory-id">${esc(m.id)}</div>
-        <div class="history-memory-title">${esc(m.title)}</div>
-        <div class="history-memory-meta">${esc(m.field)}</div>
-        <div class="history-memory-meta">${esc(m.status)}</div>
-      </div>
-      <div class="history-memory-summary">${esc(m.summary)}${m.keywords?`<div class="history-memory-ref">KEYWORDS / ${esc(m.keywords)}</div>`:''}${m.source?`<div class="history-memory-ref">SOURCE / ${esc(m.source)}</div>`:''}</div>
-    </article>`).join(''):'<div class="history-empty">Memory Indexに項目がありません。</div>'}
+    ${items.length?items.map(m=>{
+      const r=memorySearchRecord(m,0),key=searchKey(r),selected=state.selected.has(key);
+      return`<article class="history-memory-row selectable ${selected?'selected':''}" data-key="${esc(key)}">
+        <div class="history-browse-check"><input class="row-check" type="checkbox" ${selected?'checked':''}></div>
+        <div class="history-memory-content">
+          <div class="history-memory-main">
+            <div class="history-memory-id">${esc(m.id)}</div>
+            <div class="history-memory-title">${esc(m.title)}</div>
+            <div class="history-memory-meta">${esc(m.field)}</div>
+            <div class="history-memory-meta">${esc(m.status)}</div>
+          </div>
+          <div class="history-memory-summary">${esc(m.summary)}${m.keywords?`<div class="history-memory-ref">KEYWORDS / ${esc(m.keywords)}</div>`:''}${m.source?`<div class="history-memory-ref">SOURCE / ${esc(m.source)}</div>`:''}</div>
+        </div>
+      </article>`;
+    }).join(''):'<div class="history-empty">Memory Indexに項目がありません。</div>'}
   </div>`;
 }
+function renderCompletedBrowse(file){
+  const items=parseCompletedIndex(file.text);
+  return`<div class="history-preview">
+    <div class="history-preview-head"><span class="ui-label">COMPLETED</span><span class="history-preview-name">${esc(file.name)}</span></div>
+    ${items.length?`<div class="history-completed-head"><div></div><div>P ID</div><div>DATE</div><div>FIELD</div><div>SUMMARY</div></div>`:''}
+    ${items.length?items.map(item=>{
+      const r=completedSearchRecord(file,item,0),key=searchKey(r),selected=state.selected.has(key);
+      const detail=r.detail||'';
+      return`<article class="history-completed-row selectable ${selected?'selected':''}" data-key="${esc(key)}">
+        <div class="history-browse-check"><input class="row-check" type="checkbox" ${selected?'checked':''}></div>
+        <div class="history-completed-id">${esc(item.id||'—')}</div>
+        <div class="history-completed-meta">${esc(item.date||'—')}</div>
+        <div class="history-completed-meta">${esc(item.field||'—')}</div>
+        <div class="history-completed-summary">
+          ${esc(item.summary||'')}
+          ${detail?`<details class="history-completed-detail"><summary>DETAIL</summary><pre>${esc(detail)}</pre></details>`:''}
+        </div>
+      </article>`;
+    }).join(''):'<div class="history-empty">COMPLETEDに項目がありません。</div>'}
+  </div>`;
+}
+
 function parseOriginalEntries(md){
   const lines=normalize(md).split('\n'),entries=[];let i=0;
   while(i<lines.length){
@@ -2528,7 +2750,7 @@ function renderOptimizedHistoryPreview(file){
   if(!file)return'<div class="empty"><strong>SELECT FILE</strong>左側からファイルを選択してください。</div>';
   if(file.type==='MEMORY')return renderMemoryBrowse(file);
   if(file.type==='WEEKLY')return renderSemanticHistory(file,'WEEKLY');
-  if(file.type==='COMPLETED')return renderSemanticHistory(file,'COMPLETED');
+  if(file.type==='COMPLETED')return renderCompletedBrowse(file);
   if(file.type==='ORIGINAL')return renderOriginalBrowse(file);
   return`<pre class="search-browse-source">${esc(file.text)}</pre>`;
 }
@@ -2593,7 +2815,8 @@ Memory Indexに原本参照がある場合は、索引だけで判断せず参�
 
 function renderSearch(){
   const results=historyResults(state.globalQuery);
-  state.searchResultMap=new Map(results.map(r=>[searchKey(r),r]));
+  const mapResults=state.globalQuery.trim()?results:blankSearchSelectableResults();
+  state.searchResultMap=new Map(mapResults.map(r=>[searchKey(r),r]));
   const scopes=['ALL','MEMORY','WEEKLY','COMPLETED','ORIGINAL'];
 
   return`<div class="search-strip">
@@ -2607,13 +2830,17 @@ function renderSearch(){
   </div>
   ${state.globalQuery
     ? results.length
-      ? `<div class="search-results-head"><div>SOURCE</div><div>P ID</div><div>RESULT</div><div>REFERENCE</div></div>`+
-        results.map(r=>`<div class="search-result-select">
-          <div class="result-type">${esc(r.type)}</div>
-          <div class="result-id">${esc(r.id||'—')}</div>
-          <div class="search-result-main"><div class="search-result-title">${esc(r.title)}</div><div class="search-result-snippet">${highlightText(r.snippet,state.globalQuery)}</div></div>
-          <div class="search-result-source">${esc(r.source||'—')}</div>
-        </div>`).join('')
+      ? `<div class="search-results-head"><div></div><div>SOURCE</div><div>P ID</div><div>RESULT</div><div>REFERENCE</div></div>`+
+        results.map(r=>{
+          const key=searchKey(r),canSelect=r.type==='MEMORY'||r.type==='COMPLETED',selected=canSelect&&state.selected.has(key);
+          return`<div class="search-result-select ${canSelect?'selectable':''} ${selected?'selected':''}" ${canSelect?`data-key="${esc(key)}"`:''}>
+            <div class="search-select-cell ${canSelect?'':'empty'}">${canSelect?`<input class="row-check" type="checkbox" ${selected?'checked':''}>`:''}</div>
+            <div class="result-type">${esc(r.type)}</div>
+            <div class="result-id">${esc(r.id||'—')}</div>
+            <div class="search-result-main"><div class="search-result-title">${esc(r.title)}</div><div class="search-result-snippet">${highlightText(r.snippet,state.globalQuery)}</div></div>
+            <div class="search-result-source">${esc(r.source||'—')}</div>
+          </div>`;
+        }).join('')
       : '<div class="empty"><strong>NO RESULTS</strong>該当する履歴情報はありません。</div>'
     : renderSearchBrowse()}`
 }
@@ -2813,14 +3040,18 @@ function contextForKey(key){
     if(r.type==='MEMORY'&&r.memory){
       const m=r.memory;
       return{
-        label:`SEARCH / ${m.id}`,
-        text:`[SEARCH CLUE / MEMORY INDEX]\n検索語：${state.globalQuery}\nP ID：${m.id}\nタイトル：${m.title}\n種別：${m.kind}\n分野：${m.field}\n記憶の要約：${m.summary}\n状態：${m.status}\n基準日：${m.date}\n再開・見直し条件：${m.reopen}\nキーワード：${m.keywords}\n原本参照：${m.source}`
+        label:`${m.id} / MEMORY`,
+        text:`[SEARCH / MEMORY INDEX 訂正候補]\n${state.globalQuery.trim()?`検索語：${state.globalQuery}`:'選択元：SEARCH未検索一覧'}\n対象ファイル：${state.active.MEMORY?.name||'—'}\nP ID：${m.id}\nタイトル：${m.title}\n種別：${m.kind}\n分野：${m.field}\n記憶の要約：${m.summary}\n状態：${m.status}\n基準日：${m.date}\n再開・見直し条件：${m.reopen}\nキーワード：${m.keywords}\n原本参照：${m.source}`
       };
     }
-    return{
-      label:`SEARCH / ${r.type}`,
-      text:`[SEARCH CLUE / ${r.type}]\n検索語：${state.globalQuery}\n候補ファイル：${r.source||r.title}\n一致箇所の抜粋：${r.snippet}`
-    };
+    if(r.type==='COMPLETED'&&r.completed){
+      const c=r.completed;
+      return{
+        label:`${c.id||'COMPLETED'} / COMPLETED`,
+        text:`[SEARCH / COMPLETED 訂正候補]\n${state.globalQuery.trim()?`検索語：${state.globalQuery}`:'選択元：SEARCH未検索一覧'}\n対象ファイル：${r.source}\nP ID：${c.id||'—'}\n完了・節目日：${c.date||'—'}\n分野：${c.field||'—'}\n概要：${c.summary||'—'}${r.detail?`\n\n【詳細記録】\n${r.detail}`:''}`
+      };
+    }
+    return null;
   }
   return null
 }
@@ -2829,22 +3060,43 @@ function saveNotes(){try{localStorage.setItem(NOTES_KEY,JSON.stringify(Object.fr
 function selectedContexts(){return[...state.selected].map(k=>({key:k,c:contextForKey(k)})).filter(x=>x.c)}
 function renderItemNotes(){
   const shell=$('itemNotes'),list=$('itemNotesList');
-  if(state.primary==='SEARCH'&&state.globalQuery.trim()){
-    shell.classList.add('open');
-    list.innerHTML=`<div class="item-note">
-      <div class="item-note-meta">
-        <span class="item-note-id">SEARCH</span>
-        <span class="item-note-label">${esc(state.globalQuery)}</span>
-        <span class="item-note-section">SEARCH</span>
-      </div>
-      <textarea class="item-note-text search-chat-note" placeholder="この項目への追記・修正・回答を入力…">${esc(state.searchNote)}</textarea>
-    </div>`;
-    document.querySelector('.search-chat-note')?.addEventListener('input',e=>{
-      state.searchNote=e.target.value;
-      refreshPromptOnly();
-    });
+
+  if(state.primary==='SEARCH'){
+    const selectedSearch=selectedContexts().filter(x=>x.key.startsWith('SEARCH::'));
+
+    if(selectedSearch.length){
+      shell.classList.add('open');
+      list.innerHTML=selectedSearch.map(({key,c})=>`<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc(c.text.split('\n')[0])}</span><span class="item-note-section">SEARCH</span></div><textarea class="item-note-text" data-note-key="${esc(key)}" placeholder="この項目への追記・修正・回答を入力…">${esc(noteForKey(key))}</textarea></div>`).join('');
+      document.querySelectorAll('[data-note-key]').forEach(t=>t.addEventListener('input',e=>{
+        state.notes.set(e.target.dataset.noteKey,e.target.value);
+        saveNotes();
+        refreshPromptOnly();
+      }));
+      return;
+    }
+
+    if(state.globalQuery.trim()){
+      shell.classList.add('open');
+      list.innerHTML=`<div class="item-note">
+        <div class="item-note-meta">
+          <span class="item-note-id">SEARCH</span>
+          <span class="item-note-label">${esc(state.globalQuery)}</span>
+          <span class="item-note-section">SEARCH</span>
+        </div>
+        <textarea class="item-note-text search-chat-note" placeholder="この項目への追記・修正・回答を入力…">${esc(state.searchNote)}</textarea>
+      </div>`;
+      document.querySelector('.search-chat-note')?.addEventListener('input',e=>{
+        state.searchNote=e.target.value;
+        refreshPromptOnly();
+      });
+      return;
+    }
+
+    shell.classList.remove('open');
+    list.innerHTML='';
     return;
   }
+
   const contexts=selectedContexts();
   if(!contexts.length){shell.classList.remove('open');list.innerHTML='';return}
   shell.classList.add('open');list.innerHTML=contexts.map(({key,c})=>`<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc(c.text.split('\n')[0])}</span><span class="item-note-section">${esc(key.split('::')[0])}</span></div><textarea class="item-note-text" data-note-key="${esc(key)}" placeholder="この項目への追記・修正・回答を入力…">${esc(noteForKey(key))}</textarea></div>`).join('');
@@ -2854,9 +3106,12 @@ function renderItemNotes(){
     refreshPromptOnly();
   }))
 }
+
 function buildPrompt(){
-  if(state.primary==='SEARCH'&&state.globalQuery.trim())return buildSearchAssistPrompt();
-  const ctx=selectedContexts();if(!ctx.length)return'左側の項目を選択すると、ChatGPTへ貼り付ける文章がここに生成されます。';
+  const allCtx=selectedContexts();
+  const selectedSearch=state.primary==='SEARCH'?allCtx.filter(x=>x.key.startsWith('SEARCH::')):[];
+  if(state.primary==='SEARCH'&&state.globalQuery.trim()&&!selectedSearch.length)return buildSearchAssistPrompt();
+  const ctx=state.primary==='SEARCH'?selectedSearch:allCtx;if(!ctx.length)return'左側の項目を選択すると、ChatGPTへ貼り付ける文章がここに生成されます。';
   const body=ctx.map(({key,c},i)=>`${ctx.length>1?`【対象${i+1}】\n`:''}${c.text}\n\n【この項目への追記・指示】\n${noteForKey(key).trim()||'（なし）'}`).join('\n\n--------------------\n\n');
   const hasDate=ctx.some(x=>x.key.startsWith('DATE::'));
   const hasMemory=ctx.some(x=>x.key.startsWith('MEMORY::'));
@@ -2865,6 +3120,8 @@ function buildPrompt(){
   const hasProfile=ctx.some(x=>x.key.startsWith('PROFILE::'));
   const hasToolbox=ctx.some(x=>x.key.startsWith('TOOLBOX::'));
   const hasSearch=ctx.some(x=>x.key.startsWith('SEARCH::'));
+  const hasSearchMemory=ctx.some(x=>x.key.startsWith('SEARCH::')&&x.c.text.startsWith('[SEARCH / MEMORY INDEX'));
+  const hasSearchCompleted=ctx.some(x=>x.key.startsWith('SEARCH::')&&x.c.text.startsWith('[SEARCH / COMPLETED'));
   let head='';
   if(hasDate)head='DATE対象はCURRENTのT10への新規予定追加です。既存S番号を振り直さず、次の未使用S番号を使用し、指定日をYYYY-MM-DDで反映してください。不明事項は推測しないでください。\n\n';
   if(hasMemory)head+='MEMORY対象は過去の決定・確認事項へアクセスする索引です。追記・修正指示により現在状態や判断が変わる場合は、Memory Indexだけを機械的に書き換えず、必要に応じてCURRENTのT02/T04(OPEN QUESTION)/T10、日別ログ、Memory Indexの状態・原本参照を整合させてください。詳細事実が必要なら原本参照先を確認してください。\n\n';
@@ -2872,14 +3129,24 @@ function buildPrompt(){
   if(hasOpenQuestion)head+='OPEN QUESTIONは翌日以降も追跡可能な未解決事項です。回答・判断・確認結果が得られた場合は、ユーザーの指示に従ってT04の現在状態等を更新してください。LCAPP側の都合でAI REVIEWへコピーしたり、解決・持越しを独自判定したりしないでください。\n\n';
   if(hasProfile)head+='PROFILE対象は長期的に安定して参照する人物・家族・仕事関係・所属・活動背景等の情報です。追記・修正指示のうち、長期的に保持すべき背景情報だけをPROFILEへ反映してください。一時的な進捗、今日だけの出来事、期限、未解決確認はPROFILEへ混在させず、必要に応じてCURRENTのT02・T04（OPEN QUESTION）・T10や日別ログへ反映してください。既存情報の訂正では重複を作らず、より新しい明示的情報を優先してください。\n\n';
   if(hasToolbox)head+='TOOLBOX対象は、再利用するために保存された定型文・指示文です。TOOLBOXのCOPY本文を今回の作業指示として使用し、「この項目への追記・指示」がある場合はその内容も加味してください。ユーザーがTOOL自体の改訂を明示的に依頼していない限り、TOOLBOX正本を書き換える前提では扱わないでください。\n\n';
-  if(hasSearch)head+='以下はLIVING CONTEXTの過去情報を探すためにLCAPPで抽出した検索候補です。LCAPPの抜粋だけで最終回答せず、この候補を手掛かりとして、このチャットからアクセスできる保存済みLIVING CONTEXTファイルを検索してください。MEMORY INDEXは索引として扱い、原本参照がある場合は該当するWEEKLY等の原本を実際に確認してください。必要に応じて関連するWEEKLY、COMPLETED、ORIGINAL、PROFILEも追加で検索し、ユーザーが知りたい内容へ到達してください。P番号は永久IDとして維持し、異なるP番号を推測で統合しないでください。確認できない内容は推測せず、どこまで原本確認できたかを明示してください。各対象の「この項目への追記・指示」は、今回知りたいこと・確認したいこととして扱ってください。\n\n';
+  if(hasSearch)head+='以下はSEARCHから個別に選択されたLIVING CONTEXTの記録です。「この項目への追記・指示」を、対象記録の修正・訂正・確認依頼として扱ってください。LCAPP表示だけで機械的に正本を書き換えず、このチャットからアクセスできる保存済みLIVING CONTEXTファイルを必要な範囲で確認し、根拠が取れた内容に基づいて反映してください。P番号は永久IDとして維持し、再採番・別Pとの推測統合はしないでください。\n\n';
+  if(hasSearchMemory)head+='MEMORY INDEXは過去情報への索引であり、詳細事実の原本ではありません。MEMORYの訂正では、原本参照先のWEEKLY等を可能な限り確認し、記憶の要約・状態・基準日・再開条件・キーワード・原本参照のうち必要な箇所だけを修正してください。原本自体の事実も誤っているとユーザーが明示した場合は、その指示を尊重しつつ、どのファイルを訂正すべきか区別してください。\n\n';
+  if(hasSearchCompleted)head+='COMPLETEDは完了・節目の正式記録です。訂正では該当P IDを維持し、完了・節目日、分野、概要、詳細記録の整合を確認してください。必要に応じて当時の日別ログ・WEEKLY・ORIGINAL等を確認し、完了記録だけを推測で変更しないでください。\n\n';
   return head+body
 }
 function refreshPromptOnly(){
   $('promptOutput').value=buildPrompt();
-  if(state.primary==='SEARCH'&&state.globalQuery.trim()){
-    const n=searchCandidateFiles().length;
-    $('composerCount').textContent=`${n} FILE${n===1?'':'S'}`;
+  if(state.primary==='SEARCH'){
+    const selectedSearch=selectedContexts().filter(x=>x.key.startsWith('SEARCH::'));
+    if(selectedSearch.length){
+      const n=selectedSearch.length;
+      $('composerCount').textContent=`${n} ITEM${n===1?'':'S'}`;
+    }else if(state.globalQuery.trim()){
+      const n=searchCandidateFiles().length;
+      $('composerCount').textContent=`${n} FILE${n===1?'':'S'}`;
+    }else{
+      $('composerCount').textContent='0 ITEMS';
+    }
     return;
   }
   const n=state.selected.size;
@@ -2958,6 +3225,8 @@ function bindDynamic(){
     render();
   }));
   document.querySelector('[data-search-reset]')?.addEventListener('click',()=>{
+    [...state.selected].filter(k=>k.startsWith('SEARCH::')).forEach(k=>{state.selected.delete(k);state.notes.delete(k)});
+    saveNotes();
     state.globalQuery='';
     state.searchNote='';
     state.searchScope='ALL';
