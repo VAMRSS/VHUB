@@ -692,9 +692,195 @@ to{transform:translateX(calc(-100% - 100vw))}
   .mt-drawer,.mt-scrim{transition-duration:.001ms!important}
 }
 
+
+/* ============================================================
+   WEB APP UI SYSTEM v1.3 — final compliance layer
+   Header / Footer = full viewport
+   Main Content only = user-selectable width
+   ============================================================ */
+:root{
+  --app-max-width:100vw;
+  --signal-mid:rgba(200,31,58,.24);
+  --signal-strong:rgba(200,31,58,.32);
+  --green-mid:rgba(22,138,82,.24);
+  --green-strong:rgba(22,138,82,.32);
+}
+
+body[data-width-mode="fit"]{--app-max-width:100vw}
+body[data-width-mode="720"]{--app-max-width:720px}
+body[data-width-mode="960"]{--app-max-width:960px}
+body[data-width-mode="1200"]{--app-max-width:1200px}
+body[data-width-mode="1440"]{--app-max-width:1440px}
+
+.app-shell{
+  width:min(100%,var(--app-max-width));
+  min-height:100vh;
+  margin:0 auto;
+}
+
+/* v1.3 standard page geometry */
+.page{
+  width:100%;
+  padding:20px 20px 110px;
+}
+
+/* Header stays viewport-wide. 86px is the v1.3 PC standard.
+   Secretary review remains integrated into that total height. */
+.header{
+  width:100%;
+  height:86px;
+  min-height:86px;
+  padding:0 20px 22px;
+  gap:20px;
+}
+.header-center{
+  font-size:8px;
+}
+.review-ticker{
+  height:22px;
+  padding:0 20px;
+}
+
+/* Tabs reuse Ghost Button behavior: no filled active pill/block. */
+.section-tab{
+  background:transparent!important;
+  color:var(--muted);
+  font-weight:400;
+}
+.section-tab:hover{
+  background:#fafafa!important;
+  color:var(--black);
+}
+.section-tab.active{
+  background:transparent!important;
+  color:var(--black)!important;
+  font-weight:700;
+}
+.section-tab.review-tab.active{
+  background:transparent!important;
+  color:var(--signal)!important;
+  font-weight:700;
+}
+
+/* Sticky prompt pane follows the v1.3 header/footer geometry. */
+.composer{
+  top:86px!important;
+  height:calc(100vh - 138px)!important;
+  min-height:520px;
+  max-height:calc(100vh - 138px)!important;
+}
+
+/* No decorative drop shadow. Inset lines remain allowed elsewhere. */
+.mt-drawer{
+  box-shadow:none!important;
+}
+
+/* Footer is always full browser width and always three-part. */
+.footer-strip{
+  width:100%;
+  min-height:52px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:20px;
+  padding:0 20px;
+}
+.footer-main{
+  justify-self:start;
+  min-width:0;
+}
+.footer-width{
+  justify-self:center;
+}
+.footer-side{
+  justify-self:end;
+  min-width:0;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.footer-main,
+.footer-side,
+.width-switcher{
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.width-switcher{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  white-space:nowrap;
+}
+.width-btn{
+  appearance:none;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--muted);
+  padding:0;
+  cursor:pointer;
+  font:inherit;
+  letter-spacing:inherit;
+  text-transform:inherit;
+}
+.width-btn:hover{color:var(--black)}
+.width-btn.active{
+  color:var(--black);
+  font-weight:700;
+}
+.width-switcher .separator{color:var(--muted)}
+
+/* v1.3 responsive baseline */
+@media(max-width:900px){
+  .header{
+    grid-template-columns:1fr auto;
+    height:auto;
+    min-height:72px;
+    padding:14px 14px 22px;
+  }
+  .header-center{display:none}
+  .review-ticker{padding:0 14px}
+  .page{padding:16px 14px 100px}
+
+  .workspace{grid-template-columns:1fr}
+  .composer{
+    position:static!important;
+    height:auto!important;
+    min-height:520px;
+    max-height:none!important;
+    border-left:0;
+    border-top:.5px solid var(--divider);
+  }
+
+  .footer-strip{
+    gap:10px;
+    padding:0 14px;
+  }
+  .footer-main,
+  .footer-side{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .width-switcher{gap:4px}
+}
+
+@media(max-width:620px){
+  .footer-main,
+  .footer-side{display:none}
+  .footer-strip{
+    grid-template-columns:1fr;
+    justify-items:center;
+  }
+  .footer-width{justify-self:center}
+}
+
 </style>
 </head>
-<body>
+<body data-width-mode="fit">
 <header class="header">
   <div class="brand"><span class="signal-block"></span><span>CONTEXT LENS / LIVING CONTEXT</span></div>
   <div class="header-center">MARKDOWN SUMMARY / LOCAL PROCESSING</div>
@@ -711,6 +897,7 @@ to{transform:translateX(calc(-100% - 100vw))}
   </div>
 </header>
 
+<div class="app-shell">
 <main class="page">
   <div class="drop-zone" id="dropZone">
     <div><div class="drop-title">DROP MARKDOWN FILE</div><div class="drop-note">living-context-summary_*.md をここへドロップ</div></div>
@@ -737,6 +924,7 @@ to{transform:translateX(calc(-100% - 100vw))}
     </aside>
   </section>
 </main>
+</div>
 
 <div class="mt-scrim" id="mtScrim" aria-hidden="true"></div>
 <aside class="mt-drawer" id="mtDrawer" aria-hidden="true" aria-label="MEMOTIME">
@@ -790,7 +978,23 @@ to{transform:translateX(calc(-100% - 100vw))}
   </div>
 </aside>
 
-<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.14 · MEMOTIME MORNING PAGE COPY</div></footer>
+<footer class="footer-strip">
+  <div class="footer-main footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div>
+  <div class="footer-width">
+    <nav class="width-switcher" aria-label="Application width">
+      <button class="width-btn active" type="button" data-width="fit">FIT</button>
+      <span class="separator" aria-hidden="true">/</span>
+      <button class="width-btn" type="button" data-width="720">720</button>
+      <span class="separator" aria-hidden="true">/</span>
+      <button class="width-btn" type="button" data-width="960">960</button>
+      <span class="separator" aria-hidden="true">/</span>
+      <button class="width-btn" type="button" data-width="1200">1200</button>
+      <span class="separator" aria-hidden="true">/</span>
+      <button class="width-btn" type="button" data-width="1440">1440</button>
+    </nav>
+  </div>
+  <div class="footer-side footer-right">CONTEXT LENS / V1.15 · UI SYSTEM 1.3</div>
+</footer>
 <div class="toast" id="toast">COPIED</div>
 <input class="file-input" type="file" id="fileInput" accept=".md,.markdown,text/markdown,text/plain">
 
@@ -798,8 +1002,31 @@ to{transform:translateX(calc(-100% - 100vw))}
 (() => {
   const STORAGE_KEY = 'context-lens-source-v1';
   const NOTES_KEY = 'context-lens-item-notes-v1';
+
+  const WIDTH_STORAGE_KEY = 'web-app-ui-width';
+  const VALID_WIDTHS = ['fit','720','960','1200','1440'];
+
+  function applyWidthMode(mode,persist=true){
+    const value=VALID_WIDTHS.includes(mode)?mode:'fit';
+    document.body.dataset.widthMode=value;
+    document.querySelectorAll('.width-btn').forEach(btn=>{
+      btn.classList.toggle('active',btn.dataset.width===value);
+    });
+    if(persist){
+      try{ localStorage.setItem(WIDTH_STORAGE_KEY,value); }catch{}
+    }
+  }
+
   const state = { source:'', fileName:'', sections:[], logs:[], selected:new Set(), notes:new Map(), mode:'free', query:'', section:'T10', showLogs:true, calendarOffset:0, reviewItems:[], reviewIndex:0, reviewTimer:null };
   const $ = id => document.getElementById(id);
+
+  document.querySelectorAll('.width-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>applyWidthMode(btn.dataset.width));
+  });
+
+  let savedWidth='fit';
+  try{ savedWidth=localStorage.getItem(WIDTH_STORAGE_KEY)||'fit'; }catch{}
+  applyWidthMode(savedWidth,false);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const normalize = s => String(s ?? '').replace(/\r\n/g,'\n');
 
