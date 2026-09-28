@@ -490,6 +490,208 @@ to{transform:translateX(calc(-100% - 100vw))}
   color:var(--white);
 }
 
+
+/* v1.13 MEMOTIME drawer */
+.mt-scrim{
+  position:fixed;
+  inset:0;
+  z-index:108;
+  background:rgba(10,10,10,.16);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .16s ease;
+}
+.mt-scrim.open{
+  opacity:1;
+  pointer-events:auto;
+}
+.mt-drawer{
+  position:fixed;
+  top:0;
+  right:0;
+  bottom:0;
+  z-index:110;
+  width:min(440px,100vw);
+  display:flex;
+  flex-direction:column;
+  background:var(--white);
+  border-left:.5px solid var(--divider);
+  transform:translateX(100%);
+  transition:transform .18s ease;
+  box-shadow:-14px 0 34px rgba(10,10,10,.06);
+}
+.mt-drawer.open{transform:translateX(0)}
+.mt-head{
+  flex:0 0 54px;
+  min-height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:0 16px;
+  border-bottom:.5px solid var(--divider);
+}
+.mt-brand{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.mt-content{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.mt-timer{
+  flex:0 0 auto;
+  padding:14px 16px;
+  border-bottom:.5px solid var(--divider);
+  background:var(--bone);
+}
+.mt-section-label,
+.mt-state-kicker,
+.mt-local{
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.mt-section-label{font-weight:700;color:var(--black)}
+.mt-local{margin-top:4px;color:var(--muted)}
+.mt-timer-controls{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr)) auto;
+  gap:12px;
+  align-items:end;
+  margin-top:14px;
+}
+.mt-time-field{
+  display:grid;
+  gap:5px;
+  min-width:0;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  color:var(--mid);
+}
+.mt-time-field input{
+  width:100%;
+  height:30px;
+  padding:2px 0;
+  border:0;
+  border-bottom:.5px solid var(--divider);
+  outline:0;
+  background:transparent;
+  color:var(--black);
+  font-family:var(--font-euro);
+  font-size:13px;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.mt-time-field input:focus{border-bottom-color:var(--black)}
+.mt-primary{
+  height:30px;
+  border:0;
+  background:var(--black);
+  color:var(--white);
+  padding:0 13px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.mt-timer-state{
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:.5px solid var(--divider);
+}
+.mt-timer-state.active{display:flex}
+.mt-state-kicker{color:var(--muted);margin-bottom:6px}
+.mt-remaining{
+  font-family:var(--font-euro);
+  font-size:28px;
+  line-height:1;
+  font-weight:700;
+  letter-spacing:1px;
+  font-variant-numeric:tabular-nums;
+}
+.mt-done .mt-remaining{color:var(--signal)}
+.mt-memo{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+.mt-memo-head{
+  flex:0 0 auto;
+  min-height:52px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:8px 14px;
+  border-bottom:.5px solid var(--divider);
+}
+.mt-memo-actions{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+#mtMemo{
+  flex:1;
+  min-height:180px;
+  width:100%;
+  resize:none;
+  border:0;
+  outline:0;
+  margin:0;
+  padding:15px 14px 18px;
+  background:var(--white);
+  color:var(--black);
+  font-family:var(--font-mono);
+  font-size:13px;
+  line-height:1.85;
+  white-space:pre-wrap;
+  overflow-wrap:break-word;
+}
+#mtMemo:focus{box-shadow:inset 0 -1px 0 var(--black)}
+#mtMemo::placeholder{color:var(--muted)}
+.mt-memo-status{
+  flex:0 0 28px;
+  min-height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  padding:0 14px;
+  border-top:.5px solid var(--divider);
+  color:var(--green);
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+#memotimeToggleBtn.mt-active{font-weight:700}
+#memotimeToggleBtn.mt-complete{color:var(--signal)}
+@media(max-width:560px){
+  .mt-drawer{width:100vw}
+  .mt-timer-controls{grid-template-columns:repeat(3,1fr)}
+  .mt-primary{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){
+  .mt-drawer,.mt-scrim{transition-duration:.001ms!important}
+}
+
 </style>
 </head>
 <body>
@@ -497,6 +699,7 @@ to{transform:translateX(calc(-100% - 100vw))}
   <div class="brand"><span class="signal-block"></span><span>CONTEXT LENS / LIVING CONTEXT</span></div>
   <div class="header-center">MARKDOWN SUMMARY / LOCAL PROCESSING</div>
   <div class="header-actions">
+    <button class="ghost" id="memotimeToggleBtn" type="button">MEMOTIME</button>
     <button class="ghost" id="importBtn">IMPORT MD</button>
     <button class="ghost" id="pasteBtn">PASTE</button>
     <button class="ghost danger" id="clearBtn">CLEAR</button>
@@ -535,7 +738,59 @@ to{transform:translateX(calc(-100% - 100vw))}
   </section>
 </main>
 
-<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.12 · AI REVIEW ANSWERS</div></footer>
+<div class="mt-scrim" id="mtScrim" aria-hidden="true"></div>
+<aside class="mt-drawer" id="mtDrawer" aria-hidden="true" aria-label="MEMOTIME">
+  <div class="mt-head">
+    <div class="mt-brand"><span class="signal-block" aria-hidden="true"></span><span>MEMOTIME</span></div>
+    <button class="ghost" id="mtCloseBtn" type="button">CLOSE</button>
+  </div>
+
+  <div class="mt-content">
+    <section class="mt-timer" aria-label="Countdown timer">
+      <div class="mt-section-label">TIMER / COUNTDOWN</div>
+
+      <div class="mt-timer-controls" id="mtTimerControls">
+        <label class="mt-time-field">HOUR<input id="mtHours" type="number" min="0" max="99" inputmode="numeric"></label>
+        <label class="mt-time-field">MIN<input id="mtMinutes" type="number" min="0" max="59" inputmode="numeric"></label>
+        <label class="mt-time-field">SEC<input id="mtSeconds" type="number" min="0" max="59" inputmode="numeric"></label>
+        <button class="mt-primary" id="mtStartBtn" type="button">START</button>
+      </div>
+
+      <div class="mt-timer-state" id="mtRunningState" aria-live="polite">
+        <div>
+          <div class="mt-state-kicker">RUNNING / TIME REMAINING</div>
+          <div class="mt-remaining" id="mtRemaining">00:00</div>
+        </div>
+        <button class="ghost danger" id="mtStopBtn" type="button">STOP</button>
+      </div>
+
+      <div class="mt-timer-state mt-done" id="mtDoneState" aria-live="assertive">
+        <div>
+          <div class="mt-state-kicker">COMPLETE / TIMER</div>
+          <div class="mt-remaining">TIME UP.</div>
+        </div>
+        <button class="ghost" id="mtResetBtn" type="button">RESET</button>
+      </div>
+    </section>
+
+    <section class="mt-memo">
+      <div class="mt-memo-head">
+        <div>
+          <div class="mt-section-label">MEMO / 作業メモ</div>
+          <div class="mt-local">AUTO SAVE / LOCAL</div>
+        </div>
+        <div class="mt-memo-actions">
+          <button class="ghost danger" id="mtClearMemoBtn" type="button">CLEAR</button>
+          <button class="ghost" id="mtCopyMemoBtn" type="button">COPY</button>
+        </div>
+      </div>
+      <textarea id="mtMemo" spellcheck="false" placeholder="Type here." aria-label="MEMOTIME memo"></textarea>
+      <div class="mt-memo-status" id="mtMemoStatus" aria-live="polite"></div>
+    </section>
+  </div>
+</aside>
+
+<footer class="footer-strip"><div class="footer-left" id="footerStatus">READY · IMPORT A SUMMARY MD</div><div class="footer-right">CONTEXT LENS / V1.14 · MEMOTIME MORNING PAGE COPY</div></footer>
 <div class="toast" id="toast">COPIED</div>
 <input class="file-input" type="file" id="fileInput" accept=".md,.markdown,text/markdown,text/plain">
 
@@ -1041,7 +1296,219 @@ to{transform:translateX(calc(-100% - 100vw))}
     toast('INPUTS & SELECTION CLEARED');
   });
 
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ state.selected.clear(); render(); } });
+  // MEMOTIME ------------------------------------------------------------
+  const mtDrawer=$('mtDrawer');
+  const mtScrim=$('mtScrim');
+  const mtToggleBtn=$('memotimeToggleBtn');
+  const mtCloseBtn=$('mtCloseBtn');
+  const mtMemo=$('mtMemo');
+  const mtMemoStatus=$('mtMemoStatus');
+  const mtClearMemoBtn=$('mtClearMemoBtn');
+  const mtCopyMemoBtn=$('mtCopyMemoBtn');
+  const mtHours=$('mtHours');
+  const mtMinutes=$('mtMinutes');
+  const mtSeconds=$('mtSeconds');
+  const mtTimerControls=$('mtTimerControls');
+  const mtRunningState=$('mtRunningState');
+  const mtDoneState=$('mtDoneState');
+  const mtRemaining=$('mtRemaining');
+  const mtStartBtn=$('mtStartBtn');
+  const mtStopBtn=$('mtStopBtn');
+  const mtResetBtn=$('mtResetBtn');
+
+  let mtEndAt=null;
+  let mtTimerId=null;
+  let mtStatusId=null;
+  let mtAudioContext=null;
+
+  function mtOpen(){
+    mtDrawer.classList.add('open');
+    mtScrim.classList.add('open');
+    mtDrawer.setAttribute('aria-hidden','false');
+    mtScrim.setAttribute('aria-hidden','false');
+    mtToggleBtn.classList.add('mt-active');
+    setTimeout(()=>mtMemo.focus(),30);
+  }
+
+  function mtClose(){
+    mtDrawer.classList.remove('open');
+    mtScrim.classList.remove('open');
+    mtDrawer.setAttribute('aria-hidden','true');
+    mtScrim.setAttribute('aria-hidden','true');
+    mtToggleBtn.classList.remove('mt-active');
+  }
+
+  function mtClamp(value,min,max){
+    const n=Number.parseInt(value,10);
+    if(Number.isNaN(n)) return min;
+    return Math.min(max,Math.max(min,n));
+  }
+
+  function mtSanitize(){
+    mtHours.value=mtClamp(mtHours.value,0,99);
+    mtMinutes.value=mtClamp(mtMinutes.value,0,59);
+    mtSeconds.value=mtClamp(mtSeconds.value,0,59);
+  }
+
+  function mtSaveTimerSettings(){
+    try{
+      localStorage.setItem('memotime.hours',mtHours.value);
+      localStorage.setItem('memotime.minutes',mtMinutes.value);
+      localStorage.setItem('memotime.seconds',mtSeconds.value);
+    }catch{}
+  }
+
+  function mtShowStatus(message){
+    clearTimeout(mtStatusId);
+    mtMemoStatus.textContent=message;
+    mtStatusId=setTimeout(()=>{ mtMemoStatus.textContent=''; },1000);
+  }
+
+  async function mtCopyMemo(){
+    const value=mtMemo.value;
+    if(!value){ mtShowStatus('EMPTY'); return; }
+    const copyValue=`本日のモーニングページです。\n\n${value}`;
+    try{
+      await navigator.clipboard.writeText(copyValue);
+      mtShowStatus('COPIED');
+    }catch{
+      const temp=document.createElement('textarea');
+      temp.value=copyValue;
+      temp.setAttribute('readonly','');
+      temp.style.position='fixed';
+      temp.style.opacity='0';
+      document.body.appendChild(temp);
+      temp.select();
+      const ok=document.execCommand('copy');
+      temp.remove();
+      if(ok) mtShowStatus('COPIED');
+    }
+  }
+
+  function mtPrepareAudio(){
+    try{
+      const A=window.AudioContext||window.webkitAudioContext;
+      if(!A) return;
+      if(!mtAudioContext) mtAudioContext=new A();
+      if(mtAudioContext.state==='suspended') mtAudioContext.resume();
+    }catch{}
+  }
+
+  function mtBeep(){
+    try{
+      if(!mtAudioContext) return;
+      const now=mtAudioContext.currentTime;
+      const osc=mtAudioContext.createOscillator();
+      const gain=mtAudioContext.createGain();
+      osc.type='sine';
+      osc.frequency.setValueAtTime(880,now);
+      gain.gain.setValueAtTime(.0001,now);
+      gain.gain.exponentialRampToValueAtTime(.16,now+.02);
+      gain.gain.exponentialRampToValueAtTime(.0001,now+.72);
+      osc.connect(gain);
+      gain.connect(mtAudioContext.destination);
+      osc.start(now);
+      osc.stop(now+.74);
+    }catch{}
+  }
+
+  function mtFormatRemaining(ms){
+    const total=Math.ceil(ms/1000);
+    const h=Math.floor(total/3600);
+    const m=Math.floor((total%3600)/60);
+    const s=total%60;
+    return h>0
+      ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+      : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  function mtUpdateRemaining(ms=Math.max(0,(mtEndAt??Date.now())-Date.now())){
+    mtRemaining.textContent=mtFormatRemaining(ms);
+  }
+
+  function mtCheckTimer(){
+    if(mtEndAt===null) return;
+    const ms=Math.max(0,mtEndAt-Date.now());
+    mtUpdateRemaining(ms);
+    if(ms>0) return;
+    clearInterval(mtTimerId);
+    mtTimerId=null;
+    mtEndAt=null;
+    mtRunningState.classList.remove('active');
+    mtDoneState.classList.add('active');
+    mtToggleBtn.classList.add('mt-complete');
+    mtToggleBtn.textContent='MEMOTIME · TIME UP';
+    mtBeep();
+    if('vibrate' in navigator) navigator.vibrate([180,80,180]);
+  }
+
+  function mtResetTimer(){
+    clearInterval(mtTimerId);
+    mtTimerId=null;
+    mtEndAt=null;
+    mtRemaining.textContent='00:00';
+    mtRunningState.classList.remove('active');
+    mtDoneState.classList.remove('active');
+    mtTimerControls.style.display='';
+    mtToggleBtn.classList.remove('mt-complete');
+    mtToggleBtn.textContent='MEMOTIME';
+  }
+
+  mtToggleBtn.addEventListener('click',()=>mtDrawer.classList.contains('open')?mtClose():mtOpen());
+  mtCloseBtn.addEventListener('click',mtClose);
+  mtScrim.addEventListener('click',mtClose);
+
+  mtMemo.value=localStorage.getItem('memotime.memo')||'';
+  mtHours.value=localStorage.getItem('memotime.hours')??'0';
+  mtMinutes.value=localStorage.getItem('memotime.minutes')??'25';
+  mtSeconds.value=localStorage.getItem('memotime.seconds')??'0';
+
+  mtMemo.addEventListener('input',()=>{
+    try{ localStorage.setItem('memotime.memo',mtMemo.value); }catch{}
+  });
+  mtCopyMemoBtn.addEventListener('click',mtCopyMemo);
+  mtClearMemoBtn.addEventListener('click',()=>{
+    if(!mtMemo.value){ mtShowStatus('EMPTY'); return; }
+    mtMemo.value='';
+    try{ localStorage.removeItem('memotime.memo'); }catch{}
+    mtShowStatus('CLEARED');
+    mtMemo.focus();
+  });
+
+  [mtHours,mtMinutes,mtSeconds].forEach(input=>{
+    input.addEventListener('change',()=>{
+      mtSanitize();
+      mtSaveTimerSettings();
+    });
+  });
+
+  mtStartBtn.addEventListener('click',()=>{
+    mtSanitize();
+    mtSaveTimerSettings();
+    const duration=((Number(mtHours.value)*3600)+(Number(mtMinutes.value)*60)+Number(mtSeconds.value))*1000;
+    if(duration<=0){ mtShowStatus('SET TIME'); return; }
+    mtPrepareAudio();
+    mtEndAt=Date.now()+duration;
+    mtTimerControls.style.display='none';
+    mtDoneState.classList.remove('active');
+    mtRunningState.classList.add('active');
+    mtToggleBtn.classList.remove('mt-complete');
+    mtToggleBtn.textContent='MEMOTIME';
+    mtUpdateRemaining(duration);
+    clearInterval(mtTimerId);
+    mtTimerId=setInterval(mtCheckTimer,250);
+    mtCheckTimer();
+  });
+
+  mtStopBtn.addEventListener('click',mtResetTimer);
+  mtResetBtn.addEventListener('click',mtResetTimer);
+
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Escape') return;
+    if(mtDrawer.classList.contains('open')){ mtClose(); return; }
+    state.selected.clear();
+    render();
+  });
   window.addEventListener('dragenter',e=>{e.preventDefault();$('dropZone').classList.add('active')});
   window.addEventListener('dragover',e=>e.preventDefault());
   window.addEventListener('dragleave',e=>{if(e.target===document.documentElement||e.target===document.body)$('dropZone').classList.remove('active')});
