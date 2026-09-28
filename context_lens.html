@@ -1248,6 +1248,217 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
   .open-question-item>div:nth-child(6){display:none}
 }
 
+
+.toolbox-head>div:nth-child(3),
+  .toolbox-row>div:nth-child(3),
+  .toolbox-head>div:nth-child(4),
+  .toolbox-row>div:nth-child(4){
+    display:none;
+  }
+  .toolbox-info{
+    grid-template-columns:1fr;
+  }
+  .toolbox-field:nth-child(odd){
+    border-right:0;
+  }
+}
+
+
+/* v4.4 TOOLBOX */
+.workspace.toolbox-mode .browser{
+  min-width:0;
+}
+.toolbox-shell{
+  display:grid;
+  grid-template-columns:minmax(210px,.62fr) minmax(0,1.38fr);
+  min-height:600px;
+}
+.toolbox-list-pane{
+  min-width:0;
+  border-right:.5px solid var(--divider);
+}
+.toolbox-detail-pane{
+  min-width:0;
+  overflow:auto;
+}
+.toolbox-head,
+.toolbox-row{
+  display:grid;
+  grid-template-columns:82px minmax(0,1fr);
+}
+.toolbox-head{
+  background:var(--bone);
+  border-bottom:.5px solid var(--divider);
+  font-family:var(--font-euro);
+  font-size:7px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--mid);
+}
+.toolbox-head>div,
+.toolbox-row>div{
+  min-width:0;
+  padding:9px 10px;
+}
+.toolbox-head>div+div,
+.toolbox-row>div+div{
+  border-left:.5px solid var(--divider);
+}
+.toolbox-row{
+  cursor:pointer;
+  border-bottom:.5px solid var(--divider);
+}
+.toolbox-row:hover{
+  background:#fafafa;
+}
+.toolbox-row.active{
+  box-shadow:inset 3px 0 0 var(--signal);
+}
+.toolbox-row.retired{
+  opacity:.62;
+}
+.toolbox-id{
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.03em;
+}
+.toolbox-title{
+  font-size:10px;
+  font-weight:600;
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.toolbox-detail-head{
+  min-height:46px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  padding:0 10px;
+  border-bottom:.5px solid var(--divider);
+  background:var(--bone);
+}
+.toolbox-detail-id{
+  font-family:var(--font-euro);
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.04em;
+}
+.toolbox-detail-title{
+  min-width:0;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.5;
+  overflow-wrap:anywhere;
+}
+.toolbox-copy-btn{
+  min-height:30px;
+  min-width:58px;
+  padding:0 10px;
+}
+.toolbox-info{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  border-bottom:.5px solid var(--divider);
+}
+.toolbox-field{
+  display:grid;
+  grid-template-columns:90px minmax(0,1fr);
+  gap:8px;
+  padding:8px 10px;
+  border-bottom:.5px solid #f0f0f0;
+}
+.toolbox-field:nth-child(odd){
+  border-right:.5px solid var(--divider);
+}
+.toolbox-field-label{
+  font-family:var(--font-euro);
+  font-size:7px;
+  line-height:1.3;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.toolbox-field-value{
+  min-width:0;
+  font-size:10px;
+  line-height:1.65;
+  overflow-wrap:anywhere;
+}
+.toolbox-section-head{
+  min-height:36px;
+  display:flex;
+  align-items:center;
+  padding:0 10px;
+  border-bottom:.5px solid var(--divider);
+  background:var(--bone);
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.toolbox-copy-body{
+  max-height:360px;
+  overflow:auto;
+  margin:0;
+  padding:12px 14px;
+  border-bottom:.5px solid var(--divider);
+  font-family:var(--font-mono);
+  font-size:10px;
+  line-height:1.7;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.toolbox-notes{
+  padding:11px 12px 16px;
+  font-size:10px;
+  line-height:1.75;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  color:var(--mid);
+}
+.toolbox-empty{
+  padding:18px 12px;
+  font-size:11px;
+  color:var(--mid);
+}
+@media(max-width:900px){
+  .toolbox-shell{
+    grid-template-columns:1fr;
+  }
+  .toolbox-list-pane{
+    border-right:0;
+    border-bottom:.5px solid var(--divider);
+  }
+}
+@media(max-width:620px){
+  .toolbox-info{
+    grid-template-columns:1fr;
+  }
+  .toolbox-field:nth-child(odd){
+    border-right:0;
+  }
+}
+
+
+.toolbox-detail-actions{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.toolbox-use-btn{
+  min-height:30px;
+  min-width:52px;
+  padding:0 10px;
+}
+.toolbox-use-btn.active{
+  color:var(--signal);
+  font-weight:700;
+}
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -1319,7 +1530,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V4.2 · AI REVIEW + OPEN QUESTION</div>
+  <div class="footer-side">CONTEXT LENS / V4.5 · TOOLBOX CHATGPT</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -1347,6 +1558,7 @@ const MENU_TABS=[
   ['T01','STATUS'],
   ['LOG','DAILY LOG'],
   ['SEARCH','SEARCH'],
+  ['TOOLBOX','TOOLBOX'],
   ['PROFILE','PROFILE'],
   ['FILES','FILES']
 ];
@@ -1358,6 +1570,7 @@ const state={
   memorySelected:'',memoryFilters:{q:'',pid:'',title:'',field:'ALL',kind:'ALL',status:'ALL',keyword:''},
   archiveSelected:'',archiveQuery:'',profileQuery:'',globalQuery:'',filesSelected:'',
   searchScope:'ALL',searchResultMap:new Map(),searchBrowseFile:'',searchNote:'',
+  toolbox:[],toolboxSelected:'',
   reviewItems:[],reviewIndex:0,reviewTimer:null
 };
 
@@ -1417,18 +1630,20 @@ function classifyFileName(name){
     ['ORIGINAL',/^living-context-original_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['PROFILE',/^living-context-profile_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['COMPLETED',/^living-context-t09_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
-    ['GUIDE',/^living-context-guide_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i]
+    ['GUIDE',/^living-context-guide_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
+    ['TOOLBOX',/^living-context-toolbox_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i]
   ];
   for(const [type,re] of defs){m=n.match(re);if(m)return{type,timestamp:m[1],period:''}}
   return null
 }
 function classifyContent(text){
-  const s=normalize(text).slice(0,1800);
+  const s=normalize(text).slice(0,3000);
   if(/LIVING CONTEXT｜Memory Index/i.test(s)||/##\s*記憶索引/.test(s))return'MEMORY';
   if(/LIVING CONTEXT｜蓄積サマリー/.test(s))return'SUMMARY';
   if(/LIVING CONTEXT｜運用・引き継ぎガイド/.test(s))return'GUIDE';
   if(/LIVING CONTEXT｜週次アーカイブ/.test(s))return'WEEKLY';
   if(/LIVING CONTEXT｜.*プロフィール|パーソナルプロフィール/.test(s))return'PROFILE';
+  if(/LIVING CONTEXT｜.*TOOLBOX/i.test(s)||/^##\s+TOOL-\d+\s*[｜|]/mi.test(s))return'TOOLBOX';
   if(/T09｜完了・節目|完了・節目/.test(s)&&/P\d{3}/.test(s))return'COMPLETED';
   if(/モーニングページ原文|原文/.test(s))return'ORIGINAL';
   return'UNKNOWN'
@@ -1436,7 +1651,7 @@ function classifyContent(text){
 function fileRank(f){return `${f.timestamp||''}|${String(f.loadedAt||0).padStart(16,'0')}`}
 
 async function pruneStoredFiles(){
-  const singletonTypes=['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL'];
+  const singletonTypes=['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','TOOLBOX'];
   const keepNames=new Set();
 
   for(const type of singletonTypes){
@@ -1475,7 +1690,7 @@ async function pruneStoredFiles(){
 
 function refreshDerived(){
   const active={};
-  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE']){
+  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE','TOOLBOX']){
     const list=state.files.filter(f=>f.type===type).sort((a,b)=>fileRank(b).localeCompare(fileRank(a)));
     active[type]=list[0]||null
   }
@@ -1486,6 +1701,9 @@ function refreshDerived(){
   state.active=active;
   state.summary=active.SUMMARY?parseSummary(active.SUMMARY.text):{sections:[],logs:[]};
   state.memory=active.MEMORY?parseMemoryIndex(active.MEMORY.text):[];
+  state.toolbox=active.TOOLBOX?parseToolbox(active.TOOLBOX.text):[];
+  if(state.toolboxSelected&&!state.toolbox.some(t=>t.id===state.toolboxSelected))state.toolboxSelected='';
+  if(!state.toolboxSelected&&state.toolbox[0])state.toolboxSelected=state.toolbox[0].id;
   if(!state.archiveSelected&&state.weekly[0])state.archiveSelected=state.weekly[0].name;
   startReviewTicker()
 }
@@ -1540,6 +1758,89 @@ function parseSummary(md){
   }
   return{sections,logs}
 }
+
+function parseToolbox(md){
+  const lines=normalize(md).split('\n');
+  const tools=[];let i=0;
+
+  const cleanValue=v=>String(v||'').trim();
+
+  while(i<lines.length){
+    const hm=lines[i].match(/^##\s+(TOOL-\d+)\s*[｜|]\s*(.+?)\s*$/i);
+    if(!hm){i++;continue}
+
+    const id=hm[1].toUpperCase();
+    const title=hm[2].trim();
+    const block=[];i++;
+    while(i<lines.length&&!/^##\s+TOOL-\d+\s*[｜|]/i.test(lines[i])){
+      block.push(lines[i]);i++;
+    }
+
+    let status='',category='',purpose='',updated='';
+    const timing=[];
+    let copy='',notes='';
+    let section='META';
+    let inFence=false,copyFenceFound=false;
+    const copyLines=[],noteLines=[];
+
+    for(let j=0;j<block.length;j++){
+      const line=block[j];
+      const trim=line.trim();
+
+      if(/^###\s+COPY\s*$/i.test(trim)){
+        section='COPY';inFence=false;copyFenceFound=false;continue;
+      }
+      if(/^###\s+NOTES\s*$/i.test(trim)){
+        section='NOTES';inFence=false;continue;
+      }
+
+      if(section==='COPY'){
+        if(/^```/.test(trim)){
+          if(!copyFenceFound){copyFenceFound=true;inFence=true;continue}
+          if(inFence){inFence=false;continue}
+        }
+        if(inFence)copyLines.push(line);
+        else if(!copyFenceFound&&trim)copyLines.push(line);
+        continue;
+      }
+
+      if(section==='NOTES'){
+        noteLines.push(line);
+        continue;
+      }
+
+      const mm=line.match(/^\s*[-*]\s*([^：:]+)[：:]\s*(.*)$/);
+      if(mm){
+        const key=mm[1].trim(),value=cleanValue(mm[2]);
+        if(key==='状態')status=value;
+        else if(key==='カテゴリ')category=value;
+        else if(key==='用途')purpose=value;
+        else if(key==='最終更新')updated=value;
+        else if(key==='使用タイミング'){
+          if(value)timing.push(value);
+          let k=j+1;
+          while(k<block.length){
+            const cm=block[k].match(/^\s{2,}[-*]\s+(.+)$/);
+            if(!cm)break;
+            timing.push(cm[1].trim());k++;
+          }
+          if(k>j+1)j=k-1;
+        }
+      }
+    }
+
+    copy=copyLines.join('\n').replace(/^\n+|\n+$/g,'');
+    notes=noteLines.join('\n').replace(/^\n+|\n+$/g,'');
+
+    tools.push({
+      id,title,status:status||'有効',category,purpose,timing,updated,
+      copy,notes,index:tools.length
+    });
+  }
+
+  return tools;
+}
+
 function parseMemoryIndex(md){
   const lines=normalize(md).split('\n');
   for(let i=0;i<lines.length-1;i++){
@@ -1949,6 +2250,59 @@ function renderProfileBlock(block,sectionTitle){
     </div>`;
   }).join('')}</div>`;
 }
+
+function toolboxItems(){
+  return [...state.toolbox].sort((a,b)=>{
+    const ar=/(廃止|無効)/.test(a.status)?1:0;
+    const br=/(廃止|無効)/.test(b.status)?1:0;
+    if(ar!==br)return ar-br;
+    return a.id.localeCompare(b.id,undefined,{numeric:true});
+  });
+}
+function renderToolboxDetail(tool){
+  if(!tool)return'<div class="toolbox-empty">TOOLを選択してください。</div>';
+  const timing=tool.timing.length?tool.timing.map(x=>`・${esc(x)}`).join('<br>'):'—';
+  return`<div class="toolbox-detail">
+    <div class="toolbox-detail-head">
+      <span class="toolbox-detail-id">${esc(tool.id)}</span>
+      <span class="toolbox-detail-title">${esc(tool.title)}</span>
+      <div class="toolbox-detail-actions">
+        <button class="ghost toolbox-use-btn ${state.selected.has(`TOOLBOX::${tool.id}`)?'active':''}" data-tool-use="${esc(tool.id)}">${state.selected.has(`TOOLBOX::${tool.id}`)?'USING':'USE'}</button>
+        <button class="ghost toolbox-copy-btn" data-tool-copy="${esc(tool.id)}">COPY</button>
+      </div>
+    </div>
+    <div class="toolbox-info">
+      <div class="toolbox-field"><div class="toolbox-field-label">STATUS</div><div class="toolbox-field-value">${esc(tool.status||'—')}</div></div>
+      <div class="toolbox-field"><div class="toolbox-field-label">CATEGORY</div><div class="toolbox-field-value">${esc(tool.category||'—')}</div></div>
+      <div class="toolbox-field"><div class="toolbox-field-label">PURPOSE</div><div class="toolbox-field-value">${esc(tool.purpose||'—')}</div></div>
+      <div class="toolbox-field"><div class="toolbox-field-label">UPDATED</div><div class="toolbox-field-value">${esc(tool.updated||'—')}</div></div>
+      <div class="toolbox-field" style="grid-column:1/-1"><div class="toolbox-field-label">WHEN TO USE</div><div class="toolbox-field-value">${timing}</div></div>
+    </div>
+    <div class="toolbox-section-head">COPY</div>
+    <pre class="toolbox-copy-body">${esc(tool.copy||'')}</pre>
+    ${tool.notes?`<div class="toolbox-section-head">NOTES</div><div class="toolbox-notes">${esc(tool.notes)}</div>`:''}
+  </div>`;
+}
+function renderToolbox(){
+  if(!state.active.TOOLBOX){
+    return'<div class="empty"><strong>TOOLBOX NOT LOADED</strong>TOOLBOXが読み込まれていません。</div>';
+  }
+  const tools=toolboxItems();
+  let selected=tools.find(t=>t.id===state.toolboxSelected)||tools[0]||null;
+  if(selected)state.toolboxSelected=selected.id;
+
+  return`<div class="toolbox-shell">
+    <div class="toolbox-list-pane">
+      <div class="toolbox-head"><div>TOOL ID</div><div>TITLE</div></div>
+      ${tools.length?tools.map(t=>`<div class="toolbox-row ${t.id===selected?.id?'active':''} ${/(廃止|無効)/.test(t.status)?'retired':''}" data-tool-id="${esc(t.id)}">
+        <div class="toolbox-id">${esc(t.id)}</div>
+        <div class="toolbox-title">${esc(t.title)}</div>
+      </div>`).join(''):'<div class="toolbox-empty">登録されたTOOLはありません。</div>'}
+    </div>
+    <div class="toolbox-detail-pane">${renderToolboxDetail(selected)}</div>
+  </div>`;
+}
+
 function renderProfile(){
   if(!state.active.PROFILE)return'<div class="empty"><strong>PROFILE NOT LOADED</strong>living-context-profile_*.md をIMPORTしてください。</div>';
   const sections=parseProfileSections(state.active.PROFILE.text);
@@ -2336,7 +2690,7 @@ function validateBackupPayload(payload){
   if(!payload||typeof payload!=='object')throw new Error('Invalid backup');
   if(payload.format!=='CONTEXT_LENS_BACKUP')throw new Error('Unsupported backup format');
   if(!Array.isArray(payload.files))throw new Error('Backup files missing');
-  const allowed=new Set(['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','WEEKLY']);
+  const allowed=new Set(['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','WEEKLY','TOOLBOX']);
   return payload.files.map((f,i)=>{
     if(!f||typeof f!=='object')throw new Error(`Invalid file at ${i+1}`);
     if(typeof f.name!=='string'||!f.name.trim())throw new Error(`Missing file name at ${i+1}`);
@@ -2444,6 +2798,15 @@ function contextForKey(key){
       text:`[PROFILE / 長期人物・背景情報]\n対象ファイル：${state.active.PROFILE?.name||''}\nセクション：${item.section}\n項目：${item.text}`
     };
   }
+  if(group==='TOOLBOX'){
+    const id=parts.slice(1).join('::');
+    const tool=state.toolbox.find(t=>t.id===id);
+    if(!tool)return null;
+    return{
+      label:tool.id,
+      text:`[TOOLBOX / 再利用可能な定型文・指示文]\nTOOL ID：${tool.id}\nタイトル：${tool.title}\nカテゴリ：${tool.category||'—'}\n用途：${tool.purpose||'—'}\n\n【COPY本文】\n${tool.copy}`
+    };
+  }
   if(group==='SEARCH'){
     const r=state.searchResultMap.get(key);
     if(!r)return null;
@@ -2500,6 +2863,7 @@ function buildPrompt(){
   const hasReview=ctx.some(x=>x.key.startsWith('REVIEW::'));
   const hasOpenQuestion=ctx.some(x=>x.key.startsWith('CUR::T04::'));
   const hasProfile=ctx.some(x=>x.key.startsWith('PROFILE::'));
+  const hasToolbox=ctx.some(x=>x.key.startsWith('TOOLBOX::'));
   const hasSearch=ctx.some(x=>x.key.startsWith('SEARCH::'));
   let head='';
   if(hasDate)head='DATE対象はCURRENTのT10への新規予定追加です。既存S番号を振り直さず、次の未使用S番号を使用し、指定日をYYYY-MM-DDで反映してください。不明事項は推測しないでください。\n\n';
@@ -2507,6 +2871,7 @@ function buildPrompt(){
   if(hasReview)head+='AI REVIEWはその日の判断・優先順位・次の一手・注意点です。回答内容をAI REVIEWからOPEN QUESTIONへ自動変換したり、翌日へ自動持越ししたりせず、ユーザーの指示とLIVING CONTEXT側の記録ルールに従って必要なCURRENT項目・予定・日別ログ等へ反映してください。\n\n';
   if(hasOpenQuestion)head+='OPEN QUESTIONは翌日以降も追跡可能な未解決事項です。回答・判断・確認結果が得られた場合は、ユーザーの指示に従ってT04の現在状態等を更新してください。LCAPP側の都合でAI REVIEWへコピーしたり、解決・持越しを独自判定したりしないでください。\n\n';
   if(hasProfile)head+='PROFILE対象は長期的に安定して参照する人物・家族・仕事関係・所属・活動背景等の情報です。追記・修正指示のうち、長期的に保持すべき背景情報だけをPROFILEへ反映してください。一時的な進捗、今日だけの出来事、期限、未解決確認はPROFILEへ混在させず、必要に応じてCURRENTのT02・T04（OPEN QUESTION）・T10や日別ログへ反映してください。既存情報の訂正では重複を作らず、より新しい明示的情報を優先してください。\n\n';
+  if(hasToolbox)head+='TOOLBOX対象は、再利用するために保存された定型文・指示文です。TOOLBOXのCOPY本文を今回の作業指示として使用し、「この項目への追記・指示」がある場合はその内容も加味してください。ユーザーがTOOL自体の改訂を明示的に依頼していない限り、TOOLBOX正本を書き換える前提では扱わないでください。\n\n';
   if(hasSearch)head+='以下はLIVING CONTEXTの過去情報を探すためにLCAPPで抽出した検索候補です。LCAPPの抜粋だけで最終回答せず、この候補を手掛かりとして、このチャットからアクセスできる保存済みLIVING CONTEXTファイルを検索してください。MEMORY INDEXは索引として扱い、原本参照がある場合は該当するWEEKLY等の原本を実際に確認してください。必要に応じて関連するWEEKLY、COMPLETED、ORIGINAL、PROFILEも追加で検索し、ユーザーが知りたい内容へ到達してください。P番号は永久IDとして維持し、異なるP番号を推測で統合しないでください。確認できない内容は推測せず、どこまで原本確認できたかを明示してください。各対象の「この項目への追記・指示」は、今回知りたいこと・確認したいこととして扱ってください。\n\n';
   return head+body
 }
@@ -2533,9 +2898,12 @@ function render(){
   if(state.primary==='CURRENT')html=renderCurrent();
   if(state.primary==='PROFILE')html=renderProfile();
   if(state.primary==='SEARCH')html=renderSearch();
+  if(state.primary==='TOOLBOX')html=renderToolbox();
   if(state.primary==='FILES')html=renderFiles();
   $('mainView').innerHTML=html;
-  document.querySelector('.workspace')?.classList.toggle('files-mode',state.primary==='FILES');
+  const ws=document.querySelector('.workspace');
+  ws?.classList.toggle('files-mode',state.primary==='FILES');
+  ws?.classList.toggle('toolbox-mode',state.primary==='TOOLBOX');
   bindDynamic();updateComposer();updateFooter()
 }
 function toggleSelection(key,on){if(on)state.selected.add(key);else state.selected.delete(key);render()}
@@ -2609,7 +2977,27 @@ function bindDynamic(){
     e.stopPropagation();downloadStoredFile(b.dataset.downloadFile)
   }));
   document.querySelector('[data-download-backup]')?.addEventListener('click',downloadBackup);
-  document.querySelector('[data-restore-backup]')?.addEventListener('click',chooseBackupFile)
+  document.querySelector('[data-restore-backup]')?.addEventListener('click',chooseBackupFile);
+
+  document.querySelectorAll('[data-tool-id]').forEach(r=>r.addEventListener('click',()=>{
+    state.toolboxSelected=r.dataset.toolId;
+    render();
+  }));
+  document.querySelectorAll('[data-tool-use]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();
+    const key=`TOOLBOX::${b.dataset.toolUse}`;
+    toggleSelection(key,!state.selected.has(key));
+  }));
+  document.querySelectorAll('[data-tool-copy]').forEach(b=>b.addEventListener('click',async e=>{
+    e.stopPropagation();
+    const tool=state.toolbox.find(t=>t.id===b.dataset.toolCopy);
+    if(!tool)return;
+    await copyText(tool.copy||'');
+    const old=b.textContent;
+    b.textContent='COPIED';
+    b.disabled=true;
+    setTimeout(()=>{b.textContent=old;b.disabled=false},1400);
+  }))
 }
 function openOrigin(name,hint){
   const file=findWeeklyByName(name);if(!file){toast('SOURCE NOT LOADED');return}
