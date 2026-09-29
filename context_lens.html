@@ -1583,6 +1583,224 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
   }
 }
 
+
+/* v5.0 DAILY LOG */
+.daily-log-page{
+  background:var(--white);
+}
+.daily-log-day{
+  border-bottom:.5px solid var(--divider);
+}
+.daily-log-day.selected{
+  box-shadow:inset 3px 0 0 var(--signal);
+}
+.daily-log-day-head{
+  min-height:44px;
+  display:grid;
+  grid-template-columns:30px minmax(150px,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:0 10px 0 0;
+  cursor:pointer;
+  list-style:none;
+  background:var(--white);
+}
+.daily-log-day-head::-webkit-details-marker{display:none}
+.daily-log-day-head::after{
+  content:"+";
+  grid-column:4;
+  font-family:var(--font-euro);
+  font-size:10px;
+  color:var(--muted);
+}
+.daily-log-day[open]>.daily-log-day-head::after{content:"−"}
+.daily-log-check{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.daily-log-date{
+  font-family:var(--font-euro);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.02em;
+}
+.daily-log-summary-meta{
+  font-family:var(--font-euro);
+  font-size:7px;
+  letter-spacing:.04em;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.daily-log-day-body{
+  border-top:.5px solid var(--divider);
+}
+.daily-log-block{
+  padding:11px 12px;
+  border-bottom:.5px solid #efefef;
+}
+.daily-log-section-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:7px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--mid);
+}
+.daily-log-section-title span{
+  font-weight:400;
+  color:var(--muted);
+}
+.daily-log-bullets>div,
+.daily-log-review-item{
+  position:relative;
+  padding:3px 0 3px 12px;
+  font-size:10px;
+  line-height:1.7;
+}
+.daily-log-bullets>div::before,
+.daily-log-review-item::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:11px;
+  width:3px;
+  height:3px;
+  background:var(--black);
+}
+.daily-log-review{
+  border-left:3px solid var(--signal);
+  padding-left:11px;
+  background:#fcfcfc;
+}
+.daily-log-review-item::before{
+  background:var(--signal);
+}
+.daily-log-muted{
+  font-size:10px;
+  color:var(--muted);
+}
+.daily-log-tags{
+  padding-top:9px;
+  padding-bottom:9px;
+}
+.daily-log-tagline{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 9px;
+  font-family:var(--font-mono);
+  font-size:8px;
+  line-height:1.7;
+  color:var(--mid);
+}
+.daily-log-update{
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr);
+  border-bottom:.5px solid #efefef;
+}
+.daily-log-update-meta{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr);
+  gap:7px;
+  padding:10px 9px 10px 12px;
+  border-right:.5px solid var(--divider);
+}
+.daily-log-time{
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:700;
+}
+.daily-log-update-title{
+  min-width:0;
+  font-size:9px;
+  line-height:1.5;
+  color:var(--mid);
+}
+.daily-log-update-body{
+  min-width:0;
+  padding:8px 12px;
+}
+.daily-log-update-line{
+  position:relative;
+  padding:3px 0 3px 11px;
+  font-size:10px;
+  line-height:1.65;
+}
+.daily-log-update-line::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:11px;
+  width:3px;
+  height:3px;
+  background:var(--mid);
+}
+.daily-log-history{
+  border-bottom:.5px solid #efefef;
+}
+.daily-log-history summary{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  padding:0 12px;
+  cursor:pointer;
+  list-style:none;
+  font-family:var(--font-euro);
+  font-size:7px;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:var(--muted);
+}
+.daily-log-history summary::-webkit-details-marker{display:none}
+.daily-log-history summary::after{
+  content:"+";
+  margin-left:auto;
+}
+.daily-log-history[open] summary::after{content:"−"}
+.daily-log-history-body{
+  padding:0 12px 10px;
+  font-size:9px;
+  line-height:1.7;
+  color:var(--mid);
+}
+.daily-log-history-body>div{
+  padding:5px 0;
+  border-top:.5px solid #f1f1f1;
+}
+.daily-log-plain,
+.daily-log-update-body pre,
+.daily-log-history-body pre{
+  margin:0;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  font:inherit;
+  line-height:1.7;
+}
+@media(max-width:900px){
+  .daily-log-update{
+    grid-template-columns:1fr;
+  }
+  .daily-log-update-meta{
+    border-right:0;
+    border-bottom:.5px solid #f0f0f0;
+  }
+}
+@media(max-width:620px){
+  .daily-log-day-head{
+    grid-template-columns:28px minmax(0,1fr) auto;
+  }
+  .daily-log-summary-meta{
+    display:none;
+  }
+  .daily-log-day-head::after{
+    grid-column:3;
+  }
+}
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -1654,7 +1872,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V4.9 · SIMPLIFIED CURRENTS</div>
+  <div class="footer-side">CONTEXT LENS / V5.0 · DAILY LOG VIEWS</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -2208,9 +2426,124 @@ function renderAIPage(){
 function renderReviewAnswers(){
   return renderAIPage();
 }
+function dailyLogDate(log){
+  return (String(log.id||log.title||'').match(/\d{4}-\d{2}-\d{2}/)||[''])[0];
+}
+function parseDailyLogBlocks(md){
+  const lines=normalize(md).split('\n');
+  const blocks=[];let current=null;
+  const flush=()=>{
+    if(!current)return;
+    current.lines=current.lines.filter((v,i,a)=>v.trim()||a.slice(i+1).some(x=>x.trim()));
+    blocks.push(current);current=null;
+  };
+  for(const line of lines){
+    const h4=line.match(/^####\s+(.+?)\s*$/);
+    const h3=line.match(/^###\s+(.+?)\s*$/);
+    if(h4){
+      flush();
+      current={level:4,title:h4[1].trim(),lines:[]};
+      continue;
+    }
+    if(h3){
+      flush();
+      current={level:3,title:h3[1].trim(),lines:[]};
+      continue;
+    }
+    if(!current)current={level:0,title:'',lines:[]};
+    current.lines.push(line);
+  }
+  flush();
+  return blocks;
+}
+function dailyLogBulletItems(lines){
+  const items=[];let current='';
+  for(const line of lines){
+    const m=line.match(/^\s*[-*]\s+(.+)$/);
+    if(m){
+      if(current)items.push(current.trim());
+      current=m[1].trim();
+    }else if(current&&line.trim()){
+      current+=' '+line.trim();
+    }
+  }
+  if(current)items.push(current.trim());
+  return items;
+}
+function dailyLogStats(log){
+  const blocks=parseDailyLogBlocks(log.text);
+  const review=blocks.find(b=>b.level===3&&/^AI REVIEW$/i.test(b.title));
+  const reviewCount=review?dailyLogBulletItems(review.lines).length:0;
+  const updates=blocks.filter(b=>b.level===4&&!/^AI REVIEW HISTORY$/i.test(b.title)).length;
+  return{reviewCount,updates};
+}
+function renderDailyLogBlock(block){
+  const title=block.title;
+  const items=dailyLogBulletItems(block.lines);
+  const plain=block.lines.join('\n').trim();
+
+  if(block.level===3&&/^AI REVIEW$/i.test(title)){
+    return`<section class="daily-log-block daily-log-review">
+      <div class="daily-log-section-title">AI REVIEW <span>${items.length}</span></div>
+      ${items.length?`<div class="daily-log-review-list">${items.map(x=>`<div class="daily-log-review-item">${esc(x)}</div>`).join('')}</div>`:'<div class="daily-log-muted">AI REVIEWはありません。</div>'}
+    </section>`;
+  }
+
+  if(block.level===3&&/^(タグ|TAGS?)$/i.test(title)){
+    const tags=[...plain.matchAll(/`([^`]+)`/g)].map(m=>m[1]);
+    return`<section class="daily-log-block daily-log-tags">
+      <div class="daily-log-section-title">TAGS</div>
+      <div class="daily-log-tagline">${tags.length?tags.map(t=>`<span>${esc(t)}</span>`).join(' '):esc(plain)}</div>
+    </section>`;
+  }
+
+  if(block.level===4&&/^AI REVIEW HISTORY$/i.test(title)){
+    return`<details class="daily-log-history">
+      <summary>AI REVIEW HISTORY</summary>
+      <div class="daily-log-history-body">${items.length?items.map(x=>`<div>${esc(x)}</div>`).join(''):`<pre>${esc(plain)}</pre>`}</div>
+    </details>`;
+  }
+
+  if(block.level===4){
+    const time=(title.match(/^\d{1,2}:\d{2}/)||[''])[0];
+    const label=time?title.slice(time.length).trim():title;
+    return`<section class="daily-log-update">
+      <div class="daily-log-update-meta"><span class="daily-log-time">${esc(time||'—')}</span><span class="daily-log-update-title">${esc(label)}</span></div>
+      <div class="daily-log-update-body">${items.length?items.map(x=>`<div class="daily-log-update-line">${esc(x)}</div>`).join(''):`<pre>${esc(plain)}</pre>`}</div>
+    </section>`;
+  }
+
+  if(block.level===3){
+    return`<section class="daily-log-block">
+      <div class="daily-log-section-title">${esc(title)}</div>
+      ${items.length?`<div class="daily-log-bullets">${items.map(x=>`<div>${esc(x)}</div>`).join('')}</div>`:`<pre class="daily-log-plain">${esc(plain)}</pre>`}
+    </section>`;
+  }
+
+  return plain?`<section class="daily-log-block"><pre class="daily-log-plain">${esc(plain)}</pre></section>`:'';
+}
 function renderLogs(){
   if(!state.summary.logs.length)return'<div class="empty"><strong>NO LOG</strong>直近日別ログはありません。</div>';
-  return`<section class="section">${state.summary.logs.map(log=>{const key=`LOG::${log.id}`,sel=state.selected.has(key);return`<article class="log-item ${sel?'selected':''}" data-key="${key}"><div class="log-date">${esc(log.title)} <input class="row-check" type="checkbox" ${sel?'checked':''}></div><div class="log-body">${esc(log.text)}</div></article>`}).join('')}</section>`
+
+  const logs=[...state.summary.logs].sort((a,b)=>dailyLogDate(b).localeCompare(dailyLogDate(a)));
+  const latestDate=dailyLogDate(logs[0]);
+
+  return`<section class="daily-log-page">
+    ${logs.map(log=>{
+      const key=`LOG::${log.id}`,sel=state.selected.has(key);
+      const stats=dailyLogStats(log);
+      const isLatest=dailyLogDate(log)===latestDate;
+      const blocks=parseDailyLogBlocks(log.text);
+      return`<details class="daily-log-day ${sel?'selected':''}" data-key="${esc(key)}" ${isLatest?'open':''}>
+        <summary class="daily-log-day-head">
+          <span class="daily-log-check"><input class="row-check" type="checkbox" ${sel?'checked':''}></span>
+          <span class="daily-log-date">${esc(log.title)}</span>
+          <span class="daily-log-summary-meta">${stats.reviewCount?`AI REVIEW ${stats.reviewCount}`:''}${stats.reviewCount&&stats.updates?' / ':''}${stats.updates?`UPDATES ${stats.updates}`:''}</span>
+        </summary>
+        <div class="daily-log-day-body">${blocks.map(renderDailyLogBlock).join('')}</div>
+      </details>`;
+    }).join('')}
+  </section>`;
 }
 
 function activeMenuId(){
@@ -3215,6 +3548,7 @@ function render(){
 }
 function toggleSelection(key,on){if(on)state.selected.add(key);else state.selected.delete(key);render()}
 function bindDynamic(){
+  document.querySelectorAll('.daily-log-day-head .row-check').forEach(ch=>ch.addEventListener('click',e=>e.stopPropagation()));
   document.querySelectorAll('[data-key] .row-check').forEach(ch=>ch.addEventListener('change',e=>toggleSelection(e.target.closest('[data-key]').dataset.key,e.target.checked)));
   document.querySelectorAll('[data-cal-date]').forEach(b=>b.addEventListener('click',()=>{state.selected.add(`DATE::${b.dataset.calDate}`);render();requestAnimationFrame(()=>document.querySelector(`[data-note-key="DATE::${b.dataset.calDate}"]`)?.focus())}));
   document.querySelector('.cal-prev')?.addEventListener('click',()=>{state.calendarOffset-=3;render()});document.querySelector('.cal-today')?.addEventListener('click',()=>{state.calendarOffset=0;render()});document.querySelector('.cal-next')?.addEventListener('click',()=>{state.calendarOffset+=3;render()});
