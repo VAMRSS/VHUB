@@ -169,14 +169,20 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .review-answer-check,.review-answer-id,.review-answer-body{padding:10px}
 .review-answer-id{border-left:.5px solid var(--divider);font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em}
 .review-answer-body{border-left:.5px solid var(--divider);font-size:11px;line-height:1.7}
-.calendar-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
-.calendar-month+.calendar-month{border-left:.5px solid var(--divider)}
+.calendar-grid{display:grid;gap:8px}
+.calendar-grid.span-1{grid-template-columns:minmax(0,1fr)}
+.calendar-grid.span-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.calendar-grid.span-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.calendar-month+.calendar-month{border-left:0}
 .calendar-month-head{min-height:36px;display:flex;align-items:center;padding:0 10px;border-bottom:.5px solid var(--divider)}
 .calendar-month-title{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em}
 .calendar-weekdays,.calendar-days{display:grid;grid-template-columns:repeat(7,1fr)}
 .calendar-weekday{padding:6px 2px;text-align:center;font-family:var(--font-euro);font-size:7px;color:var(--muted);border-bottom:.5px solid var(--divider)}
-.calendar-day{position:relative;min-height:36px;border:0;border-right:.5px solid var(--divider);border-bottom:.5px solid var(--divider);background:var(--white);font-family:var(--font-euro);font-size:8px;text-align:left;padding:5px}
-.calendar-day:nth-child(7n){border-right:0}.calendar-day.empty{background:#fafafa}.calendar-day.today{box-shadow:inset 0 0 0 1px var(--black)}
+.calendar-weekday:first-child{color:var(--muted)}
+.calendar-weekday:last-child{color:var(--muted)}
+.calendar-day{position:relative;min-height:54px;height:54px;border:0;border-right:.5px solid var(--divider);border-bottom:.5px solid var(--divider);background:var(--white);color:var(--black);font-family:var(--font-euro);font-size:8px;text-align:left;padding:5px;overflow:hidden}
+.calendar-day:nth-child(7n+1){color:var(--black);background:#fceeee}
+.calendar-day:nth-child(7n){color:var(--black);border-right:0;background:#fceeee}.calendar-day.empty{background:#fafafa!important;color:var(--muted)}.calendar-day.today{box-shadow:inset 0 0 0 1px var(--black)}
 .calendar-day.has-events{font-weight:700}.calendar-day.add-target{box-shadow:inset 0 0 0 1px var(--signal);background:var(--signal-soft)}
 .calendar-dots{position:absolute;left:5px;bottom:5px;display:flex;gap:2px}.calendar-dot{width:4px;height:4px;background:var(--signal)}
 .month-schedule-list{padding:0 10px 10px}.month-list-head{padding:10px 0 6px;font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;border-bottom:.5px solid var(--divider)}
@@ -188,7 +194,18 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .schedule-overflow{border-top:.5px solid var(--divider)}.schedule-overflow-head{padding:10px;font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
 .schedule-overflow-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;padding:0 10px}
 .schedule-toolbar{min-height:40px;padding:8px 10px;border-top:.5px solid var(--divider);display:flex;justify-content:flex-end;align-items:center}
-.schedule-toolbar-actions{display:flex;gap:14px}
+.schedule-toolbar-actions{display:flex;align-items:center;gap:14px}
+.calendar-view-switch{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding-right:14px;
+  border-right:.5px solid var(--divider);
+}
+.cal-span.active{
+  color:var(--signal);
+  font-weight:700;
+}
 .control-strip{
   display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;padding:10px;border-bottom:.5px solid var(--divider)
 }
@@ -1801,6 +1818,101 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
   }
 }
 
+
+.calendar-month{display:flex;flex-direction:column;min-width:0}
+.calendar-weekdays{flex:0 0 auto}
+.calendar-days{grid-auto-rows:54px;flex:0 0 324px}
+.month-schedule-list{flex:1 1 auto}
+
+
+.calendar-day-num{
+  position:absolute;
+  top:5px;
+  left:5px;
+  z-index:3;
+  display:block;
+  line-height:1;
+}
+.calendar-day.is-holiday{
+  background:#fceeee;
+}
+.calendar-day.is-holiday.weekend-sat{
+  background:#f4f5fb;
+}
+.calendar-day.is-holiday.weekend-sun{
+  background:#fceeee;
+}
+.calendar-holiday-labels{
+  position:absolute;
+  left:4px;
+  right:4px;
+  top:22px;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  min-width:0;
+}
+.calendar-holiday-label{
+  display:block;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:6.5px;
+  line-height:1.35;
+  font-weight:400;
+  color:#8b5151;
+}
+.calendar-holiday-label b{
+  font-weight:700;
+}
+.calendar-holiday-label.company{color:#765f44}
+.calendar-holiday-label.paid{color:#4f7057}
+.calendar-holiday-label.personal{color:#6a5d7a}
+.calendar-day.holiday-company{box-shadow:inset 0 2px 0 #b8a789}
+.calendar-day.holiday-paid{box-shadow:inset 0 2px 0 #91ad98}
+.calendar-day.holiday-personal{box-shadow:inset 0 2px 0 #a497b1}
+.calendar-day.today{
+  box-shadow:inset 0 0 0 1px var(--black);
+}
+.calendar-day.add-target{
+  box-shadow:inset 0 0 0 1px var(--signal);
+}
+.calendar-day.today.add-target{
+  box-shadow:inset 0 0 0 1px var(--signal);
+}
+.calendar-day.has-events .calendar-day-num{
+  font-weight:700;
+}
+.calendar-dots{
+  right:4px;
+  left:auto;
+  bottom:4px;
+  z-index:4;
+}
+@media(max-width:620px){
+  .calendar-holiday-label{
+    font-size:6px;
+  }
+}
+
+
+.calendar-dot{
+  width:5px;
+  height:5px;
+  cursor:pointer;
+}
+.calendar-dot:hover{
+  outline:1px solid var(--black);
+  outline-offset:1px;
+}
+
+
+.calendar-dot.selected{
+  outline:1px solid var(--black);
+  outline-offset:1px;
+}
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -1872,7 +1984,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V5.0 · DAILY LOG VIEWS</div>
+  <div class="footer-side">CONTEXT LENS / V5.5 · CALENDAR RANGE SWITCHS</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -1907,7 +2019,7 @@ const MENU_TABS=[
 const state={
   files:[],active:{},weekly:[],summary:{sections:[],logs:[]},memory:[],
   primary:'CURRENT',currentSection:'T10',archiveSection:'WEEKLY',
-  selected:new Set(),notes:new Map(),calendarOffset:0,
+  selected:new Set(),notes:new Map(),calendarOffset:0,calendarSpan:3,
   memorySelected:'',memoryFilters:{q:'',pid:'',title:'',field:'ALL',kind:'ALL',status:'ALL',keyword:''},
   archiveSelected:'',archiveQuery:'',profileQuery:'',globalQuery:'',filesSelected:'',
   searchScope:'ALL',searchResultMap:new Map(),searchBrowseFile:'',searchNote:'',
@@ -2084,8 +2196,12 @@ function parseTableAtResilient(lines,start,idPattern){
 }
 function parseSection(code,title,block){
   const lines=block;let table=null;
-  const resilientCurrent=new Set(['T02','T04','T10']);
-  const expectedId=code==='T10'?/^S\d+$/i:/^P\d+$/i;
+  const resilientCurrent=new Set(['T02','T04','T10','T11']);
+  const expectedId=code==='T10'
+    ? /^S\d+$/i
+    : code==='T11'
+      ? /^\d{4}-\d{2}-\d{2}$/
+      : /^P\d+$/i;
   for(let i=0;i<lines.length;i++){
     const t=resilientCurrent.has(code)
       ? parseTableAtResilient(lines,i,expectedId)
@@ -2331,6 +2447,37 @@ function scheduleDateInfo(it){
   const raw=(it.obj?.['日付・時期']||'').trim();let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return{kind:'date',year:+m[1],month:+m[2],day:+m[3],raw};
   m=raw.match(/^(\d{4})-(\d{2})$/);if(m)return{kind:'month',year:+m[1],month:+m[2],day:null,raw};return{kind:'unknown',year:null,month:null,day:null,raw:''}
 }
+function holidayDateInfo(it){
+  const raw=(it.obj?.['日付']||it.id||'').trim();
+  const m=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m)return{kind:'unknown',year:null,month:null,day:null,raw:''};
+  return{kind:'date',year:+m[1],month:+m[2],day:+m[3],raw};
+}
+function holidayType(it){return String(it.obj?.['種別']||it.category||'休日').trim()||'休日'}
+function holidayName(it){return String(it.obj?.['名称']||it.title||'休日').trim()||'休日'}
+function holidayStatus(it){return String(it.obj?.['状態']||it.status||'').trim()}
+function holidayKindClass(type){
+  if(/有休/.test(type))return'paid';
+  if(/個人休暇/.test(type))return'personal';
+  if(/会社/.test(type))return'company';
+  return'official';
+}
+function holidayShortType(type){
+  if(type==='祝日')return'祝';
+  if(type==='振替休日')return'振替';
+  if(type==='休日')return'休日';
+  if(/会社/.test(type))return'会社';
+  if(/有休/.test(type))return'有休';
+  if(/個人休暇/.test(type))return'個人';
+  return type;
+}
+function holidayTitle(items){
+  return items.map(it=>{
+    const bits=[holidayType(it),holidayName(it),holidayStatus(it)].filter(Boolean);
+    return bits.join('｜');
+  }).join('\n');
+}
+
 function scheduleTime(it){return(it.obj?.['時刻']||'').trim()}
 function scheduleTitle(it){return(it.obj?.['予定・期限']||it.title||'').trim()}
 function scheduleNote(it){return(it.obj?.['現在の確認事項']||'').trim()}
@@ -2346,22 +2493,88 @@ function renderScheduleEntry(it){
   const dt=[date,scheduleTime(it)].filter(Boolean).join(' ');
   return`<div class="schedule-entry ${sel?'selected':''}" data-key="${esc(key)}"><input class="row-check" type="checkbox" ${sel?'checked':''}><div class="schedule-entry-main"><div class="schedule-entry-head"><div class="schedule-entry-title">${esc(scheduleTitle(it))}</div><div class="schedule-entry-datetime">${esc(dt)}</div></div>${scheduleNote(it)?`<div class="schedule-entry-note">${esc(scheduleNote(it))}</div>`:''}</div></div>`
 }
-function renderMonth(date,items){
-  const y=date.getFullYear(),m=date.getMonth()+1;const monthItems=items.filter(it=>{const d=scheduleDateInfo(it);return d.year===y&&d.month===m}).sort(scheduleSort);
-  const byDay=new Map();monthItems.forEach(it=>{const d=scheduleDateInfo(it);if(d.kind==='date'){if(!byDay.has(d.day))byDay.set(d.day,[]);byDay.get(d.day).push(it)}});
-  const first=new Date(y,m-1,1),days=new Date(y,m,0).getDate(),offset=(first.getDay()+6)%7,today=new Date();let cells='';
+function renderMonth(date,items,holidays=[]){
+  const y=date.getFullYear(),m=date.getMonth()+1;
+  const monthItems=items.filter(it=>{const d=scheduleDateInfo(it);return d.year===y&&d.month===m}).sort(scheduleSort);
+  const monthHolidays=holidays.filter(it=>{const d=holidayDateInfo(it);return d.year===y&&d.month===m});
+
+  const byDay=new Map();
+  monthItems.forEach(it=>{
+    const d=scheduleDateInfo(it);
+    if(d.kind==='date'){
+      if(!byDay.has(d.day))byDay.set(d.day,[]);
+      byDay.get(d.day).push(it);
+    }
+  });
+
+  const holidayByDay=new Map();
+  monthHolidays.forEach(it=>{
+    const d=holidayDateInfo(it);
+    if(d.kind==='date'){
+      if(!holidayByDay.has(d.day))holidayByDay.set(d.day,[]);
+      holidayByDay.get(d.day).push(it);
+    }
+  });
+
+  const first=new Date(y,m-1,1),days=new Date(y,m,0).getDate(),offset=first.getDay(),today=new Date();
+  let cells='';
+
   for(let i=0;i<offset;i++)cells+='<div class="calendar-day empty"></div>';
+
   for(let day=1;day<=days;day++){
-    const ev=byDay.get(day)||[],iso=`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`,isToday=today.getFullYear()===y&&today.getMonth()+1===m&&today.getDate()===day;
-    cells+=`<button class="calendar-day ${ev.length?'has-events':''} ${isToday?'today':''} ${state.selected.has(`DATE::${iso}`)?'add-target':''}" data-cal-date="${iso}">${day}${ev.length?`<span class="calendar-dots">${ev.slice(0,3).map(()=>'<span class="calendar-dot"></span>').join('')}</span>`:''}</button>`
+    const ev=byDay.get(day)||[];
+    const hol=holidayByDay.get(day)||[];
+    const iso=`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday=today.getFullYear()===y&&today.getMonth()+1===m&&today.getDate()===day;
+    const weekday=new Date(y,m-1,day).getDay();
+    const weekendClass=weekday===0?'weekend-sun':weekday===6?'weekend-sat':'';
+    const holidayClass=hol.length?'is-holiday':'';
+    const kindClasses=uniq(hol.map(h=>holidayKindClass(holidayType(h)))).map(x=>`holiday-${x}`).join(' ');
+    const holidayHtml=hol.length
+      ? `<span class="calendar-holiday-labels">${hol.slice(0,2).map(h=>`<span class="calendar-holiday-label ${holidayKindClass(holidayType(h))}">${esc(holidayName(h))}</span>`).join('')}</span>`
+      : '';
+    const title=hol.length?` title="${esc(holidayTitle(hol))}"`:'';
+    cells+=`<button class="calendar-day ${weekendClass} ${holidayClass} ${kindClasses} ${ev.length?'has-events':''} ${isToday?'today':''} ${state.selected.has(`DATE::${iso}`)?'add-target':''}" data-cal-date="${iso}"${title}>
+      <span class="calendar-day-num">${day}</span>
+      ${holidayHtml}
+      ${ev.length?`<span class="calendar-dots">${ev.slice(0,3).map(e=>`<span class="calendar-dot ${state.selected.has(`CUR::T10::${e.id||String(e.index)}`)?'selected':''}" data-schedule-key="${esc(`CUR::T10::${e.id||String(e.index)}`)}" title="${esc(scheduleTitle(e))}"></span>`).join('')}</span>`:''}
+    </button>`
   }
+
+  const used=offset+days;
+  for(let i=used;i<42;i++)cells+='<div class="calendar-day empty"></div>';
+
   const list=monthItems.length?monthItems.map(renderScheduleEntry).join(''):'<div class="schedule-empty">この月の予定はありません。</div>';
-  return`<div class="calendar-month"><div class="calendar-month-head"><div class="calendar-month-title">${y}.${String(m).padStart(2,'0')}</div></div><div class="calendar-weekdays">${['MON','TUE','WED','THU','FRI','SAT','SUN'].map(x=>`<div class="calendar-weekday">${x}</div>`).join('')}</div><div class="calendar-days">${cells}</div><div class="month-schedule-list"><div class="month-list-head">SCHEDULES / 予定</div>${list}</div></div>`
+
+  return`<div class="calendar-month">
+    <div class="calendar-month-head"><div class="calendar-month-title">${y}.${String(m).padStart(2,'0')}</div></div>
+    <div class="calendar-weekdays">${['SUN','MON','TUE','WED','THU','FRI','SAT'].map(x=>`<div class="calendar-weekday">${x}</div>`).join('')}</div>
+    <div class="calendar-days">${cells}</div>
+    <div class="month-schedule-list"><div class="month-list-head">SCHEDULES / 予定</div>${list}</div>
+  </div>`
 }
 function renderScheduleCalendar(sec){
-  const now=new Date(),base=new Date(now.getFullYear(),now.getMonth(),1),start=shiftMonth(base,state.calendarOffset),months=[0,1,2].map(i=>shiftMonth(start,i));
-  const shown=new Set(months.map(d=>ymKey(d.getFullYear(),d.getMonth()+1)));const overflow=sec.items.filter(it=>{const d=scheduleDateInfo(it);return d.kind==='unknown'||!shown.has(d.year?ymKey(d.year,d.month):'')}).sort(scheduleSort);
-  return`<section class="section"><div class="calendar-grid">${months.map(d=>renderMonth(d,sec.items)).join('')}</div>${overflow.length?`<div class="schedule-overflow"><div class="schedule-overflow-head">OUTSIDE / 表示期間外・日付未定</div><div class="schedule-overflow-grid">${overflow.map(renderScheduleEntry).join('')}</div></div>`:''}<div class="schedule-toolbar"><div class="schedule-toolbar-actions"><button class="ghost cal-prev">PREV 3M</button><button class="ghost cal-today">TODAY</button><button class="ghost cal-next">NEXT 3M</button></div></div></section>`
+  const holidays=activeSummarySection('T11')?.items||[];
+  const span=[1,2,3].includes(state.calendarSpan)?state.calendarSpan:3;
+  const now=new Date(),base=new Date(now.getFullYear(),now.getMonth(),1),start=shiftMonth(base,state.calendarOffset),months=Array.from({length:span},(_,i)=>shiftMonth(start,i));
+  const shown=new Set(months.map(d=>ymKey(d.getFullYear(),d.getMonth()+1)));
+  const overflow=sec.items.filter(it=>{const d=scheduleDateInfo(it);return d.kind==='unknown'||!shown.has(d.year?ymKey(d.year,d.month):'')}).sort(scheduleSort);
+  return`<section class="section">
+    <div class="calendar-grid span-${span}">${months.map(d=>renderMonth(d,sec.items,holidays)).join('')}</div>
+    ${overflow.length?`<div class="schedule-overflow"><div class="schedule-overflow-head">OUTSIDE / 表示期間外・日付未定</div><div class="schedule-overflow-grid">${overflow.map(renderScheduleEntry).join('')}</div></div>`:''}
+    <div class="schedule-toolbar">
+      <div class="schedule-toolbar-actions">
+        <div class="calendar-view-switch" aria-label="表示月数">
+          <button class="ghost cal-span ${span===1?'active':''}" data-span="1">1M</button>
+          <button class="ghost cal-span ${span===2?'active':''}" data-span="2">2M</button>
+          <button class="ghost cal-span ${span===3?'active':''}" data-span="3">3M</button>
+        </div>
+        <button class="ghost cal-prev">PREV ${span}M</button>
+        <button class="ghost cal-today">TODAY</button>
+        <button class="ghost cal-next">NEXT ${span}M</button>
+      </div>
+    </div>
+  </section>`
 }
 function renderItem(sec,it){
   const key=currentItemKey(sec.code,it),sel=state.selected.has(key),fields=detailFields(it);
@@ -3548,10 +3761,22 @@ function render(){
 }
 function toggleSelection(key,on){if(on)state.selected.add(key);else state.selected.delete(key);render()}
 function bindDynamic(){
+  document.querySelectorAll('[data-schedule-key]').forEach(dot=>dot.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    const key=dot.dataset.scheduleKey;
+    toggleSelection(key,!state.selected.has(key));
+  }));
   document.querySelectorAll('.daily-log-day-head .row-check').forEach(ch=>ch.addEventListener('click',e=>e.stopPropagation()));
   document.querySelectorAll('[data-key] .row-check').forEach(ch=>ch.addEventListener('change',e=>toggleSelection(e.target.closest('[data-key]').dataset.key,e.target.checked)));
   document.querySelectorAll('[data-cal-date]').forEach(b=>b.addEventListener('click',()=>{state.selected.add(`DATE::${b.dataset.calDate}`);render();requestAnimationFrame(()=>document.querySelector(`[data-note-key="DATE::${b.dataset.calDate}"]`)?.focus())}));
-  document.querySelector('.cal-prev')?.addEventListener('click',()=>{state.calendarOffset-=3;render()});document.querySelector('.cal-today')?.addEventListener('click',()=>{state.calendarOffset=0;render()});document.querySelector('.cal-next')?.addEventListener('click',()=>{state.calendarOffset+=3;render()});
+  document.querySelectorAll('.cal-span').forEach(b=>b.addEventListener('click',()=>{
+    state.calendarSpan=Number(b.dataset.span)||3;
+    render();
+  }));
+  document.querySelector('.cal-prev')?.addEventListener('click',()=>{state.calendarOffset-=state.calendarSpan;render()});
+  document.querySelector('.cal-today')?.addEventListener('click',()=>{state.calendarOffset=0;render()});
+  document.querySelector('.cal-next')?.addEventListener('click',()=>{state.calendarOffset+=state.calendarSpan;render()});
   document.querySelectorAll('[data-memory-id]').forEach(r=>r.addEventListener('click',()=>{state.memorySelected=r.dataset.memoryId;render()}));
   document.querySelector('.memory-detail-check')?.addEventListener('change',e=>toggleSelection(e.target.dataset.key,e.target.checked));
   document.querySelectorAll('.memory-filter').forEach(i=>{
