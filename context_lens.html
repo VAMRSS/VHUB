@@ -1654,7 +1654,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V4.8 · LATEST AI REVIEW FIXS</div>
+  <div class="footer-side">CONTEXT LENS / V4.9 · SIMPLIFIED CURRENTS</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -1673,13 +1673,12 @@ const DB_NAME='context-lens-library-v2';
 const DB_VERSION=1;
 const STORE='files';
 const VALID_WIDTHS=['fit','720','960','1200','1440'];
-const CURRENT_CODES=['T10','T02','T08','T01','REVIEW','LOG'];
+const CURRENT_CODES=['T10','T02','REVIEW','LOG'];
+const RESERVED_HISTORIC_CODES=new Set(['T01','T03','T05','T08']);
 const MENU_TABS=[
   ['REVIEW','AI'],
   ['T10','SCHEDULE'],
   ['T02','ACTIVE'],
-  ['T08','THEMES'],
-  ['T01','STATUS'],
   ['LOG','DAILY LOG'],
   ['SEARCH','SEARCH'],
   ['TOOLBOX','TOOLBOX'],
@@ -1840,9 +1839,41 @@ function parseTableAt(lines,start){
   }
   return{headers,rows,end:i}
 }
+function parseTableAtResilient(lines,start,idPattern){
+  if(start<0||start>=lines.length||!lines[start].trim().startsWith('|'))return null;
+  const headers=splitTableLine(lines[start]);
+  let sep=start+1;
+  while(sep<lines.length&&!lines[sep].trim())sep++;
+  if(sep>=lines.length||!isSeparator(lines[sep]))return null;
+
+  const rows=[];let i=sep+1;
+  while(i<lines.length){
+    const trim=lines[i].trim();
+    if(/^#{1,6}\s+/.test(trim))break;
+    if(!trim){i++;continue}
+    if(trim.startsWith('|')){
+      const cells=splitTableLine(lines[i]);
+      const id=(cells[0]||'').trim();
+      if(idPattern.test(id)){
+        const obj={};
+        headers.forEach((h,j)=>obj[h]=cells[j]??'');
+        rows.push({obj,cells,raw:lines[i]});
+      }
+    }
+    i++;
+  }
+  return{headers,rows,end:i}
+}
 function parseSection(code,title,block){
   const lines=block;let table=null;
-  for(let i=0;i<lines.length-1;i++){const t=parseTableAt(lines,i);if(t){table=t;break}}
+  const resilientCurrent=new Set(['T02','T04','T10']);
+  const expectedId=code==='T10'?/^S\d+$/i:/^P\d+$/i;
+  for(let i=0;i<lines.length;i++){
+    const t=resilientCurrent.has(code)
+      ? parseTableAtResilient(lines,i,expectedId)
+      : parseTableAt(lines,i);
+    if(t){table=t;break}
+  }
   const items=[];
   if(table){
     table.rows.forEach((r,index)=>{
@@ -1966,10 +1997,19 @@ function parseToolbox(md){
 }
 
 function parseMemoryIndex(md){
-  const lines=normalize(md).split('\n');
-  for(let i=0;i<lines.length-1;i++){
+  const all=normalize(md).split('\n');
+  let from=0,to=all.length;
+  const sectionStart=all.findIndex(line=>/^##\s*記憶索引\s*$/.test(line.trim()));
+  if(sectionStart>=0){
+    from=sectionStart+1;
+    for(let i=from;i<all.length;i++){
+      if(/^##\s+/.test(all[i].trim())){to=i;break}
+    }
+  }
+  const lines=all.slice(from,to);
+  for(let i=0;i<lines.length;i++){
     if(lines[i].includes('P ID')&&lines[i].includes('原本参照')){
-      const t=parseTableAt(lines,i);if(!t)continue;
+      const t=parseTableAtResilient(lines,i,/^P\d+$/i);if(!t)continue;
       return t.rows.map((r,index)=>({
         id:(r.obj['P ID']||'').trim(),kind:(r.obj['種別']||'').trim(),field:(r.obj['分野']||'').trim(),
         title:(r.obj['タイトル']||'').trim(),summary:(r.obj['記憶の要約']||'').trim(),status:(r.obj['状態']||'').trim(),
@@ -2197,7 +2237,7 @@ function renderCurrent(){
   if(state.currentSection==='REVIEW')return renderAIPage();
   if(state.currentSection==='LOG')return renderLogs();
   const sec=activeSummarySection(state.currentSection);
-  if(!sec)return`<div class="empty"><strong>NO ${esc(state.currentSection)}</strong>最新版SUMMARYにこのセクションはありません。新構造ではT03/T05が存在しないのが正常です。</div>`;
+  if(!sec)return`<div class="empty"><strong>NO ${esc(state.currentSection)}</strong>最新版SUMMARYにこのセクションはありません。</div>`;
   if(sec.code==='T10')return renderScheduleCalendar(sec);
   return`<section class="section">${sec.items.map(it=>renderItem(sec,it)).join('')}</section>`
 }
