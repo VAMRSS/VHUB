@@ -122,7 +122,7 @@ input:focus-visible{
 
 .page{
   width:100%;
-  padding:34px 20px 110px;
+  padding:20px 20px 110px;
 }
 .hero{margin-bottom:42px}
 .meta{
@@ -849,14 +849,6 @@ select{
 </header>
 
 <main class="page">
-  <section class="hero">
-    <div class="meta">LIBRARY / AI GENERATED MUSIC</div>
-    <h1 class="wordmark">SONG ARCHIVE</h1>
-    <p class="hero-copy">
-      AI生成楽曲のタイトル、スタイル、歌詞とMP3をブラウザ内に保存・整理します。
-      音源を再生しながら分:秒のタイムスタンプや曲構成ラベルを歌詞へ入力できます。データは外部へ送信しません。
-    </p>
-  </section>
 
   <section class="control-strip" aria-label="楽曲一覧の操作">
     <div class="control-group">
@@ -870,6 +862,16 @@ select{
         <option value="updated-asc">UPDATED / OLD</option>
         <option value="title-asc">TITLE / A–Z</option>
         <option value="created-desc">CREATED / NEW</option>
+        <option value="progress-desc">PROGRESS / HIGH</option>
+        <option value="progress-asc">PROGRESS / LOW</option>
+        <option value="artwork-done">ARTWORK / DONE</option>
+        <option value="artwork-todo">ARTWORK / TODO</option>
+        <option value="tempvideo-done">TEMP VIDEO / DONE</option>
+        <option value="tempvideo-todo">TEMP VIDEO / TODO</option>
+        <option value="article-done">ARTICLE / DONE</option>
+        <option value="article-todo">ARTICLE / TODO</option>
+        <option value="video-done">VIDEO COMPLETE / DONE</option>
+        <option value="video-todo">VIDEO COMPLETE / TODO</option>
       </select>
     </div>
     <div class="spacer"></div>
@@ -1024,7 +1026,7 @@ select{
 
 <footer class="footer-strip">
   <div class="footer-main" id="footerStatus">READY · CTRL / ⌘ + S TO SAVE</div>
-  <div class="footer-side">SONG ARCHIVE / V1.4</div>
+  <div class="footer-side">SONG ARCHIVE / V1.6</div>
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1536,9 +1538,48 @@ select{
 
     const mode = ui.sortSelect.value;
     list.sort((a,b) => {
+      const pa = normalizeProgress(a.progress);
+      const pb = normalizeProgress(b.progress);
+
       if (mode === 'updated-asc') return String(a.updatedAt).localeCompare(String(b.updatedAt));
       if (mode === 'title-asc') return a.title.localeCompare(b.title, 'ja');
       if (mode === 'created-desc') return String(b.createdAt).localeCompare(String(a.createdAt));
+
+      if (mode === 'progress-desc') {
+        const diff = progressDone(pb) - progressDone(pa);
+        return diff || String(b.updatedAt).localeCompare(String(a.updatedAt));
+      }
+
+      if (mode === 'progress-asc') {
+        const diff = progressDone(pa) - progressDone(pb);
+        return diff || String(b.updatedAt).localeCompare(String(a.updatedAt));
+      }
+
+      const checkboxSort = {
+        'artwork-done':['artwork', true],
+        'artwork-todo':['artwork', false],
+        'tempvideo-done':['tempVideo', true],
+        'tempvideo-todo':['tempVideo', false],
+        'article-done':['article', true],
+        'article-todo':['article', false],
+        'video-done':['videoComplete', true],
+        'video-todo':['videoComplete', false]
+      };
+
+      if (checkboxSort[mode]) {
+        const [key, checkedFirst] = checkboxSort[mode];
+        const av = Boolean(pa[key]);
+        const bv = Boolean(pb[key]);
+
+        if (av !== bv) {
+          return checkedFirst
+            ? Number(bv) - Number(av)
+            : Number(av) - Number(bv);
+        }
+
+        return String(b.updatedAt).localeCompare(String(a.updatedAt));
+      }
+
       return String(b.updatedAt).localeCompare(String(a.updatedAt));
     });
     return list;
@@ -1741,7 +1782,7 @@ ${draft.lyrics}`;
     }
     const payload = {
       app: 'SONG ARCHIVE',
-      version: 1.4,
+      version: 1.6,
       exportedAt: nowIso(),
       note: 'MP3 binary data is stored in IndexedDB and is not included in this JSON file.',
       records
