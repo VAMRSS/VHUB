@@ -2008,6 +2008,19 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
   letter-spacing:.02em;
 }
 
+
+.id-ref{
+  color:inherit;
+  cursor:pointer;
+  text-decoration-line:underline;
+  text-decoration-style:dotted;
+  text-decoration-thickness:.5px;
+  text-underline-offset:2px;
+}
+.id-ref:hover{
+  color:var(--signal);
+}
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -2079,7 +2092,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V6.6 · SUBTLE WEEKEND TINTS</div>
+  <div class="footer-side">CONTEXT LENS / V6.7 · TIME + ID LINKSS</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -2539,6 +2552,173 @@ function metaLabels(){return new Set(['分野','分類','種別','カテゴリ',
 function detailFields(it){const a=idLabels(),b=titleLabels(),c=metaLabels();return nonEmptyFields(it).filter(f=>!a.has(f.label)&&!b.has(f.label)&&!c.has(f.label))}
 function currentItemKey(code,it){return`CUR::${code}::${it.id||it.index}`}
 function memoryKey(m){return`MEMORY::${m.id}`}
+function currentItemByPermanentId(id){
+  for(const sec of state.summary.sections||[]){
+    const item=(sec.items||[]).find(it=>String(it.id||'').toUpperCase()===id);
+    if(item)return{sec,item};
+  }
+  return null;
+}
+function memoryByPermanentId(id){
+  return(state.memory||[]).find(m=>String(m.id||'').toUpperCase()===id)||null;
+}
+function completedByPermanentId(id){
+  const file=state.active.COMPLETED;
+  if(!file)return null;
+  const item=parseCompletedIndex(file.text).find(x=>String(x.id||'').toUpperCase()===id);
+  return item?{file,item}:null;
+}
+function idReferenceInfo(rawId){
+  const id=String(rawId||'').toUpperCase();
+  if(!/^[PS]\d{3,}$/.test(id))return null;
+
+  const current=currentItemByPermanentId(id);
+  if(current){
+    const details=nonEmptyFields(current.item).map(f=>`${f.label}：${f.value}`).join('\n');
+    return{
+      id,
+      kind:'CURRENT',
+      title:`${id}｜${current.item.title||current.sec.title}`,
+      detail:`CURRENT / ${current.sec.code}｜${current.sec.title}\n${details||current.item.status||''}`.trim(),
+      current
+    };
+  }
+
+  if(id.startsWith('P')){
+    const memory=memoryByPermanentId(id);
+    if(memory){
+      return{
+        id,
+        kind:'MEMORY',
+        title:`${id}｜${memory.title||'MEMORY'}`,
+        detail:[
+          `MEMORY INDEX / ${id}`,
+          memory.title?`タイトル：${memory.title}`:'',
+          memory.summary?`記憶の要約：${memory.summary}`:'',
+          memory.status?`状態：${memory.status}`:'',
+          memory.date?`基準日：${memory.date}`:'',
+          memory.reopen?`再開・見直し条件：${memory.reopen}`:'',
+          memory.source?`原本参照：${memory.source}`:''
+        ].filter(Boolean).join('\n'),
+        memory
+      };
+    }
+
+    const completed=completedByPermanentId(id);
+    if(completed){
+      const detail=completedDetailForPid(completed.file.text,id);
+      return{
+        id,
+        kind:'COMPLETED',
+        title:`${id}｜${completed.item.summary||'COMPLETED'}`,
+        detail:[
+          `COMPLETED / ${id}`,
+          completed.item.date?`完了・節目日：${completed.item.date}`:'',
+          completed.item.field?`分野：${completed.item.field}`:'',
+          completed.item.summary?`概要：${completed.item.summary}`:'',
+          detail?`詳細：${detail}`:''
+        ].filter(Boolean).join('\n'),
+        completed
+      };
+    }
+  }
+
+  return null;
+}
+function enhanceIdReferences(root){
+  if(!root)return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{
+    acceptNode(node){
+      const p=node.parentElement;
+      if(!p||!/[PS]\d{3,}/i.test(node.nodeValue||''))return NodeFilter.FILTER_REJECT;
+      if(p.closest('script,style,textarea,input,select,option,[data-id-ref]'))return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes=[];
+  while(walker.nextNode())nodes.push(walker.currentNode);
+
+  nodes.forEach(node=>{
+    const value=node.nodeValue||'';
+    const re=/\b([PS]\d{3,})\b/gi;
+    let match,last=0,changed=false;
+    const frag=document.createDocumentFragment();
+
+    while((match=re.exec(value))){
+      const info=idReferenceInfo(match[1]);
+      if(!info)continue;
+      changed=true;
+      if(match.index>last)frag.appendChild(document.createTextNode(value.slice(last,match.index)));
+      const span=document.createElement('span');
+      span.className='id-ref';
+      span.dataset.idRef=info.id;
+      span.title=info.detail;
+      span.textContent=match[0];
+      frag.appendChild(span);
+      last=match.index+match[0].length;
+    }
+    if(!changed)return;
+    if(last<value.length)frag.appendChild(document.createTextNode(value.slice(last)));
+    node.replaceWith(frag);
+  });
+}
+function scrollToDataKey(key){
+  requestAnimationFrame(()=>{
+    const target=[...document.querySelectorAll('[data-key],[data-schedule-key]')].find(el=>
+      el.dataset.key===key||el.dataset.scheduleKey===key
+    );
+    target?.scrollIntoView({block:'center',behavior:'smooth'});
+  });
+}
+function jumpToPermanentId(rawId){
+  const id=String(rawId||'').toUpperCase();
+  const info=idReferenceInfo(id);
+  if(!info){toast('ID NOT FOUND');return}
+
+  if(info.kind==='CURRENT'){
+    const {sec,item}=info.current;
+    state.primary='CURRENT';
+    const key=currentItemKey(sec.code,item);
+    state.selected.add(key);
+
+    if(sec.code==='T10'){
+      state.currentSection='T10';
+      const d=scheduleDateInfo(item);
+      if(d.kind==='date'){
+        const now=new Date();
+        if(state.calendarMode==='6W'){
+          const currentWeek=startOfWeekSunday(now);
+          const targetWeek=startOfWeekSunday(new Date(d.year,d.month-1,d.day));
+          state.calendarOffset=Math.round((targetWeek-currentWeek)/(7*24*60*60*1000));
+        }else{
+          state.calendarOffset=(d.year-now.getFullYear())*12+(d.month-1-now.getMonth());
+        }
+      }
+    }else if(sec.code==='T04'){
+      state.currentSection='REVIEW';
+    }else if(sec.code==='T02'){
+      state.currentSection='T02';
+    }else{
+      state.primary='SEARCH';
+      state.globalQuery=id;
+      state.searchScope='ALL';
+      render();
+      requestAnimationFrame(()=>document.querySelector('.search-result-select')?.scrollIntoView({block:'center',behavior:'smooth'}));
+      return;
+    }
+
+    render();
+    scrollToDataKey(key);
+    return;
+  }
+
+  state.primary='SEARCH';
+  state.globalQuery=id;
+  state.searchScope=info.kind==='MEMORY'?'MEMORY':'COMPLETED';
+  render();
+  requestAnimationFrame(()=>document.querySelector('.search-result-select')?.scrollIntoView({block:'center',behavior:'smooth'}));
+}
+
 
 function scheduleDateInfo(it){
   const raw=(it.obj?.['日付・時期']||'').trim();let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return{kind:'date',year:+m[1],month:+m[2],day:+m[3],raw};
@@ -2628,7 +2808,7 @@ function renderSixWeekCalendar(items,holidays=[]){
       : '';
     const holidayTitle=hol.length?` title="${esc(holidayTitleText(hol))}"`:'';
     const eventHtml=ev.length
-      ? `<span class="calendar-event-labels ${hol.length?'with-holiday':''}">${ev.slice(0,hol.length?1:2).map(e=>`<span class="calendar-event-label ${state.selected.has(`CUR::T10::${e.id||String(e.index)}`)?'selected':''}" data-schedule-key="${esc(`CUR::T10::${e.id||String(e.index)}`)}" title="${esc(scheduleTitle(e))}">${esc(scheduleTitle(e))}</span>`).join('')}</span>`
+      ? `<span class="calendar-event-labels ${hol.length?'with-holiday':''}">${ev.slice(0,hol.length?1:2).map(e=>`<span class="calendar-event-label ${state.selected.has(`CUR::T10::${e.id||String(e.index)}`)?'selected':''}" data-schedule-key="${esc(`CUR::T10::${e.id||String(e.index)}`)}" title="${esc(scheduleHoverText(e))}">${esc(scheduleCalendarLabel(e))}</span>`).join('')}</span>`
       : '';
     cells+=`<button class="calendar-day week-calendar-day ${weekendClass} ${holidayClass} ${kindClasses} ${monthClass} ${ev.length?'has-events':''} ${isPast?'is-past':''} ${isToday?'today':''} ${state.selected.has(`DATE::${iso}`)?'add-target':''}" data-cal-date="${iso}"${holidayTitle}>
       <span class="calendar-day-num">${dateLabel}${isToday?'<span class="calendar-today-tag">[TODAY]</span>':''}</span>
@@ -2662,6 +2842,14 @@ function holidayTitle(items){
 function scheduleTime(it){return(it.obj?.['時刻']||'').trim()}
 function scheduleTitle(it){return(it.obj?.['予定・期限']||it.title||'').trim()}
 function scheduleNote(it){return(it.obj?.['現在の確認事項']||'').trim()}
+function scheduleCalendarLabel(it){
+  return[scheduleTime(it),scheduleTitle(it)].filter(Boolean).join(' ');
+}
+function scheduleHoverText(it){
+  const fields=nonEmptyFields(it);
+  if(fields.length)return fields.map(f=>`${f.label}：${f.value}`).join('\n');
+  return[it.id,scheduleTime(it),scheduleTitle(it),scheduleNote(it)].filter(Boolean).join('｜');
+}
 function shiftMonth(base,delta){return new Date(base.getFullYear(),base.getMonth()+delta,1)}
 function ymKey(y,m){return`${y}-${String(m).padStart(2,'0')}`}
 function scheduleSort(a,b){
@@ -2672,7 +2860,7 @@ function renderScheduleEntry(it){
   const d=scheduleDateInfo(it),key=currentItemKey('T10',it),sel=state.selected.has(key);
   const date=d.kind==='date'?`${d.month}/${d.day}`:d.kind==='month'?`${d.year}/${d.month} 日付未定`:'日付未定';
   const dt=[date,scheduleTime(it)].filter(Boolean).join(' ');
-  return`<div class="schedule-entry ${sel?'selected':''}" data-key="${esc(key)}"><input class="row-check" type="checkbox" ${sel?'checked':''}><div class="schedule-entry-main"><div class="schedule-entry-head"><div class="schedule-entry-title">${esc(scheduleTitle(it))}</div><div class="schedule-entry-datetime">${esc(dt)}</div></div>${scheduleNote(it)?`<div class="schedule-entry-note">${esc(scheduleNote(it))}</div>`:''}</div></div>`
+  return`<div class="schedule-entry ${sel?'selected':''}" data-key="${esc(key)}" title="${esc(scheduleHoverText(it))}"><input class="row-check" type="checkbox" ${sel?'checked':''}><div class="schedule-entry-main"><div class="schedule-entry-head"><div class="schedule-entry-title">${esc(scheduleTitle(it))}</div><div class="schedule-entry-datetime">${esc(dt)}</div></div>${scheduleNote(it)?`<div class="schedule-entry-note">${esc(scheduleNote(it))}</div>`:''}</div></div>`
 }
 function renderMonth(date,items,holidays=[]){
   const y=date.getFullYear(),m=date.getMonth()+1;
@@ -2721,7 +2909,7 @@ function renderMonth(date,items,holidays=[]){
     cells+=`<button class="calendar-day ${weekendClass} ${holidayClass} ${kindClasses} ${ev.length?'has-events':''} ${isPast?'is-past':''} ${isToday?'today':''} ${state.selected.has(`DATE::${iso}`)?'add-target':''}" data-cal-date="${iso}"${title}>
       <span class="calendar-day-num">${day}${isToday?'<span class="calendar-today-tag">[TODAY]</span>':''}</span>
       ${holidayHtml}
-      ${ev.length?`<span class="calendar-event-labels ${hol.length?'with-holiday':''}">${ev.slice(0,hol.length?1:2).map(e=>`<span class="calendar-event-label ${state.selected.has(`CUR::T10::${e.id||String(e.index)}`)?'selected':''}" data-schedule-key="${esc(`CUR::T10::${e.id||String(e.index)}`)}" title="${esc(scheduleTitle(e))}">${esc(scheduleTitle(e))}</span>`).join('')}</span>`:''}
+      ${ev.length?`<span class="calendar-event-labels ${hol.length?'with-holiday':''}">${ev.slice(0,hol.length?1:2).map(e=>`<span class="calendar-event-label ${state.selected.has(`CUR::T10::${e.id||String(e.index)}`)?'selected':''}" data-schedule-key="${esc(`CUR::T10::${e.id||String(e.index)}`)}" title="${esc(scheduleHoverText(e))}">${esc(scheduleCalendarLabel(e))}</span>`).join('')}</span>`:''}
     </button>`
   }
 
@@ -3967,6 +4155,7 @@ function render(){
   if(state.primary==='TOOLBOX')html=renderToolbox();
   if(state.primary==='FILES')html=renderFiles();
   $('mainView').innerHTML=html;
+  enhanceIdReferences($('mainView'));
   const ws=document.querySelector('.workspace');
   ws?.classList.toggle('files-mode',state.primary==='FILES');
   ws?.classList.toggle('toolbox-mode',state.primary==='TOOLBOX');
@@ -3974,6 +4163,11 @@ function render(){
 }
 function toggleSelection(key,on){if(on)state.selected.add(key);else state.selected.delete(key);render()}
 function bindDynamic(){
+  document.querySelectorAll('[data-id-ref]').forEach(ref=>ref.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    jumpToPermanentId(ref.dataset.idRef);
+  }));
   document.querySelectorAll('[data-schedule-key]').forEach(dot=>dot.addEventListener('click',e=>{
     e.preventDefault();
     e.stopPropagation();
