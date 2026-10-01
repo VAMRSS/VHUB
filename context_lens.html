@@ -2021,6 +2021,98 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
   color:var(--signal);
 }
 
+
+/* NEWS v0.1 */
+.workspace.news-mode{grid-template-columns:1fr}
+.workspace.news-mode .browser{border-right:0}
+.workspace.news-mode .composer{display:none}
+.news-page{background:var(--white)}
+.news-toolbar{
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:7px 10px;
+  border-bottom:.5px solid var(--divider)
+}
+.news-toolbar>div{display:flex;align-items:center;gap:10px;min-width:0}
+.news-toolbar .panel-meta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.news-file-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:0;
+  border-bottom:.5px solid var(--divider);
+  background:var(--bone)
+}
+.news-file-meta>div{
+  display:flex;
+  gap:8px;
+  padding:7px 10px;
+  border-right:.5px solid var(--divider);
+  font-size:8px;
+  line-height:1.4
+}
+.news-file-meta>div span{
+  color:var(--muted);
+  font-family:var(--font-euro);
+  letter-spacing:.03em
+}
+.news-section{border-bottom:.5px solid var(--divider)}
+.news-section-head{
+  min-height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 10px;
+  background:var(--bone);
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:400;
+  letter-spacing:.04em
+}
+.news-list{background:var(--white)}
+.news-item{
+  display:block;
+  padding:11px 10px;
+  border-bottom:.5px solid var(--divider);
+  color:inherit;
+  text-decoration:none
+}
+.news-item:last-child{border-bottom:0}
+a.news-item:hover{background:#fafafa}
+.news-item-title{
+  font-size:11px;
+  font-weight:400;
+  line-height:1.6;
+  overflow-wrap:anywhere
+}
+.news-item-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px 14px;
+  margin-top:4px;
+  color:var(--mid);
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1.4
+}
+.news-item-summary{
+  margin-top:5px;
+  color:var(--mid);
+  font-size:10px;
+  line-height:1.7;
+  overflow-wrap:anywhere
+}
+.news-empty{padding:16px 10px;font-size:10px;color:var(--muted)}
+@media(max-width:700px){
+  .news-file-meta{display:block}
+  .news-file-meta>div{border-right:0;border-bottom:.5px solid var(--divider)}
+  .news-file-meta>div:last-child{border-bottom:0}
+}
+
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -2092,7 +2184,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V6.7 · TIME + ID LINKSS</div>
+  <div class="footer-side">CONTEXT LENS / V7.4 · NEWS MARKDOWN</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -2120,6 +2212,7 @@ const MENU_TABS=[
   ['T10','SCHEDULE'],
   ['T02','ACTIVE'],
   ['LOG','DAILY LOG'],
+  ['NEWS','NEWS'],
   ['SEARCH','SEARCH'],
   ['TOOLBOX','TOOLBOX'],
   ['PROFILE','PROFILE'],
@@ -2134,6 +2227,7 @@ const state={
   archiveSelected:'',archiveQuery:'',profileQuery:'',globalQuery:'',filesSelected:'',
   searchScope:'ALL',searchResultMap:new Map(),searchBrowseFile:'',searchNote:'',
   toolbox:[],toolboxSelected:'',
+  newsFile:null,
   reviewItems:[],reviewIndex:0,reviewTimer:null
 };
 
@@ -2190,6 +2284,7 @@ function classifyFileName(name){
   const defs=[
     ['MEMORY',/^living-context-memory-index_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['SUMMARY',/^living-context-summary_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
+    ['NEWS',/^living-context-news_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['ORIGINAL',/^living-context-original_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['PROFILE',/^living-context-profile_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['COMPLETED',/^living-context-t09_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
@@ -2203,6 +2298,7 @@ function classifyContent(text){
   const s=normalize(text).slice(0,3000);
   if(/LIVING CONTEXT｜Memory Index/i.test(s)||/##\s*記憶索引/.test(s))return'MEMORY';
   if(/LIVING CONTEXT｜蓄積サマリー/.test(s))return'SUMMARY';
+  if(/LIVING CONTEXT｜NEWS/i.test(s))return'NEWS';
   if(/LIVING CONTEXT｜運用・引き継ぎガイド/.test(s))return'GUIDE';
   if(/LIVING CONTEXT｜週次アーカイブ/.test(s))return'WEEKLY';
   if(/LIVING CONTEXT｜.*プロフィール|パーソナルプロフィール/.test(s))return'PROFILE';
@@ -2253,7 +2349,7 @@ async function pruneStoredFiles(){
 
 function refreshDerived(){
   const active={};
-  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE','TOOLBOX']){
+  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE','TOOLBOX','NEWS']){
     const list=state.files.filter(f=>f.type===type).sort((a,b)=>fileRank(b).localeCompare(fileRank(a)));
     active[type]=list[0]||null
   }
@@ -3160,6 +3256,130 @@ function renderLogs(){
   </section>`;
 }
 
+
+function newsFieldKey(value){
+  return String(value||'').trim().replace(/\s+/g,'');
+}
+function newsParseMarkdown(md){
+  const lines=normalize(md).split('\n');
+  const meta={};
+  const sections=[];
+  let section=null;
+  let article=null;
+
+  const flushArticle=()=>{
+    if(!article||!section)return;
+    article.title=String(article.title||'').trim();
+    article.media=String(article.media||'').trim();
+    article.published=String(article.published||'').trim();
+    article.url=String(article.url||'').trim();
+    article.summary=String(article.summary||'').trim();
+    if(article.title)section.items.push(article);
+    article=null;
+  };
+
+  const flushSection=()=>{
+    flushArticle();
+    if(section){
+      sections.push(section);
+      section=null;
+    }
+  };
+
+  for(const raw of lines){
+    const line=raw.trim();
+
+    const h2=line.match(/^##\s+(.+?)\s*$/);
+    if(h2){
+      flushSection();
+      section={title:h2[1].trim(),items:[]};
+      continue;
+    }
+
+    const h3=line.match(/^###\s+(.+?)\s*$/);
+    if(h3&&section){
+      flushArticle();
+      article={title:h3[1].trim(),media:'',published:'',url:'',summary:''};
+      continue;
+    }
+
+    const field=line.match(/^\s*[-*]\s+([^：:]+)[：:]\s*(.*)$/);
+    if(field){
+      const key=newsFieldKey(field[1]);
+      const value=field[2].trim();
+
+      if(article){
+        if(key==='媒体'||key==='媒体名'||key==='source')article.media=value;
+        else if(key==='公開日時'||key==='日時'||key==='published')article.published=value;
+        else if(key==='URL'||key==='url')article.url=value;
+        else if(key==='概要'||key==='description'||key==='summary')article.summary=value;
+        continue;
+      }
+
+      if(!section)meta[key]=value;
+      continue;
+    }
+
+    if(article&&line&&article.summary){
+      article.summary+=` ${line}`;
+    }
+  }
+
+  flushSection();
+  return{meta,sections};
+}
+function newsSafeUrl(v){
+  try{
+    const u=new URL(String(v||''));
+    return/^https?:$/.test(u.protocol)?u.href:'';
+  }catch{return''}
+}
+function renderNewsArticle(item){
+  const url=newsSafeUrl(item.url);
+  const body=`<div class="news-item-title">${esc(item.title)}</div>
+    <div class="news-item-meta">
+      <span>${esc(item.media||'—')}</span>
+      <span>${esc(item.published||'—')}</span>
+    </div>
+    ${item.summary?`<div class="news-item-summary">${esc(item.summary)}</div>`:''}`;
+
+  return url
+    ? `<a class="news-item" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${body}</a>`
+    : `<article class="news-item">${body}</article>`;
+}
+function renderNews(){
+  const file=state.active.NEWS;
+  if(!file){
+    return`<div class="news-page">
+      <div class="news-toolbar"><div><span class="ui-label">NEWS</span><span class="panel-meta">NO FILE</span></div></div>
+      <div class="empty"><strong>NEWS NOT LOADED</strong>living-context-news_YYYYMMDD-HHMM.md をIMPORTしてください。</div>
+    </div>`;
+  }
+
+  const parsed=newsParseMarkdown(file.text);
+  const metaItems=[
+    ['生成日時',parsed.meta['生成日時']],
+    ['対象日時',parsed.meta['対象日時']],
+    ['言語',parsed.meta['言語']],
+    ['記事数',parsed.meta['記事数']]
+  ].filter(([,value])=>value);
+
+  return`<div class="news-page">
+    <div class="news-toolbar">
+      <div><span class="ui-label">NEWS</span><span class="panel-meta">${esc(file.name)}</span></div>
+    </div>
+    ${metaItems.length?`<div class="news-file-meta">${metaItems.map(([label,value])=>`<div><span>${esc(label)}</span>${esc(value)}</div>`).join('')}</div>`:''}
+    ${parsed.sections.length
+      ? parsed.sections.map(sec=>`<section class="news-section">
+          <div class="news-section-head"><span>${esc(sec.title)}</span><span>${sec.items.length}</span></div>
+          ${sec.items.length
+            ? `<div class="news-list">${sec.items.map(renderNewsArticle).join('')}</div>`
+            : '<div class="news-empty">記事はありません。</div>'}
+        </section>`).join('')
+      : '<div class="news-empty">NEWSセクションを判別できませんでした。</div>'}
+  </div>`;
+}
+
 function activeMenuId(){
   if(state.primary==='CURRENT')return state.currentSection;
   return state.primary;
@@ -3845,7 +4065,7 @@ function renderFiles(){
   if(selected)state.filesSelected=selected.name;
   return`<div class="files-layout">
     <div class="files-list-pane">
-      <div class="source-reader-toolbar"><span class="ui-label">STORAGE</span><span class="panel-meta">LATEST ONLY / WEEKLY ACCUMULATES</span></div>
+      <div class="source-reader-toolbar"><span class="ui-label">STORAGE</span><span class="panel-meta">LATEST ACTIVE / WEEKLY + NEWS ACCUMULATE</span></div>
       <div class="files-backup-bar"><span class="files-backup-meta">${files.length} FILES</span><div class="files-backup-actions"><button class="ghost files-backup-btn" data-download-backup>DOWNLOAD BACKUP</button><button class="ghost files-restore-btn" data-restore-backup>RESTORE BACKUP</button></div></div>
       <div class="files-table"><div class="data-head"><div>TYPE</div><div>FILE</div><div>VERSION</div><div>STATUS</div><div>ACTION</div></div>
     ${files.length?files.map(f=>`<div class="data-row ${f.name===selected?.name?'selected':''}" data-file-name="${esc(f.name)}"><div>${esc(f.type)}</div><div>${esc(f.name)}</div><div>${esc(f.period||f.timestamp||'—')}</div><div>${isActiveFile(f)?'<span class="file-active">ACTIVE</span>':'STORED'}</div><div class="file-action"><button class="ghost file-download" data-download-file="${esc(f.name)}">DOWNLOAD</button></div></div>`).join(''):'<div class="empty"><strong>NO FILES</strong>IMPORTまたはD&amp;Dしてください。</div>'}</div></div>
@@ -3904,7 +4124,7 @@ function validateBackupPayload(payload){
   if(!payload||typeof payload!=='object')throw new Error('Invalid backup');
   if(payload.format!=='CONTEXT_LENS_BACKUP')throw new Error('Unsupported backup format');
   if(!Array.isArray(payload.files))throw new Error('Backup files missing');
-  const allowed=new Set(['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','WEEKLY','TOOLBOX']);
+  const allowed=new Set(['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','WEEKLY','TOOLBOX','NEWS']);
   return payload.files.map((f,i)=>{
     if(!f||typeof f!=='object')throw new Error(`Invalid file at ${i+1}`);
     if(typeof f.name!=='string'||!f.name.trim())throw new Error(`Missing file name at ${i+1}`);
@@ -4151,6 +4371,7 @@ function render(){
   renderMenuTabs();let html='';
   if(state.primary==='CURRENT')html=renderCurrent();
   if(state.primary==='PROFILE')html=renderProfile();
+  if(state.primary==='NEWS')html=renderNews();
   if(state.primary==='SEARCH')html=renderSearch();
   if(state.primary==='TOOLBOX')html=renderToolbox();
   if(state.primary==='FILES')html=renderFiles();
@@ -4158,6 +4379,7 @@ function render(){
   enhanceIdReferences($('mainView'));
   const ws=document.querySelector('.workspace');
   ws?.classList.toggle('files-mode',state.primary==='FILES');
+  ws?.classList.toggle('news-mode',state.primary==='NEWS');
   ws?.classList.toggle('toolbox-mode',state.primary==='TOOLBOX');
   bindDynamic();updateComposer();updateFooter()
 }
