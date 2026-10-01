@@ -2023,9 +2023,6 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
 
 
 /* NEWS v0.1 */
-.workspace.news-mode{grid-template-columns:1fr}
-.workspace.news-mode .browser{border-right:0}
-.workspace.news-mode .composer{display:none}
 .news-page{background:var(--white)}
 .news-toolbar{
   min-height:42px;
@@ -2038,26 +2035,6 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
 }
 .news-toolbar>div{display:flex;align-items:center;gap:10px;min-width:0}
 .news-toolbar .panel-meta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.news-file-meta{
-  display:flex;
-  flex-wrap:wrap;
-  gap:0;
-  border-bottom:.5px solid var(--divider);
-  background:var(--bone)
-}
-.news-file-meta>div{
-  display:flex;
-  gap:8px;
-  padding:7px 10px;
-  border-right:.5px solid var(--divider);
-  font-size:8px;
-  line-height:1.4
-}
-.news-file-meta>div span{
-  color:var(--muted);
-  font-family:var(--font-euro);
-  letter-spacing:.03em
-}
 .news-section{border-bottom:.5px solid var(--divider)}
 .news-section-head{
   min-height:36px;
@@ -2072,16 +2049,25 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
   font-weight:400;
   letter-spacing:.04em
 }
-.news-list{background:var(--white)}
+.news-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  background:var(--white)
+}
 .news-item{
   display:block;
+  min-width:0;
   padding:11px 10px;
   border-bottom:.5px solid var(--divider);
   color:inherit;
-  text-decoration:none
+  cursor:pointer
 }
-.news-item:last-child{border-bottom:0}
-a.news-item:hover{background:#fafafa}
+.news-item:nth-child(odd){border-right:.5px solid var(--divider)}
+.news-item:hover{background:#fafafa}
+.news-item.selected{
+  background:#f5f5f5;
+  box-shadow:inset 2px 0 0 var(--signal)
+}
 .news-item-title{
   font-size:11px;
   font-weight:400;
@@ -2092,24 +2078,213 @@ a.news-item:hover{background:#fafafa}
   display:flex;
   flex-wrap:wrap;
   gap:5px 14px;
-  margin-top:4px;
+  margin-top:5px;
   color:var(--mid);
   font-family:var(--font-euro);
   font-size:8px;
   line-height:1.4
 }
-.news-item-summary{
-  margin-top:5px;
-  color:var(--mid);
-  font-size:10px;
-  line-height:1.7;
-  overflow-wrap:anywhere
+.news-source-link{
+  color:inherit;
+  text-decoration:underline;
+  text-decoration-thickness:.5px;
+  text-underline-offset:2px
 }
+.news-source-link:hover{color:var(--black)}
 .news-empty{padding:16px 10px;font-size:10px;color:var(--muted)}
 @media(max-width:700px){
-  .news-file-meta{display:block}
-  .news-file-meta>div{border-right:0;border-bottom:.5px solid var(--divider)}
-  .news-file-meta>div:last-child{border-bottom:0}
+  .news-list{grid-template-columns:1fr}
+  .news-item:nth-child(odd){border-right:0}
+}
+
+
+/* v8.0 / unified card-click selection */
+.selectable-card{
+  cursor:pointer;
+}
+.selectable-card:focus-visible{
+  outline:1px solid var(--black);
+  outline-offset:-1px;
+}
+.selectable-card.selected{
+  box-shadow:inset 3px 0 0 var(--signal);
+  background:var(--signal-soft);
+}
+
+/* CURRENT */
+.item{
+  grid-template-columns:74px 180px minmax(0,1fr);
+}
+.schedule-entry{
+  display:block;
+  padding:8px 4px;
+}
+.open-question-item{
+  grid-template-columns:66px 90px 72px minmax(170px,1.2fr) minmax(150px,1fr) 92px;
+}
+.review-answer-item{
+  grid-template-columns:54px minmax(0,1fr);
+}
+.review-answer-id{
+  border-left:0;
+}
+@media(max-width:900px){
+  .open-question-item{
+    grid-template-columns:60px minmax(0,1fr) 82px;
+  }
+  .open-question-item>div:nth-child(2),
+  .open-question-item>div:nth-child(3),
+  .open-question-item>div:nth-child(5){display:none}
+}
+
+/* DAILY LOG: card selects, +/- only expands */
+.daily-log-day-head{
+  grid-template-columns:minmax(150px,1fr) auto 24px;
+  padding:0 10px;
+}
+.daily-log-day-head::after{content:none!important}
+.daily-log-toggle{
+  width:24px;
+  height:24px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-family:var(--font-euro);
+  font-size:11px;
+  cursor:pointer;
+}
+.daily-log-toggle:hover{color:var(--black)}
+
+/* MEMORY */
+.memory-list .data-row{
+  cursor:pointer;
+}
+.memory-list .data-row.active:not(.selected){
+  background:#fafafa;
+}
+
+/* PROFILE */
+.profile-select-row{
+  display:block;
+}
+.profile-row-body{
+  padding:7px 10px;
+}
+.profile-table tr.selectable-card td{
+  cursor:pointer;
+}
+.profile-table tr.selectable-card.selected{
+  box-shadow:inset 3px 0 0 var(--signal);
+  background:var(--signal-soft);
+}
+
+/* SEARCH / HISTORY */
+.search-results-head,
+.search-result-select{
+  grid-template-columns:86px 78px minmax(0,1fr) 190px;
+}
+.search-result-select.selectable-card{cursor:pointer}
+.history-memory-row.selectable-card{
+  display:block;
+}
+.history-memory-summary{
+  padding-left:74px;
+}
+.history-completed-head,
+.history-completed-row{
+  grid-template-columns:68px 92px 110px minmax(0,1fr);
+}
+@media(max-width:900px){
+  .search-results-head,
+  .search-result-select{
+    grid-template-columns:72px 64px minmax(0,1fr);
+  }
+  .search-results-head>div:nth-child(4),
+  .search-result-select>div:nth-child(4){display:none}
+  .history-completed-head,
+  .history-completed-row{
+    grid-template-columns:62px 82px minmax(0,1fr);
+  }
+  .history-completed-head>div:nth-child(3),
+  .history-completed-row>div:nth-child(3){display:none}
+}
+
+
+/* v8.1 / divider de-duplication
+   Horizontal separators are drawn once: between cards by the card,
+   at the outer edge by the containing section/frame. */
+
+/* CURRENT / AI */
+.section > .item:last-child,
+.ai-block .section > .review-answer-item:last-child,
+.ai-block > .open-question-item:last-child{
+  border-bottom:0;
+}
+
+/* Schedule overflow: each column keeps internal separators, but the last
+   visual row does not double against the following toolbar/section edge. */
+.schedule-overflow-grid > .schedule-entry:last-child,
+.schedule-overflow-grid > .schedule-entry:nth-last-child(2):nth-child(odd){
+  border-bottom:0;
+}
+@media(max-width:900px){
+  .schedule-overflow-grid > .schedule-entry:nth-last-child(2):nth-child(odd){
+    border-bottom:.5px solid var(--divider);
+  }
+  .schedule-overflow-grid > .schedule-entry:last-child{
+    border-bottom:0;
+  }
+}
+
+/* Daily log */
+.daily-log-page > .daily-log-day:last-child{
+  border-bottom:0;
+}
+
+/* Memory / generic data lists */
+.memory-list > .data-row:last-child,
+.files-table > .data-row:last-child{
+  border-bottom:0;
+}
+
+/* Profile: block/section already owns the outer lower edge. */
+.profile-block > .profile-select-row:last-child{
+  border-bottom:0;
+}
+.profile-table tbody tr:last-child > td{
+  border-bottom:0;
+}
+.profile-section > .profile-block:last-child{
+  border-bottom:0;
+}
+
+/* Search / archive previews */
+.search-result-select:last-child,
+.history-preview > .history-memory-row:last-child,
+.history-preview > .history-completed-row:last-child{
+  border-bottom:0;
+}
+
+/* NEWS is a 2-column grid. Remove the card separator only on the final
+   visual row; .news-section supplies the section's lower edge. */
+.news-list > .news-item:last-child,
+.news-list > .news-item:nth-last-child(2):nth-child(odd){
+  border-bottom:0;
+}
+@media(max-width:700px){
+  .news-list > .news-item:nth-last-child(2):nth-child(odd){
+    border-bottom:.5px solid var(--divider);
+  }
+  .news-list > .news-item:last-child{
+    border-bottom:0;
+  }
+}
+
+/* Other row lists with an enclosing pane/frame. */
+.toolbox-list-pane > .toolbox-row:last-child,
+.search-browse-list > .search-browse-file:last-child{
+  border-bottom:0;
 }
 
 
@@ -2184,7 +2359,7 @@ a.news-item:hover{background:#fafafa}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V7.4 · NEWS MARKDOWN</div>
+  <div class="footer-side">CONTEXT LENS / V8.1 · CARD SELECT</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -2227,7 +2402,6 @@ const state={
   archiveSelected:'',archiveQuery:'',profileQuery:'',globalQuery:'',filesSelected:'',
   searchScope:'ALL',searchResultMap:new Map(),searchBrowseFile:'',searchNote:'',
   toolbox:[],toolboxSelected:'',
-  newsFile:null,
   reviewItems:[],reviewIndex:0,reviewTimer:null
 };
 
@@ -2284,7 +2458,6 @@ function classifyFileName(name){
   const defs=[
     ['MEMORY',/^living-context-memory-index_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['SUMMARY',/^living-context-summary_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
-    ['NEWS',/^living-context-news_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['ORIGINAL',/^living-context-original_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['PROFILE',/^living-context-profile_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
     ['COMPLETED',/^living-context-t09_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
@@ -2298,7 +2471,6 @@ function classifyContent(text){
   const s=normalize(text).slice(0,3000);
   if(/LIVING CONTEXT｜Memory Index/i.test(s)||/##\s*記憶索引/.test(s))return'MEMORY';
   if(/LIVING CONTEXT｜蓄積サマリー/.test(s))return'SUMMARY';
-  if(/LIVING CONTEXT｜NEWS/i.test(s))return'NEWS';
   if(/LIVING CONTEXT｜運用・引き継ぎガイド/.test(s))return'GUIDE';
   if(/LIVING CONTEXT｜週次アーカイブ/.test(s))return'WEEKLY';
   if(/LIVING CONTEXT｜.*プロフィール|パーソナルプロフィール/.test(s))return'PROFILE';
@@ -2349,7 +2521,7 @@ async function pruneStoredFiles(){
 
 function refreshDerived(){
   const active={};
-  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE','TOOLBOX','NEWS']){
+  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE','TOOLBOX']){
     const list=state.files.filter(f=>f.type===type).sort((a,b)=>fileRank(b).localeCompare(fileRank(a)));
     active[type]=list[0]||null
   }
@@ -2437,12 +2609,18 @@ function parseSummary(md){
     const sm=lines[i].match(/^##\s+(T\d+)｜(.+)$/);
     if(sm){
       const code=sm[1],title=sm[2].trim(),block=[];i++;
-      while(i<lines.length&&!/^##\s+T\d+｜/.test(lines[i])&&!/^#{1,2}\s+直近日別ログ/.test(lines[i])){block.push(lines[i]);i++}
+      while(
+        i<lines.length &&
+        !/^##\s+T\d+｜/.test(lines[i]) &&
+        !/^##\s+NEWS｜外部世界の現在\s*$/.test(lines[i]) &&
+        !/^#{1,2}\s+直近日別ログ/.test(lines[i])
+      ){block.push(lines[i]);i++}
       sections.push(parseSection(code,title,block));continue
     }
     if(/^#{1,2}\s+直近日別ログ/.test(lines[i])){
       i++;
       while(i<lines.length){
+        if(/^##\s+NEWS｜外部世界の現在\s*$/.test(lines[i]))break;
         const dm=lines[i].match(/^##\s+(\d{4}-\d{2}-\d{2}[^\n]*)$/);
         if(dm){const title=dm[1].trim(),body=[];i++;while(i<lines.length&&!/^##\s+\d{4}-\d{2}-\d{2}/.test(lines[i])){body.push(lines[i]);i++}logs.push({id:title.split(/[（(]/)[0].trim(),title,text:body.join('\n').trim()});continue}
         i++
@@ -2956,7 +3134,7 @@ function renderScheduleEntry(it){
   const d=scheduleDateInfo(it),key=currentItemKey('T10',it),sel=state.selected.has(key);
   const date=d.kind==='date'?`${d.month}/${d.day}`:d.kind==='month'?`${d.year}/${d.month} 日付未定`:'日付未定';
   const dt=[date,scheduleTime(it)].filter(Boolean).join(' ');
-  return`<div class="schedule-entry ${sel?'selected':''}" data-key="${esc(key)}" title="${esc(scheduleHoverText(it))}"><input class="row-check" type="checkbox" ${sel?'checked':''}><div class="schedule-entry-main"><div class="schedule-entry-head"><div class="schedule-entry-title">${esc(scheduleTitle(it))}</div><div class="schedule-entry-datetime">${esc(dt)}</div></div>${scheduleNote(it)?`<div class="schedule-entry-note">${esc(scheduleNote(it))}</div>`:''}</div></div>`
+  return`<div class="schedule-entry selectable-card ${sel?'selected':''}" data-key="${esc(key)}" role="button" tabindex="0" title="${esc(scheduleHoverText(it))}"><div class="schedule-entry-main"><div class="schedule-entry-head"><div class="schedule-entry-title">${esc(scheduleTitle(it))}</div><div class="schedule-entry-datetime">${esc(dt)}</div></div>${scheduleNote(it)?`<div class="schedule-entry-note">${esc(scheduleNote(it))}</div>`:''}</div></div>`
 }
 function renderMonth(date,items,holidays=[]){
   const y=date.getFullYear(),m=date.getMonth()+1;
@@ -3076,7 +3254,7 @@ function renderScheduleCalendar(sec){
 function renderItem(sec,it){
   const key=currentItemKey(sec.code,it),sel=state.selected.has(key),fields=detailFields(it);
   const body=fields.length?`<div class="field-list">${fields.map(f=>`<div class="field-row"><div class="field-label">${esc(f.label)}</div><div class="field-value">${esc(f.value)}</div></div>`).join('')}</div>`:`<div class="field-value">${esc(it.status||it.raw)}</div>`;
-  return`<article class="item ${sel?'selected':''}" data-key="${esc(key)}"><div class="cell select-cell"><input class="row-check" type="checkbox" ${sel?'checked':''}></div><div class="cell"><div class="item-id">${esc(it.id||sec.code)}</div><div class="item-cat">${esc(it.category||'')}</div></div><div class="cell"><div class="item-title">${esc(it.title||sec.title)}</div>${it.updated?`<div class="item-cat">${esc(it.updated)}</div>`:''}</div><div class="cell body-cell">${body}</div></article>`
+  return`<article class="item selectable-card ${sel?'selected':''}" data-key="${esc(key)}" role="button" tabindex="0"><div class="cell"><div class="item-id">${esc(it.id||sec.code)}</div><div class="item-cat">${esc(it.category||'')}</div></div><div class="cell"><div class="item-title">${esc(it.title||sec.title)}</div>${it.updated?`<div class="item-cat">${esc(it.updated)}</div>`:''}</div><div class="cell body-cell">${body}</div></article>`
 }
 function openQuestionValue(it,names){
   for(const n of names){
@@ -3089,7 +3267,7 @@ function renderOpenQuestionSection(){
   const sec=activeSummarySection('T04');
   const items=sec?.items||[];
   const head=`<div class="open-question-item oq-head">
-    <div></div><div>P ID</div><div>CLASS</div><div>PRIORITY</div><div>QUESTION</div><div>STATUS</div><div>UPDATED</div>
+    <div>P ID</div><div>CLASS</div><div>PRIORITY</div><div>QUESTION</div><div>STATUS</div><div>UPDATED</div>
   </div>`;
   const rows=items.map(it=>{
     const key=currentItemKey('T04',it),sel=state.selected.has(key);
@@ -3098,8 +3276,7 @@ function renderOpenQuestionSection(){
     const question=openQuestionValue(it,['問い／確認事項','問い・確認事項','問い・提案','項目','内容','概要'])||it.title||'';
     const status=openQuestionValue(it,['現在状態','現在の状態','状態','現在の確認事項'])||it.status||'';
     const updated=openQuestionValue(it,['最終更新','最終更新日','更新日'])||it.updated||'';
-    return`<div class="open-question-item ${sel?'selected':''}" data-key="${esc(key)}">
-      <div class="select-cell"><input class="row-check" type="checkbox" ${sel?'checked':''}></div>
+    return`<div class="open-question-item selectable-card ${sel?'selected':''}" data-key="${esc(key)}" role="button" tabindex="0">
       <div class="oq-id">${esc(it.id||'—')}</div>
       <div class="oq-meta">${esc(category||'—')}</div>
       <div class="oq-meta">${esc(priority||'—')}</div>
@@ -3120,8 +3297,7 @@ function renderAIPage(){
     ${data.items.length
       ? `<div class="section">${data.items.map((item,i)=>{
           const key=`REVIEW::${simpleHash(item)}`,sel=state.selected.has(key);
-          return`<article class="review-answer-item ${sel?'selected':''}" data-key="${key}">
-            <div class="review-answer-check"><input class="row-check" type="checkbox" ${sel?'checked':''}></div>
+          return`<article class="review-answer-item selectable-card ${sel?'selected':''}" data-key="${key}" role="button" tabindex="0">
             <div class="review-answer-id">R${String(i+1).padStart(2,'0')}</div>
             <div class="review-answer-body">${esc(item)}</div>
           </article>`;
@@ -3245,10 +3421,10 @@ function renderLogs(){
       const isLatest=dailyLogDate(log)===latestDate;
       const blocks=parseDailyLogBlocks(log.text);
       return`<details class="daily-log-day ${sel?'selected':''}" data-key="${esc(key)}" ${isLatest?'open':''}>
-        <summary class="daily-log-day-head">
-          <span class="daily-log-check"><input class="row-check" type="checkbox" ${sel?'checked':''}></span>
+        <summary class="daily-log-day-head" title="クリックしてChatGPT欄へ追加">
           <span class="daily-log-date">${esc(log.title)}</span>
           <span class="daily-log-summary-meta">${stats.reviewCount?`AI REVIEW ${stats.reviewCount}`:''}${stats.reviewCount&&stats.updates?' / ':''}${stats.updates?`UPDATES ${stats.updates}`:''}</span>
+          <button class="daily-log-toggle" type="button" aria-label="詳細表示を切り替え">${isLatest?'−':'+'}</button>
         </summary>
         <div class="daily-log-day-body">${blocks.map(renderDailyLogBlock).join('')}</div>
       </details>`;
@@ -3257,126 +3433,129 @@ function renderLogs(){
 }
 
 
-function newsFieldKey(value){
-  return String(value||'').trim().replace(/\s+/g,'');
-}
-function newsParseMarkdown(md){
-  const lines=normalize(md).split('\n');
-  const meta={};
-  const sections=[];
-  let section=null;
-  let article=null;
+const NEWS_SECTION_TITLE='NEWS｜外部世界の現在';
+const NEWS_GENRE_ORDER=['TOP','国内','世界','ビジネス','テクノロジー','科学','健康'];
+const NEWS_GENRES=new Set(NEWS_GENRE_ORDER);
 
-  const flushArticle=()=>{
-    if(!article||!section)return;
-    article.title=String(article.title||'').trim();
-    article.media=String(article.media||'').trim();
-    article.published=String(article.published||'').trim();
-    article.url=String(article.url||'').trim();
-    article.summary=String(article.summary||'').trim();
-    if(article.title)section.items.push(article);
-    article=null;
-  };
-
-  const flushSection=()=>{
-    flushArticle();
-    if(section){
-      sections.push(section);
-      section=null;
-    }
-  };
-
-  for(const raw of lines){
-    const line=raw.trim();
-
-    const h2=line.match(/^##\s+(.+?)\s*$/);
-    if(h2){
-      flushSection();
-      section={title:h2[1].trim(),items:[]};
-      continue;
-    }
-
-    const h3=line.match(/^###\s+(.+?)\s*$/);
-    if(h3&&section){
-      flushArticle();
-      article={title:h3[1].trim(),media:'',published:'',url:'',summary:''};
-      continue;
-    }
-
-    const field=line.match(/^\s*[-*]\s+([^：:]+)[：:]\s*(.*)$/);
-    if(field){
-      const key=newsFieldKey(field[1]);
-      const value=field[2].trim();
-
-      if(article){
-        if(key==='媒体'||key==='媒体名'||key==='source')article.media=value;
-        else if(key==='公開日時'||key==='日時'||key==='published')article.published=value;
-        else if(key==='URL'||key==='url')article.url=value;
-        else if(key==='概要'||key==='description'||key==='summary')article.summary=value;
-        continue;
-      }
-
-      if(!section)meta[key]=value;
-      continue;
-    }
-
-    if(article&&line&&article.summary){
-      article.summary+=` ${line}`;
-    }
-  }
-
-  flushSection();
-  return{meta,sections};
-}
 function newsSafeUrl(v){
+  let raw=String(v||'').trim();
+  if(/^<https?:\/\/.+>$/.test(raw))raw=raw.slice(1,-1);
+  const md=raw.match(/^\[[^\]]*\]\((https?:\/\/[^)]+)\)$/);
+  if(md)raw=md[1];
   try{
-    const u=new URL(String(v||''));
+    const u=new URL(raw);
     return/^https?:$/.test(u.protocol)?u.href:'';
   }catch{return''}
 }
-function renderNewsArticle(item){
-  const url=newsSafeUrl(item.url);
-  const body=`<div class="news-item-title">${esc(item.title)}</div>
-    <div class="news-item-meta">
-      <span>${esc(item.media||'—')}</span>
-      <span>${esc(item.published||'—')}</span>
-    </div>
-    ${item.summary?`<div class="news-item-summary">${esc(item.summary)}</div>`:''}`;
+function parseSummaryNews(md){
+  const lines=normalize(md).split('\n');
+  const start=lines.findIndex(line=>/^##\s+NEWS｜外部世界の現在\s*$/.test(line.trim()));
+  if(start<0)return null;
 
-  return url
-    ? `<a class="news-item" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${body}</a>`
-    : `<article class="news-item">${body}</article>`;
+  let end=lines.length;
+  for(let i=start+1;i<lines.length;i++){
+    if(/^#{1,2}\s+/.test(lines[i].trim())){end=i;break}
+  }
+
+  const block=lines.slice(start+1,end);
+  let updated='';
+
+  for(const raw of block){
+    const m=raw.trim().match(/^[-*]\s+NEWS更新日時[：:]\s*(.+)$/);
+    if(m){updated=m[1].trim();break}
+  }
+
+  let table=null;
+  for(let i=0;i<block.length;i++){
+    const parsed=parseTableAt(block,i);
+    if(!parsed)continue;
+
+    const headers=parsed.headers.map(h=>String(h||'').trim());
+    const expected=['ジャンル','タイトル','出どころ','URL'];
+    if(expected.every((h,ix)=>headers[ix]===h)){
+      table=parsed;
+      break;
+    }
+  }
+
+  if(!table)return{updated,items:[],sections:[]};
+
+  const items=[];
+  for(const row of table.rows){
+    const genre=String(row.obj['ジャンル']||'').trim();
+    const title=String(row.obj['タイトル']||'').trim();
+    const source=String(row.obj['出どころ']||'').trim();
+    const url=newsSafeUrl(row.obj['URL']);
+
+    if(!NEWS_GENRES.has(genre) || !title)continue;
+
+    items.push({genre,title,source,url});
+  }
+
+  const sections=NEWS_GENRE_ORDER
+    .map(genre=>({title:genre,items:items.filter(item=>item.genre===genre)}))
+    .filter(section=>section.items.length);
+
+  return{updated,items,sections};
+}
+function newsItemKey(sectionTitle,item){
+  return`NEWS::${simpleHash(`${sectionTitle}|${item.title}|${item.source}|${item.url}`)}`;
+}
+function newsItemFromKey(key){
+  if(!key.startsWith('NEWS::')||!state.active.SUMMARY)return null;
+  const news=parseSummaryNews(state.active.SUMMARY.text);
+  if(!news)return null;
+  for(const sec of news.sections){
+    for(const item of sec.items){
+      if(newsItemKey(sec.title,item)===key)return{section:sec.title,item,updated:news.updated};
+    }
+  }
+  return null;
+}
+function renderNewsArticle(sectionTitle,item){
+  const key=newsItemKey(sectionTitle,item);
+  const selected=state.selected.has(key);
+  const source=item.url
+    ? `<a class="news-source-link" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.source||'—')}</a>`
+    : `<span>${esc(item.source||'—')}</span>`;
+
+  return`<div class="news-item selectable-card ${selected?'selected':''}" data-key="${esc(key)}" role="button" tabindex="0" title="クリックしてChatGPT欄へ追加">
+    <div class="news-item-title">${esc(item.title)}</div>
+    <div class="news-item-meta">${source}</div>
+  </div>`;
 }
 function renderNews(){
-  const file=state.active.NEWS;
-  if(!file){
+  const summary=state.active.SUMMARY;
+  if(!summary){
     return`<div class="news-page">
-      <div class="news-toolbar"><div><span class="ui-label">NEWS</span><span class="panel-meta">NO FILE</span></div></div>
-      <div class="empty"><strong>NEWS NOT LOADED</strong>living-context-news_YYYYMMDD-HHMM.md をIMPORTしてください。</div>
+      <div class="news-toolbar"><div><span class="ui-label">NEWS</span><span class="panel-meta">NO SUMMARY</span></div></div>
+      <div class="news-empty">NEWSデータはありません。</div>
     </div>`;
   }
 
-  const parsed=newsParseMarkdown(file.text);
-  const metaItems=[
-    ['生成日時',parsed.meta['生成日時']],
-    ['対象日時',parsed.meta['対象日時']],
-    ['言語',parsed.meta['言語']],
-    ['記事数',parsed.meta['記事数']]
-  ].filter(([,value])=>value);
+  const news=parseSummaryNews(summary.text);
+  if(!news){
+    return`<div class="news-page">
+      <div class="news-toolbar"><div><span class="ui-label">NEWS</span><span class="panel-meta">${esc(summary.name)}</span></div></div>
+      <div class="news-empty">NEWSデータはありません。</div>
+    </div>`;
+  }
 
   return`<div class="news-page">
     <div class="news-toolbar">
-      <div><span class="ui-label">NEWS</span><span class="panel-meta">${esc(file.name)}</span></div>
+      <div>
+        <span class="ui-label">NEWS</span>
+        ${news.updated?`<span class="panel-meta">更新：${esc(news.updated)}</span>`:''}
+      </div>
     </div>
-    ${metaItems.length?`<div class="news-file-meta">${metaItems.map(([label,value])=>`<div><span>${esc(label)}</span>${esc(value)}</div>`).join('')}</div>`:''}
-    ${parsed.sections.length
-      ? parsed.sections.map(sec=>`<section class="news-section">
+    ${news.sections.length
+      ? news.sections.map(sec=>`<section class="news-section">
           <div class="news-section-head"><span>${esc(sec.title)}</span><span>${sec.items.length}</span></div>
           ${sec.items.length
-            ? `<div class="news-list">${sec.items.map(renderNewsArticle).join('')}</div>`
+            ? `<div class="news-list">${sec.items.map(item=>renderNewsArticle(sec.title,item)).join('')}</div>`
             : '<div class="news-empty">記事はありません。</div>'}
         </section>`).join('')
-      : '<div class="news-empty">NEWSセクションを判別できませんでした。</div>'}
+      : '<div class="news-empty">NEWSデータはありません。</div>'}
   </div>`;
 }
 
@@ -3441,7 +3620,7 @@ function renderMemoryDetail(m){
   if(!m)return'<div class="empty"><strong>SELECT MEMORY</strong>左の一覧から項目を選択してください。</div>';
   const key=memoryKey(m),sel=state.selected.has(key),origin=parseOriginRef(m.source),loaded=origin?findWeeklyByName(origin.name):null;
   const fields=[['P ID',m.id],['タイトル',m.title],['種別',m.kind],['分野',m.field],['記憶の要約',m.summary],['現在の状態',m.status],['基準日',m.date],['再開・見直し条件',m.reopen],['キーワード',m.keywords],['原本参照',m.source]];
-  return`<div class="detail-head"><div class="detail-title">${esc(m.id)}｜${esc(m.title)}</div><label class="ui-label"><input class="row-check memory-detail-check" type="checkbox" data-key="${key}" ${sel?'checked':''}> SELECT</label></div><div class="detail-fields">${fields.map(([l,v])=>`<div class="detail-field"><div class="detail-label">${esc(l)}</div><div class="detail-value">${esc(v||'—')}</div></div>`).join('')}${origin?loaded?`<div class="source-status"><button class="ghost origin-open" data-file="${esc(loaded.name)}" data-hint="${esc(origin.hint||m.id)}">OPEN SOURCE / 原本を開く</button></div>`:`<div class="source-status missing">SOURCE NOT LOADED / 原本ファイルが読み込まれていません<br>${esc(origin.name)}</div>`:`<div class="source-status missing">原本参照からweeklyファイル名を判別できません。</div>`}</div>`
+  return`<div class="detail-head"><div class="detail-title">${esc(m.id)}｜${esc(m.title)}</div><span class="ui-label">${sel?'SELECTED':'CLICK ROW TO SELECT'}</span></div><div class="detail-fields">${fields.map(([l,v])=>`<div class="detail-field"><div class="detail-label">${esc(l)}</div><div class="detail-value">${esc(v||'—')}</div></div>`).join('')}${origin?loaded?`<div class="source-status"><button class="ghost origin-open" data-file="${esc(loaded.name)}" data-hint="${esc(origin.hint||m.id)}">OPEN SOURCE / 原本を開く</button></div>`:`<div class="source-status missing">SOURCE NOT LOADED / 原本ファイルが読み込まれていません<br>${esc(origin.name)}</div>`:`<div class="source-status missing">原本参照からweeklyファイル名を判別できません。</div>`}</div>`
 }
 function renderMemory(){
   if(!state.active.MEMORY)return'<div class="empty"><strong>MEMORY INDEX NOT LOADED</strong>living-context-memory-index_*.md をIMPORTしてください。</div>';
@@ -3458,7 +3637,10 @@ function renderMemory(){
     <div class="control-group"><span class="control-label">KEYWORD</span><input class="text-input memory-filter" data-f="keyword" value="${esc(state.memoryFilters.keyword)}"></div>
   </div>
   <div class="memory-layout"><div class="memory-list"><div class="data-head"><div>P ID</div><div>TITLE</div><div>FIELD</div><div>STATUS</div></div>
-  ${list.length?list.map(m=>`<div class="data-row ${m.id===current?.id?'selected':''}" data-memory-id="${esc(m.id)}"><div class="data-id">${esc(m.id)}</div><div>${esc(m.title)}</div><div>${esc(m.field)}</div><div>${esc(m.status)}</div></div>`).join(''):'<div class="empty"><strong>NO RESULTS</strong>検索条件に一致するMemoryはありません。</div>'}</div>
+  ${list.length?list.map(m=>{
+    const key=memoryKey(m),selected=state.selected.has(key);
+    return`<div class="data-row selectable-card ${m.id===current?.id?'active':''} ${selected?'selected':''}" data-memory-id="${esc(m.id)}" data-key="${esc(key)}" role="button" tabindex="0"><div class="data-id">${esc(m.id)}</div><div>${esc(m.title)}</div><div>${esc(m.field)}</div><div>${esc(m.status)}</div></div>`;
+  }).join(''):'<div class="empty"><strong>NO RESULTS</strong>検索条件に一致するMemoryはありません。</div>'}</div>
   <div class="memory-detail">${renderMemoryDetail(current)}</div></div>`
 }
 function highlightText(text,query){
@@ -3569,24 +3751,22 @@ function renderProfileBlock(block,sectionTitle){
   if(block.type==='list'){
     return`<div class="profile-block">${block.items.map(item=>{
       const key=profileRowKey(sectionTitle,'list',item),selected=state.selected.has(key);
-      return`<div class="profile-select-row ${selected?'selected':''}" data-key="${key}">
-        <div class="profile-row-check"><input class="row-check" type="checkbox" ${selected?'checked':''}></div>
+      return`<div class="profile-select-row selectable-card ${selected?'selected':''}" data-key="${key}" role="button" tabindex="0">
         <div class="profile-row-body">${profileMarked(item)}</div>
       </div>`;
     }).join('')}</div>`;
   }
   if(block.type==='table'){
-    return`<div class="profile-block"><table class="profile-table"><thead><tr><th class="profile-check-col"></th>${block.headers.map(h=>`<th>${profileMarked(h)}</th>`).join('')}</tr></thead><tbody>${block.rows.map(row=>{
+    return`<div class="profile-block"><table class="profile-table"><thead><tr>${block.headers.map(h=>`<th>${profileMarked(h)}</th>`).join('')}</tr></thead><tbody>${block.rows.map(row=>{
       const payload=block.headers.map((h,i)=>`${h}：${row[i]||''}`).filter(x=>!x.endsWith('：')).join('\n');
       const key=profileRowKey(sectionTitle,'table',payload),selected=state.selected.has(key);
-      return`<tr class="${selected?'selected':''}" data-key="${key}"><td class="profile-check-col"><input class="row-check" type="checkbox" ${selected?'checked':''}></td>${block.headers.map((_,i)=>`<td>${profileMarked(row[i]||'')}</td>`).join('')}</tr>`;
+      return`<tr class="selectable-card ${selected?'selected':''}" data-key="${key}" role="button" tabindex="0">${block.headers.map((_,i)=>`<td>${profileMarked(row[i]||'')}</td>`).join('')}</tr>`;
     }).join('')}</tbody></table></div>`;
   }
   const lines=block.text.split('\n').map(x=>x.trim()).filter(Boolean);
   return`<div class="profile-block">${lines.map(line=>{
     const key=profileRowKey(sectionTitle,'text',line),selected=state.selected.has(key);
-    return`<div class="profile-select-row ${selected?'selected':''}" data-key="${key}">
-      <div class="profile-row-check"><input class="row-check" type="checkbox" ${selected?'checked':''}></div>
+    return`<div class="profile-select-row selectable-card ${selected?'selected':''}" data-key="${key}" role="button" tabindex="0">
       <div class="profile-row-body">${profileMarked(line)}</div>
     </div>`;
   }).join('')}</div>`;
@@ -3885,8 +4065,7 @@ function renderMemoryBrowse(file){
     <div class="history-preview-head"><span class="ui-label">MEMORY</span><span class="history-preview-name">${esc(file.name)}</span></div>
     ${items.length?items.map(m=>{
       const r=memorySearchRecord(m,0),key=searchKey(r),selected=state.selected.has(key);
-      return`<article class="history-memory-row selectable ${selected?'selected':''}" data-key="${esc(key)}">
-        <div class="history-browse-check"><input class="row-check" type="checkbox" ${selected?'checked':''}></div>
+      return`<article class="history-memory-row selectable-card ${selected?'selected':''}" data-key="${esc(key)}" role="button" tabindex="0">
         <div class="history-memory-content">
           <div class="history-memory-main">
             <div class="history-memory-id">${esc(m.id)}</div>
@@ -3904,12 +4083,11 @@ function renderCompletedBrowse(file){
   const items=parseCompletedIndex(file.text);
   return`<div class="history-preview">
     <div class="history-preview-head"><span class="ui-label">COMPLETED</span><span class="history-preview-name">${esc(file.name)}</span></div>
-    ${items.length?`<div class="history-completed-head"><div></div><div>P ID</div><div>DATE</div><div>FIELD</div><div>SUMMARY</div></div>`:''}
+    ${items.length?`<div class="history-completed-head"><div>P ID</div><div>DATE</div><div>FIELD</div><div>SUMMARY</div></div>`:''}
     ${items.length?items.map(item=>{
       const r=completedSearchRecord(file,item,0),key=searchKey(r),selected=state.selected.has(key);
       const detail=r.detail||'';
-      return`<article class="history-completed-row selectable ${selected?'selected':''}" data-key="${esc(key)}">
-        <div class="history-browse-check"><input class="row-check" type="checkbox" ${selected?'checked':''}></div>
+      return`<article class="history-completed-row selectable-card ${selected?'selected':''}" data-key="${esc(key)}" role="button" tabindex="0">
         <div class="history-completed-id">${esc(item.id||'—')}</div>
         <div class="history-completed-meta">${esc(item.date||'—')}</div>
         <div class="history-completed-meta">${esc(item.field||'—')}</div>
@@ -4037,11 +4215,10 @@ function renderSearch(){
   </div>
   ${state.globalQuery
     ? results.length
-      ? `<div class="search-results-head"><div></div><div>SOURCE</div><div>P ID</div><div>RESULT</div><div>REFERENCE</div></div>`+
+      ? `<div class="search-results-head"><div>SOURCE</div><div>P ID</div><div>RESULT</div><div>REFERENCE</div></div>`+
         results.map(r=>{
           const key=searchKey(r),canSelect=r.type==='MEMORY'||r.type==='COMPLETED',selected=canSelect&&state.selected.has(key);
-          return`<div class="search-result-select ${canSelect?'selectable':''} ${selected?'selected':''}" ${canSelect?`data-key="${esc(key)}"`:''}>
-            <div class="search-select-cell ${canSelect?'':'empty'}">${canSelect?`<input class="row-check" type="checkbox" ${selected?'checked':''}>`:''}</div>
+          return`<div class="search-result-select ${canSelect?'selectable-card':''} ${selected?'selected':''}" ${canSelect?`data-key="${esc(key)}" role="button" tabindex="0"`:''}>
             <div class="result-type">${esc(r.type)}</div>
             <div class="result-id">${esc(r.id||'—')}</div>
             <div class="search-result-main"><div class="search-result-title">${esc(r.title)}</div><div class="search-result-snippet">${highlightText(r.snippet,state.globalQuery)}</div></div>
@@ -4065,7 +4242,7 @@ function renderFiles(){
   if(selected)state.filesSelected=selected.name;
   return`<div class="files-layout">
     <div class="files-list-pane">
-      <div class="source-reader-toolbar"><span class="ui-label">STORAGE</span><span class="panel-meta">LATEST ACTIVE / WEEKLY + NEWS ACCUMULATE</span></div>
+      <div class="source-reader-toolbar"><span class="ui-label">STORAGE</span><span class="panel-meta">LATEST ONLY / WEEKLY ACCUMULATES</span></div>
       <div class="files-backup-bar"><span class="files-backup-meta">${files.length} FILES</span><div class="files-backup-actions"><button class="ghost files-backup-btn" data-download-backup>DOWNLOAD BACKUP</button><button class="ghost files-restore-btn" data-restore-backup>RESTORE BACKUP</button></div></div>
       <div class="files-table"><div class="data-head"><div>TYPE</div><div>FILE</div><div>VERSION</div><div>STATUS</div><div>ACTION</div></div>
     ${files.length?files.map(f=>`<div class="data-row ${f.name===selected?.name?'selected':''}" data-file-name="${esc(f.name)}"><div>${esc(f.type)}</div><div>${esc(f.name)}</div><div>${esc(f.period||f.timestamp||'—')}</div><div>${isActiveFile(f)?'<span class="file-active">ACTIVE</span>':'STORED'}</div><div class="file-action"><button class="ghost file-download" data-download-file="${esc(f.name)}">DOWNLOAD</button></div></div>`).join(''):'<div class="empty"><strong>NO FILES</strong>IMPORTまたはD&amp;Dしてください。</div>'}</div></div>
@@ -4241,6 +4418,15 @@ function contextForKey(key){
       text:`[TOOLBOX / 再利用可能な定型文・指示文]\nTOOL ID：${tool.id}\nタイトル：${tool.title}\nカテゴリ：${tool.category||'—'}\n用途：${tool.purpose||'—'}\n\n【COPY本文】\n${tool.copy}`
     };
   }
+  if(group==='NEWS'){
+    const found=newsItemFromKey(key);
+    if(!found)return null;
+    const {section,item,updated}=found;
+    return{
+      label:`NEWS / ${section}`,
+      text:`[NEWS / 外部世界の現在]\nNEWS更新日時：${updated||'—'}\nジャンル：${section}\nタイトル：${item.title}\n出どころ：${item.source||'—'}\nURL：${item.url||'—'}`
+    };
+  }
   if(group==='SEARCH'){
     const r=state.searchResultMap.get(key);
     if(!r)return null;
@@ -4306,7 +4492,12 @@ function renderItemNotes(){
 
   const contexts=selectedContexts();
   if(!contexts.length){shell.classList.remove('open');list.innerHTML='';return}
-  shell.classList.add('open');list.innerHTML=contexts.map(({key,c})=>`<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc(c.text.split('\n')[0])}</span><span class="item-note-section">${esc(key.split('::')[0])}</span></div><textarea class="item-note-text" data-note-key="${esc(key)}" placeholder="この項目への追記・修正・回答を入力…">${esc(noteForKey(key))}</textarea></div>`).join('');
+  shell.classList.add('open');list.innerHTML=contexts.map(({key,c})=>{
+    const placeholder=key.startsWith('NEWS::')
+      ? 'このNEWSについて聞きたいこと・相談内容を入力…'
+      : 'この項目への追記・修正・回答を入力…';
+    return`<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc(c.text.split('\n')[0])}</span><span class="item-note-section">${esc(key.split('::')[0])}</span></div><textarea class="item-note-text" data-note-key="${esc(key)}" placeholder="${esc(placeholder)}">${esc(noteForKey(key))}</textarea></div>`;
+  }).join('');
   document.querySelectorAll('[data-note-key]').forEach(t=>t.addEventListener('input',e=>{
     state.notes.set(e.target.dataset.noteKey,e.target.value);
     saveNotes();
@@ -4326,6 +4517,7 @@ function buildPrompt(){
   const hasOpenQuestion=ctx.some(x=>x.key.startsWith('CUR::T04::'));
   const hasProfile=ctx.some(x=>x.key.startsWith('PROFILE::'));
   const hasToolbox=ctx.some(x=>x.key.startsWith('TOOLBOX::'));
+  const hasNews=ctx.some(x=>x.key.startsWith('NEWS::'));
   const hasSearch=ctx.some(x=>x.key.startsWith('SEARCH::'));
   const hasSearchMemory=ctx.some(x=>x.key.startsWith('SEARCH::')&&x.c.text.startsWith('[SEARCH / MEMORY INDEX'));
   const hasSearchCompleted=ctx.some(x=>x.key.startsWith('SEARCH::')&&x.c.text.startsWith('[SEARCH / COMPLETED'));
@@ -4335,7 +4527,7 @@ function buildPrompt(){
   if(hasReview)head+='AI REVIEWはその日の判断・優先順位・次の一手・注意点です。回答内容をAI REVIEWからOPEN QUESTIONへ自動変換したり、翌日へ自動持越ししたりせず、ユーザーの指示とLIVING CONTEXT側の記録ルールに従って必要なCURRENT項目・予定・日別ログ等へ反映してください。\n\n';
   if(hasOpenQuestion)head+='OPEN QUESTIONは翌日以降も追跡可能な未解決事項です。回答・判断・確認結果が得られた場合は、ユーザーの指示に従ってT04の現在状態等を更新してください。LCAPP側の都合でAI REVIEWへコピーしたり、解決・持越しを独自判定したりしないでください。\n\n';
   if(hasProfile)head+='PROFILE対象は長期的に安定して参照する人物・家族・仕事関係・所属・活動背景等の情報です。追記・修正指示のうち、長期的に保持すべき背景情報だけをPROFILEへ反映してください。一時的な進捗、今日だけの出来事、期限、未解決確認はPROFILEへ混在させず、必要に応じてCURRENTのT02・T04（OPEN QUESTION）・T10や日別ログへ反映してください。既存情報の訂正では重複を作らず、より新しい明示的情報を優先してください。\n\n';
-  if(hasToolbox)head+='TOOLBOX対象は、再利用するために保存された定型文・指示文です。TOOLBOXのCOPY本文を今回の作業指示として使用し、「この項目への追記・指示」がある場合はその内容も加味してください。ユーザーがTOOL自体の改訂を明示的に依頼していない限り、TOOLBOX正本を書き換える前提では扱わないでください。\n\n';
+  if(hasToolbox)head+='TOOLBOX対象は、再利用するために保存された定型文・指示文です。TOOLBOXのCOPY本文を今回の作業指示として使用し、「この項目への追記・指示」がある場合はその内容も加味してください。ユーザーがTOOL自体の改訂を明示的に依頼していない限り、TOOLBOX正本を書き換える前提では扱わないでください。\n\n';  if(hasNews)head+='以下はNEWS画面で選択した外部ニュース項目です。NEWSはLIVING CONTEXTのCURRENT・Memory・PROFILE等とは独立した参照情報です。「この項目への追記・指示」に書かれた質問や相談へ回答してください。必要に応じてURL先の内容を確認・調査して構いませんが、ユーザーが明示的に依頼しない限り、NEWS内容をLIVING CONTEXTへ自動保存・反映する前提では扱わないでください。\n\n';
   if(hasSearch)head+='以下はSEARCHから個別に選択されたLIVING CONTEXTの記録です。「この項目への追記・指示」を、対象記録の修正・訂正・確認依頼として扱ってください。LCAPP表示だけで機械的に正本を書き換えず、このチャットからアクセスできる保存済みLIVING CONTEXTファイルを必要な範囲で確認し、根拠が取れた内容に基づいて反映してください。P番号は永久IDとして維持し、再採番・別Pとの推測統合はしないでください。\n\n';
   if(hasSearchMemory)head+='MEMORY INDEXは過去情報への索引であり、詳細事実の原本ではありません。MEMORYの訂正では、原本参照先のWEEKLY等を可能な限り確認し、記憶の要約・状態・基準日・再開条件・キーワード・原本参照のうち必要な箇所だけを修正してください。原本自体の事実も誤っているとユーザーが明示した場合は、その指示を尊重しつつ、どのファイルを訂正すべきか区別してください。\n\n';
   if(hasSearchCompleted)head+='COMPLETEDは完了・節目の正式記録です。訂正では該当P IDを維持し、完了・節目日、分野、概要、詳細記録の整合を確認してください。必要に応じて当時の日別ログ・WEEKLY・ORIGINAL等を確認し、完了記録だけを推測で変更しないでください。\n\n';
@@ -4390,15 +4582,55 @@ function bindDynamic(){
     e.stopPropagation();
     jumpToPermanentId(ref.dataset.idRef);
   }));
+  const activateSelectableCard=(card)=>{
+    const key=card?.dataset?.key;
+    if(!key)return;
+    if(card.dataset.memoryId)state.memorySelected=card.dataset.memoryId;
+    const next=!state.selected.has(key);
+    toggleSelection(key,next);
+    if(next){
+      requestAnimationFrame(()=>{
+        const note=document.querySelector(`[data-note-key="${CSS.escape(key)}"]`);
+        note?.focus();
+      });
+    }
+  };
+  document.querySelectorAll('.selectable-card[data-key]').forEach(card=>{
+    card.addEventListener('click',e=>{
+      if(e.target.closest('a,button,input,textarea,select,label,details,summary'))return;
+      activateSelectableCard(card);
+    });
+    card.addEventListener('keydown',e=>{
+      if(e.key!=='Enter'&&e.key!==' ')return;
+      if(e.target.closest('a,button,input,textarea,select,label,details,summary'))return;
+      e.preventDefault();
+      activateSelectableCard(card);
+    });
+  });
+  document.querySelectorAll('.daily-log-day-head').forEach(head=>head.addEventListener('click',e=>{
+    if(e.target.closest('.daily-log-toggle'))return;
+    e.preventDefault();
+    activateSelectableCard(head.closest('.daily-log-day'));
+  }));
+  document.querySelectorAll('.daily-log-toggle').forEach(btn=>btn.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    const detail=btn.closest('.daily-log-day');
+    detail.open=!detail.open;
+    btn.textContent=detail.open?'−':'+';
+  }));
   document.querySelectorAll('[data-schedule-key]').forEach(dot=>dot.addEventListener('click',e=>{
     e.preventDefault();
     e.stopPropagation();
     const key=dot.dataset.scheduleKey;
     toggleSelection(key,!state.selected.has(key));
   }));
-  document.querySelectorAll('.daily-log-day-head .row-check').forEach(ch=>ch.addEventListener('click',e=>e.stopPropagation()));
-  document.querySelectorAll('[data-key] .row-check').forEach(ch=>ch.addEventListener('change',e=>toggleSelection(e.target.closest('[data-key]').dataset.key,e.target.checked)));
-  document.querySelectorAll('[data-cal-date]').forEach(b=>b.addEventListener('click',()=>{state.selected.add(`DATE::${b.dataset.calDate}`);render();requestAnimationFrame(()=>document.querySelector(`[data-note-key="DATE::${b.dataset.calDate}"]`)?.focus())}));
+  document.querySelectorAll('[data-cal-date]').forEach(b=>b.addEventListener('click',()=>{
+    const key=`DATE::${b.dataset.calDate}`;
+    const next=!state.selected.has(key);
+    toggleSelection(key,next);
+    if(next)requestAnimationFrame(()=>document.querySelector(`[data-note-key="${CSS.escape(key)}"]`)?.focus());
+  }));
   document.querySelectorAll('.cal-mode').forEach(b=>b.addEventListener('click',()=>{
     state.calendarMode=b.dataset.mode==='6W'?'6W':'MONTHS';
     state.calendarOffset=0;
@@ -4424,8 +4656,6 @@ function bindDynamic(){
     state.calendarOffset+=state.calendarMode==='6W'?6:state.calendarSpan;
     render();
   });
-  document.querySelectorAll('[data-memory-id]').forEach(r=>r.addEventListener('click',()=>{state.memorySelected=r.dataset.memoryId;render()}));
-  document.querySelector('.memory-detail-check')?.addEventListener('change',e=>toggleSelection(e.target.dataset.key,e.target.checked));
   document.querySelectorAll('.memory-filter').forEach(i=>{
     const commit=()=>{state.memoryFilters[i.dataset.f]=i.value;render()};
     i.addEventListener('input',()=>{state.memoryFilters[i.dataset.f]=i.value});
