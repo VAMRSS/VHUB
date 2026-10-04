@@ -2288,6 +2288,563 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
 }
 
 
+/* v8.2 / LIBRARY */
+.library-page{
+  min-height:560px;
+  background:var(--white);
+}
+.library-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:end;
+  gap:8px 14px;
+  padding:8px 10px;
+  border-bottom:.5px solid var(--divider);
+  background:var(--bone);
+}
+.library-search-group{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:260px;
+  flex:1 1 300px;
+}
+.library-search-group .library-search{min-width:120px;flex:1}
+.library-filter{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  min-width:105px;
+}
+.library-filter>span{
+  font-family:var(--font-euro);
+  font-size:8px;
+  line-height:1;
+  color:var(--muted);
+}
+.library-filter select{min-width:105px;max-width:170px}
+.library-explorer{
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  min-height:520px;
+}
+.library-tree-pane{
+  min-width:0;
+  border-right:.5px solid var(--divider);
+  overflow:auto;
+  background:#fafafa;
+}
+.library-tree-row{
+  --depth:0;
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr) 34px;
+  align-items:center;
+  min-height:29px;
+  padding:0 8px 0 calc(6px + var(--depth) * 14px);
+  border-bottom:.5px solid #f0f0f0;
+  cursor:pointer;
+}
+.library-tree-row:hover{background:#f4f4f4}
+.library-tree-row.active{
+  background:var(--signal-soft);
+  box-shadow:inset 3px 0 0 var(--signal);
+}
+.library-tree-toggle{
+  width:18px;height:22px;padding:0;border:0;background:transparent;
+  color:var(--muted);font-family:var(--font-euro);font-size:10px;cursor:pointer;
+}
+.library-tree-toggle:disabled{cursor:default;color:#b8b8b8}
+.library-tree-name{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:10px;line-height:1.3;
+}
+.library-tree-count{
+  text-align:right;font-family:var(--font-euro);font-size:8px;color:var(--muted);
+}
+.library-right{min-width:0}
+.library-pathbar{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:0 10px;
+  border-bottom:.5px solid var(--divider);
+  font-family:var(--font-euro);
+  font-size:8px;
+}
+.library-right-grid{
+  display:grid;
+  grid-template-columns:minmax(300px,.85fr) minmax(360px,1.15fr);
+  min-height:486px;
+}
+.library-list-pane{
+  min-width:0;
+  border-right:.5px solid var(--divider);
+  overflow:auto;
+}
+.library-list-head,
+.library-item-row{
+  display:grid;
+  grid-template-columns:minmax(180px,1.7fr) minmax(82px,.7fr) minmax(90px,.8fr) 82px;
+}
+.library-list-head{
+  position:sticky;top:0;z-index:1;
+  background:var(--bone);
+  border-bottom:.5px solid var(--divider);
+  font-family:var(--font-euro);
+  font-size:8px;
+  color:var(--muted);
+}
+.library-list-head>div,
+.library-item-row>div{
+  min-width:0;
+  padding:8px 9px;
+}
+.library-list-head>div+div,
+.library-item-row>div+div{border-left:.5px solid var(--divider)}
+.library-item-row{
+  border-bottom:.5px solid var(--divider);
+}
+.library-item-row:last-child{border-bottom:0}
+.library-item-row.active:not(.selected){background:#fafafa}
+.library-item-main{min-width:0}
+.library-item-title{
+  font-size:10px;line-height:1.55;overflow-wrap:anywhere;
+}
+.library-item-id{
+  margin-top:3px;
+  font-family:var(--font-euro);font-size:8px;color:var(--muted);
+}
+.library-item-meta{
+  font-size:9px;line-height:1.5;color:var(--mid);overflow-wrap:anywhere;
+}
+.library-detail-pane{
+  min-width:0;
+  overflow:auto;
+}
+.library-detail-head{
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:7px 10px;
+  border-bottom:.5px solid var(--divider);
+}
+.library-detail-head>div{min-width:0}
+.library-detail-id{
+  margin-right:8px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  color:var(--muted);
+}
+.library-detail-title{
+  font-size:11px;
+  line-height:1.5;
+}
+.library-detail-meta{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  border-bottom:.5px solid var(--divider);
+}
+.library-meta-field{
+  min-width:0;
+  padding:7px 9px;
+  border-bottom:.5px solid #f0f0f0;
+}
+.library-meta-field:nth-child(odd){border-right:.5px solid var(--divider)}
+.library-meta-label{
+  margin-bottom:3px;
+  font-family:var(--font-euro);
+  font-size:8px;
+  color:var(--muted);
+}
+.library-meta-value{
+  font-size:9px;line-height:1.5;overflow-wrap:anywhere;
+}
+.library-markdown-head{
+  padding:8px 10px;
+  border-bottom:.5px solid var(--divider);
+  font-family:var(--font-euro);
+  font-size:8px;
+  color:var(--muted);
+  background:var(--bone);
+}
+.library-markdown{
+  margin:0;
+  padding:12px 12px 24px;
+  font-family:var(--font-mono);
+  font-size:10px;
+  line-height:1.7;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.library-detail-empty,.library-empty{
+  padding:16px 10px;
+  font-size:10px;
+  color:var(--muted);
+}
+@media(max-width:1180px){
+  .library-right-grid{grid-template-columns:1fr}
+  .library-list-pane{
+    border-right:0;
+    border-bottom:.5px solid var(--divider);
+    max-height:340px;
+  }
+}
+@media(max-width:760px){
+  .library-explorer{grid-template-columns:1fr}
+  .library-tree-pane{
+    border-right:0;
+    border-bottom:.5px solid var(--divider);
+    max-height:260px;
+  }
+  .library-list-head,
+  .library-item-row{
+    grid-template-columns:minmax(170px,1fr) minmax(80px,.6fr);
+  }
+  .library-list-head>div:nth-child(3),
+  .library-list-head>div:nth-child(4),
+  .library-item-row>div:nth-child(3),
+  .library-item-row>div:nth-child(4){display:none}
+  .library-detail-meta{grid-template-columns:1fr}
+  .library-meta-field:nth-child(odd){border-right:0}
+}
+
+
+/* v8.3 / compact LIBRARY */
+.library-explorer{
+  grid-template-columns:180px minmax(0,1fr);
+}
+.library-tree-row{
+  min-height:25px;
+  grid-template-columns:18px minmax(0,1fr) 30px;
+  padding-right:6px;
+}
+.library-right-grid{
+  grid-template-columns:350px minmax(0,1fr);
+}
+.library-list-head,
+.library-item-row{
+  grid-template-columns:72px minmax(0,1fr);
+}
+.library-list-head>div,
+.library-item-row>div{
+  padding:5px 7px;
+}
+.library-item-row{
+  min-height:34px;
+}
+.library-item-id{
+  margin:0;
+  align-self:start;
+  padding-top:1px;
+  font-size:8px;
+  white-space:nowrap;
+}
+.library-item-content{
+  min-width:0;
+}
+.library-item-title{
+  font-size:9px;
+  line-height:1.35;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.library-item-sub{
+  margin-top:2px;
+  color:var(--muted);
+  font-size:8px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.library-detail-head{
+  min-height:36px;
+  padding:5px 8px;
+}
+.library-detail-heading{
+  min-width:0;
+  display:flex;
+  align-items:baseline;
+  gap:7px;
+}
+.library-detail-id{
+  flex:0 0 auto;
+  margin:0;
+}
+.library-detail-title{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:10px;
+}
+.library-detail-actions{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex:0 0 auto;
+}
+.library-detail-meta-compact{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:0;
+  padding:4px 7px;
+  border-bottom:.5px solid var(--divider);
+  background:#fafafa;
+}
+.library-meta-pair{
+  display:inline-flex;
+  min-width:0;
+  align-items:baseline;
+  gap:4px;
+  padding:2px 8px 2px 0;
+  margin-right:8px;
+  font-size:8px;
+  line-height:1.35;
+}
+.library-meta-pair b{
+  flex:0 0 auto;
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:400;
+  color:var(--muted);
+}
+.library-meta-pair span{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.library-markdown-head{
+  padding:6px 8px;
+}
+.library-markdown{
+  padding:9px 10px 20px;
+  font-size:9px;
+  line-height:1.65;
+}
+@media(max-width:1180px){
+  .library-right-grid{
+    grid-template-columns:300px minmax(0,1fr);
+  }
+  .library-list-pane{
+    max-height:none;
+    border-right:.5px solid var(--divider);
+    border-bottom:0;
+  }
+}
+@media(max-width:900px){
+  .library-explorer{grid-template-columns:160px minmax(0,1fr)}
+  .library-right-grid{grid-template-columns:1fr}
+  .library-list-pane{
+    max-height:260px;
+    border-right:0;
+    border-bottom:.5px solid var(--divider);
+  }
+}
+@media(max-width:700px){
+  .library-explorer{grid-template-columns:1fr}
+  .library-tree-pane{
+    max-height:220px;
+    border-right:0;
+    border-bottom:.5px solid var(--divider);
+  }
+  .library-list-head,
+  .library-item-row{
+    grid-template-columns:68px minmax(0,1fr);
+  }
+}
+
+
+/* v8.4 / FILES column correction */
+.files-layout{
+  grid-template-columns:minmax(560px,.95fr) minmax(0,1.05fr);
+}
+.files-table .data-head,
+.files-table .data-row{
+  grid-template-columns:118px minmax(220px,1fr) 116px 72px 136px;
+}
+.files-table .data-head>div,
+.files-table .data-row>div{
+  min-width:0;
+}
+.file-type-cell{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-family:var(--font-euro);
+  font-size:8px;
+}
+.file-name-cell{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.file-action{
+  justify-content:flex-start;
+  gap:6px;
+  padding-left:6px!important;
+  padding-right:6px!important;
+}
+.file-download,
+.file-delete{
+  min-height:26px;
+  padding:0 6px;
+  font-size:8px;
+}
+@media(max-width:1100px){
+  .files-layout{grid-template-columns:1fr}
+  .files-list-pane{
+    border-right:0;
+    border-bottom:.5px solid var(--divider);
+  }
+}
+@media(max-width:720px){
+  .files-table .data-head,
+  .files-table .data-row{
+    grid-template-columns:106px minmax(0,1fr) 128px;
+  }
+  .files-table .data-head>div:nth-child(3),
+  .files-table .data-row>div:nth-child(3),
+  .files-table .data-head>div:nth-child(4),
+  .files-table .data-row>div:nth-child(4){
+    display:none;
+  }
+}
+
+
+/* v8.5 / LIBRARY root collapse + compact toolbar */
+.library-toolbar{
+  gap:6px 10px;
+  padding:6px 8px;
+}
+.library-search-group{
+  flex:0 1 260px;
+  min-width:190px;
+  max-width:300px;
+  gap:5px;
+}
+.library-search-group .library-search{
+  min-width:90px;
+  max-width:190px;
+}
+.library-search-group [data-library-search-run]{
+  padding-left:6px;
+  padding-right:6px;
+}
+.library-filter{
+  min-width:88px;
+}
+.library-filter select{
+  min-width:88px;
+  max-width:128px;
+}
+.library-root-collapsed .library-explorer{
+  grid-template-columns:180px;
+}
+.library-root-collapsed .library-tree-pane{
+  border-right:0;
+}
+@media(max-width:900px){
+  .library-search-group{
+    flex:0 1 220px;
+    max-width:240px;
+  }
+  .library-search-group .library-search{
+    max-width:140px;
+  }
+}
+@media(max-width:700px){
+  .library-toolbar{
+    align-items:center;
+  }
+  .library-search-group{
+    flex:1 1 190px;
+    max-width:none;
+  }
+  .library-search-group .library-search{
+    max-width:none;
+  }
+  .library-root-collapsed .library-explorer{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* v8.6 / LIBRARY search highlighting */
+.library-markdown-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.library-hit-count{
+  font-family:var(--font-euro);
+  font-size:8px;
+  color:var(--signal);
+}
+.library-search-hit{
+  background:var(--signal-soft);
+  color:inherit;
+  padding:0;
+  outline:.5px solid rgba(0,0,0,.08);
+  outline-offset:0;
+}
+
+
+/* v8.7 / typography floor + fixed ChatGPT composer width */
+.library-page{
+  --library-min-font-size:8px;
+}
+/* LIBRARY follows the LCAPP minimum text size rule: never below 8px. */
+.library-toolbar .control-label,
+.library-toolbar input,
+.library-toolbar select,
+.library-toolbar button,
+.library-filter>span,
+.library-tree-count,
+.library-list-head,
+.library-item-id,
+.library-item-sub,
+.library-detail-id,
+.library-meta-pair,
+.library-meta-pair b,
+.library-markdown-head,
+.library-hit-count{
+  font-size:var(--library-min-font-size);
+}
+
+/* Match the ChatGPT pane width used by the 720px application width.
+   Wider application widths now expand only the browser/content pane. */
+@media(min-width:901px){
+  .workspace{
+    grid-template-columns:minmax(0,1fr) 360px;
+  }
+  .composer{
+    width:360px;
+    min-width:360px;
+    max-width:360px;
+  }
+  .workspace.files-mode{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:900px){
+  .workspace{
+    grid-template-columns:1fr;
+  }
+  .composer{
+    width:auto;
+    min-width:0;
+    max-width:none;
+  }
+}
+
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -2359,7 +2916,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V8.1 · CARD SELECT</div>
+  <div class="footer-side">CONTEXT LENS / V8.7 · LIBRARY</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -2377,8 +2934,9 @@ const WIDTH_STORAGE_KEY='web-app-ui-width';
 const CALENDAR_SPAN_KEY='context-lens-calendar-span-v1';
 const CALENDAR_MODE_KEY='context-lens-calendar-mode-v1';
 const DB_NAME='context-lens-library-v2';
-const DB_VERSION=1;
+const DB_VERSION=2;
 const STORE='files';
+const LIBRARY_STORE='library_items';
 const VALID_WIDTHS=['fit','720','960','1200','1440'];
 const CURRENT_CODES=['T10','T02','REVIEW','LOG'];
 const RESERVED_HISTORIC_CODES=new Set(['T01','T03','T05','T08']);
@@ -2391,6 +2949,7 @@ const MENU_TABS=[
   ['SEARCH','SEARCH'],
   ['TOOLBOX','TOOLBOX'],
   ['PROFILE','PROFILE'],
+  ['LIBRARY','LIBRARY'],
   ['FILES','FILES']
 ];
 
@@ -2402,6 +2961,8 @@ const state={
   archiveSelected:'',archiveQuery:'',profileQuery:'',globalQuery:'',filesSelected:'',
   searchScope:'ALL',searchResultMap:new Map(),searchBrowseFile:'',searchNote:'',
   toolbox:[],toolboxSelected:'',
+  libraryItems:[],librarySelectedPath:'',libraryExpanded:new Set(['']),libraryDetailId:'',
+  libraryQuery:'',libraryFilters:{category:'ALL',documentType:'ALL',source:'ALL',status:'ALL'},
   reviewItems:[],reviewIndex:0,reviewTimer:null
 };
 
@@ -2430,7 +2991,11 @@ function openDb(){
   return new Promise((resolve,reject)=>{
     if(!('indexedDB'in window)){resolve(null);return}
     const req=indexedDB.open(DB_NAME,DB_VERSION);
-    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'name'})};
+    req.onupgradeneeded=()=>{
+      const db=req.result;
+      if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'name'});
+      if(!db.objectStoreNames.contains(LIBRARY_STORE))db.createObjectStore(LIBRARY_STORE,{keyPath:'id'});
+    };
     req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)
   })
 }
@@ -2450,10 +3015,305 @@ async function dbClear(){
   const db=await openDb();if(!db)return;
   return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).clear();tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error)})
 }
+async function libraryDbAll(){
+  const db=await openDb();if(!db)return[];
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(LIBRARY_STORE,'readonly');
+    const r=tx.objectStore(LIBRARY_STORE).getAll();
+    r.onsuccess=()=>resolve(r.result||[]);
+    r.onerror=()=>reject(r.error);
+  });
+}
+async function libraryDbPut(item){
+  const db=await openDb();if(!db)return false;
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(LIBRARY_STORE,'readwrite');
+    tx.objectStore(LIBRARY_STORE).put(item);
+    tx.oncomplete=()=>resolve(true);
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+async function libraryDbDelete(id){
+  const db=await openDb();if(!db)return;
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(LIBRARY_STORE,'readwrite');
+    tx.objectStore(LIBRARY_STORE).delete(id);
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+async function libraryDbClear(){
+  const db=await openDb();if(!db)return;
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(LIBRARY_STORE,'readwrite');
+    tx.objectStore(LIBRARY_STORE).clear();
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+
+
+function libraryUnquote(value){
+  const v=String(value??'').trim();
+  if(v.length>=2&&((v[0]==='"'&&v.at(-1)==='"')||(v[0]==="'"&&v.at(-1)==="'")||(v[0]==='`'&&v.at(-1)==='`'))){
+    return v.slice(1,-1);
+  }
+  return v;
+}
+function libraryParseInlineArray(raw){
+  let v=String(raw??'').trim();
+  if(v==='[]'||!v)return[];
+  if(v.startsWith('[')&&v.endsWith(']'))v=v.slice(1,-1);
+  const out=[];let cur='',quote='';
+  for(let i=0;i<v.length;i++){
+    const ch=v[i];
+    if(quote){
+      if(ch===quote&&v[i-1]!=='\\')quote='';
+      else cur+=ch;
+      continue;
+    }
+    if(ch==='"'||ch==="'"){quote=ch;continue}
+    if(ch===','){if(cur.trim())out.push(libraryUnquote(cur));cur='';continue}
+    cur+=ch;
+  }
+  if(cur.trim())out.push(libraryUnquote(cur));
+  return out.map(x=>String(x).trim()).filter(Boolean);
+}
+function parseLibraryFrontmatter(md){
+  const normalized=normalize(md);
+  const lines=normalized.split('\n');
+  if(lines[0]?.trim()!=='---')return null;
+  let end=-1;
+  for(let i=1;i<lines.length;i++){if(lines[i].trim()==='---'){end=i;break}}
+  if(end<0)return null;
+
+  const meta={};let currentListKey='';
+  for(let i=1;i<end;i++){
+    const raw=lines[i];
+    const list=raw.match(/^\s*-\s+(.+?)\s*$/);
+    if(list&&currentListKey){
+      if(!Array.isArray(meta[currentListKey]))meta[currentListKey]=[];
+      meta[currentListKey].push(libraryUnquote(list[1]));
+      continue;
+    }
+    const m=raw.match(/^([A-Za-z0-9_-]+)\s*:\s*(.*?)\s*$/);
+    if(!m){currentListKey='';continue}
+    const key=m[1].trim().toLowerCase();
+    const value=m[2].trim();
+    if(value===''){
+      meta[key]=[];
+      currentListKey=key;
+    }else if(value.startsWith('[')&&value.endsWith(']')){
+      meta[key]=libraryParseInlineArray(value);
+      currentListKey='';
+    }else{
+      meta[key]=libraryUnquote(value);
+      currentListKey='';
+    }
+  }
+  return{meta,body:lines.slice(end+1).join('\n').replace(/^\n+/,'').trimEnd(),raw:normalized};
+}
+function libraryArrayValue(v){
+  if(Array.isArray(v))return v.map(x=>String(x).trim()).filter(Boolean);
+  if(v==null||String(v).trim()==='')return[];
+  return libraryParseInlineArray(v);
+}
+function normalizeLibraryPath(value){
+  return String(value||'').split('/').map(x=>x.trim()).filter(Boolean).join('/');
+}
+function parseLibraryItemMarkdown(fileName,md,lastModified=Date.now()){
+  const fm=parseLibraryFrontmatter(md);
+  if(!fm||String(fm.meta.type||'').toLowerCase()!=='library_item')return null;
+
+  const id=String(fm.meta.id||'').trim().toUpperCase();
+  if(!/^LIB-\d{6}$/.test(id)){
+    throw new Error(`LIBRARY ITEM requires permanent ID: ${fileName}`);
+  }
+
+  const item={
+    id,
+    fileName:String(fileName||'').trim(),
+    title:String(fm.meta.title||'').trim(),
+    category:String(fm.meta.category||'').trim(),
+    libraryPath:normalizeLibraryPath(fm.meta.library_path),
+    documentType:String(fm.meta.document_type||'').trim(),
+    source:String(fm.meta.source||'').trim(),
+    sourceDate:String(fm.meta.source_date||'').trim(),
+    added:String(fm.meta.added||'').trim(),
+    updated:String(fm.meta.updated||'').trim(),
+    status:String(fm.meta.status||'').trim(),
+    tags:libraryArrayValue(fm.meta.tags),
+    related:libraryArrayValue(fm.meta.related),
+    secretRef:String(fm.meta.secret_ref||'').trim(),
+    originalName:String(fm.meta.original_name||'').trim(),
+    metadata:fm.meta,
+    body:fm.body,
+    markdown:normalize(md),
+    importedAt:Date.now(),
+    lastModified:Number(lastModified)||Date.now()
+  };
+  return item;
+}
+function upsertLibraryState(item){
+  const ix=state.libraryItems.findIndex(x=>x.id===item.id);
+  if(ix>=0)state.libraryItems[ix]=item;
+  else state.libraryItems.push(item);
+  state.libraryItems.sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+}
+async function ingestLibraryItem(name,text,lastModified=Date.now()){
+  const item=parseLibraryItemMarkdown(name,text,lastModified);
+  if(!item)return false;
+  await libraryDbPut(item);
+  upsertLibraryState(item);
+  if(!state.libraryDetailId)state.libraryDetailId=item.id;
+  return true;
+}
+function libraryItemKey(id){return`LIBRARY::${id}`}
+function libraryItemById(id){return state.libraryItems.find(x=>x.id===id)||null}
+function libraryContextText(item){
+  if(!item)return'';
+  return`[LIBRARY ITEM]\nID: ${item.id}\nTITLE: ${item.title||'—'}\nSOURCE: ${item.source||'—'}\n---\n${item.body||''}`.trim();
+}
+function selectedLibraryItems(){
+  return[...state.selected]
+    .filter(key=>key.startsWith('LIBRARY::'))
+    .map(key=>libraryItemById(key.slice('LIBRARY::'.length)))
+    .filter(Boolean);
+}
+async function copySelectedLibraryItems(){
+  const items=selectedLibraryItems();
+  if(!items.length){toast('NO LIBRARY SELECTION');return}
+  await copyText(items.map(libraryContextText).join('\n\n--------------------\n\n'));
+}
+
+function libraryLocalDate(){
+  const d=new Date(),p=n=>String(n).padStart(2,'0');
+  return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+function libraryNextId(){
+  let max=0;
+  for(const item of state.libraryItems){
+    const m=String(item.id||'').match(/^LIB-(\d{6})$/);
+    if(m)max=Math.max(max,Number(m[1]));
+  }
+  return`LIB-${String(max+1).padStart(6,'0')}`;
+}
+function libraryMdCell(value){
+  return String(value??'').replace(/\|/g,'\\|').replace(/\r?\n/g,' ').trim();
+}
+function libraryIndexTreeLines(){
+  const root=libraryTree(state.libraryItems);
+  const lines=['LIBRARY'];
+  const walk=(node,prefix)=>{
+    const kids=[...node.children.values()].sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+    kids.forEach((child,i)=>{
+      const last=i===kids.length-1;
+      lines.push(`${prefix}${last?'└─':'├─'} ${child.name}`);
+      walk(child,`${prefix}${last?'   ':'│  '}`);
+    });
+  };
+  walk(root,'');
+  return lines;
+}
+function generateLibraryIndexMarkdown(){
+  const items=[...state.libraryItems].sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+  const updated=libraryLocalDate();
+  const nextId=libraryNextId();
+  const rows=items.map(item=>`| ${libraryMdCell(item.id)} | ${libraryMdCell(item.title)} | ${libraryMdCell(item.libraryPath)} | ${libraryMdCell(item.documentType)} | ${libraryMdCell(item.source)} | ${libraryMdCell(item.status)} | \`${libraryMdCell(item.fileName)}\` | ${libraryMdCell(item.added)} | ${libraryMdCell(item.updated)} |`).join('\n');
+  return`---
+type: library_index
+schema_version: "0.4"
+updated: ${updated}
+next_id: ${nextId}
+item_count: ${items.length}
+---
+
+# LIBRARY INDEX
+
+## 運用
+
+- 各資料内容の正本：各LIBRARY ITEM Markdown
+- 本INDEX：LCAPPに現在取り込まれているLIBRARY ITEMから生成したスナップショット
+- LCAPP：読み込み・表示・検索・INDEX出力を行うコンシューマー
+- 恒久IDは既存LIBRARY ITEMのIDを維持する
+
+## フォルダ構成
+
+\`\`\`text
+${libraryIndexTreeLines().join('\n')}
+\`\`\`
+
+## 登録資料
+
+| ID | Title | Library Path | Document Type | Source | Status | Filename | Added | Updated |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+${rows}
+
+## 採番情報
+
+- 登録件数：${items.length}
+- 次回採番候補：${nextId}
+
+## 注意
+
+- 本ファイルはLCAPP内の現在の取り込み状態から生成したINDEXです。
+- 資料本文は各LIBRARY ITEM Markdownを参照してください。
+- IDの再利用は行わないでください。
+`;
+}
+function downloadTextFile(name,content,mime='text/markdown;charset=utf-8'){
+  const blob=new Blob([content],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function saveGeneratedLibraryIndex(){
+  const md=generateLibraryIndexMarkdown();
+  await ingest('library-index.md',md,Date.now(),'LIBRARY_INDEX');
+  state.filesSelected='library-index.md';
+  return md;
+}
+async function exportLibraryIndex(){
+  const md=await saveGeneratedLibraryIndex();
+  downloadTextFile('library-index.md',md);
+  render();
+  toast('LIBRARY INDEX EXPORTED');
+}
+async function copyLibraryIndex(){
+  const md=await saveGeneratedLibraryIndex();
+  await copyText(md);
+  render();
+  toast('LIBRARY INDEX COPIED');
+}
+async function deleteLibraryItem(id){
+  const item=libraryItemById(id);
+  if(!item)return;
+  if(!confirm(`LIBRARY ITEMを削除しますか？\n\n${item.id}｜${item.title||'UNTITLED'}\n\nLCAPP内の保存データのみ削除します。`))return;
+  try{
+    await libraryDbDelete(id);
+    state.libraryItems=state.libraryItems.filter(x=>x.id!==id);
+    const key=libraryItemKey(id);
+    state.selected.delete(key);
+    state.notes.delete(key);
+    saveNotes();
+    if(state.libraryDetailId===id)state.libraryDetailId='';
+    render();
+    toast('LIBRARY ITEM DELETED');
+  }catch(e){
+    console.error(e);
+    toast('DELETE FAILED');
+  }
+}
 
 function classifyFileName(name){
   const n=String(name||'');
   let m;
+  if((m=n.match(/^library-index(?:_(\d{8}-\d{4}))?(?:\([^)]*\))?\.md$/i)))return{type:'LIBRARY_INDEX',timestamp:m[1]||'',period:''};
   if((m=n.match(/^living-context-weekly_(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})(?:\([^)]*\))?\.md$/i)))return{type:'WEEKLY',period:`${m[1]}_to_${m[2]}`,timestamp:`${m[1]}_${m[2]}`};
   const defs=[
     ['MEMORY',/^living-context-memory-index_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
@@ -2469,6 +3329,7 @@ function classifyFileName(name){
 }
 function classifyContent(text){
   const s=normalize(text).slice(0,3000);
+  if(/^---[\s\S]*?^type\s*:\s*library_index\s*$/im.test(s))return'LIBRARY_INDEX';
   if(/LIVING CONTEXT｜Memory Index/i.test(s)||/##\s*記憶索引/.test(s))return'MEMORY';
   if(/LIVING CONTEXT｜蓄積サマリー/.test(s))return'SUMMARY';
   if(/LIVING CONTEXT｜運用・引き継ぎガイド/.test(s))return'GUIDE';
@@ -2482,7 +3343,7 @@ function classifyContent(text){
 function fileRank(f){return `${f.timestamp||''}|${String(f.loadedAt||0).padStart(16,'0')}`}
 
 async function pruneStoredFiles(){
-  const singletonTypes=['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','TOOLBOX'];
+  const singletonTypes=['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','TOOLBOX','LIBRARY_INDEX'];
   const keepNames=new Set();
 
   for(const type of singletonTypes){
@@ -2521,7 +3382,7 @@ async function pruneStoredFiles(){
 
 function refreshDerived(){
   const active={};
-  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE','TOOLBOX']){
+  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE','TOOLBOX','LIBRARY_INDEX']){
     const list=state.files.filter(f=>f.type===type).sort((a,b)=>fileRank(b).localeCompare(fileRank(a)));
     active[type]=list[0]||null
   }
@@ -3559,6 +4420,192 @@ function renderNews(){
   </div>`;
 }
 
+
+function libraryTree(items){
+  const root={name:'LIBRARY',path:'',children:new Map(),count:0};
+  for(const item of items){
+    root.count++;
+    let node=root;
+    const parts=normalizeLibraryPath(item.libraryPath).split('/').filter(Boolean);
+    let path='';
+    for(const part of parts){
+      path=path?`${path}/${part}`:part;
+      if(!node.children.has(part))node.children.set(part,{name:part,path,children:new Map(),count:0});
+      node=node.children.get(part);
+      node.count++;
+    }
+  }
+  return root;
+}
+function renderLibraryTreeNode(node,depth=0){
+  const isRoot=depth===0;
+  const expanded=state.libraryExpanded.has(node.path);
+  const hasChildren=node.children.size>0;
+  const selected=state.librarySelectedPath===node.path;
+  const kids=[...node.children.values()].sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+
+  return`<div class="library-tree-node">
+    <div class="library-tree-row ${selected?'active':''}" data-library-folder="${esc(node.path)}" style="--depth:${depth}">
+      <button class="library-tree-toggle" data-library-toggle="${esc(node.path)}" ${hasChildren?'':'disabled'} aria-label="${expanded?'折りたたむ':'展開する'}">${hasChildren?(expanded?'−':'+'):'·'}</button>
+      <span class="library-tree-name">${esc(node.name)}</span>
+      <span class="library-tree-count">${node.count}</span>
+    </div>
+    ${expanded&&kids.length?`<div class="library-tree-children">${kids.map(x=>renderLibraryTreeNode(x,depth+1)).join('')}</div>`:''}
+  </div>`;
+}
+function libraryFilterOptions(field){
+  const values=uniq(state.libraryItems.map(x=>String(x[field]||'').trim()).filter(Boolean)).sort((a,b)=>a.localeCompare(b,'ja'));
+  const current=state.libraryFilters[field]||'ALL';
+  return`<option value="ALL">ALL</option>${values.map(v=>`<option value="${esc(v)}" ${v===current?'selected':''}>${esc(v)}</option>`).join('')}`;
+}
+function librarySearchHaystack(item){
+  return[
+    item.title,item.id,item.category,item.libraryPath,item.documentType,item.source,
+    ...(item.tags||[]),...(item.related||[]),item.markdown
+  ].join('\n').toLowerCase();
+}
+function librarySearchTerms(query=state.libraryQuery){
+  return uniq(
+    String(query||'')
+      .trim()
+      .split(/\s+/)
+      .map(x=>x.trim())
+      .filter(Boolean)
+  );
+}
+function libraryEscapeRegex(value){
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+}
+function libraryHighlightHtml(value,query=state.libraryQuery){
+  const source=String(value||'');
+  const terms=librarySearchTerms(query);
+  if(!terms.length)return esc(source);
+
+  const sorted=[...terms].sort((a,b)=>b.length-a.length);
+  const re=new RegExp(`(${sorted.map(libraryEscapeRegex).join('|')})`,'gi');
+  const lowered=new Set(sorted.map(x=>x.toLowerCase()));
+
+  return source.split(re).map(part=>{
+    if(lowered.has(part.toLowerCase())){
+      return`<mark class="library-search-hit">${esc(part)}</mark>`;
+    }
+    return esc(part);
+  }).join('');
+}
+function libraryHighlightCount(value,query=state.libraryQuery){
+  const source=String(value||'');
+  const terms=librarySearchTerms(query);
+  if(!terms.length)return 0;
+  const re=new RegExp(terms.map(libraryEscapeRegex).join('|'),'gi');
+  return(source.match(re)||[]).length;
+}
+function libraryFilteredItems(){
+  const terms=librarySearchTerms().map(x=>x.toLowerCase());
+  const f=state.libraryFilters;
+  return state.libraryItems.filter(item=>{
+    if(f.category!=='ALL'&&item.category!==f.category)return false;
+    if(f.documentType!=='ALL'&&item.documentType!==f.documentType)return false;
+    if(f.source!=='ALL'&&item.source!==f.source)return false;
+    if(f.status!=='ALL'&&item.status!==f.status)return false;
+    if(terms.length){
+      const hay=librarySearchHaystack(item);
+      return terms.every(term=>hay.includes(term));
+    }
+
+    const path=state.librarySelectedPath;
+    if(!path)return true;
+    return item.libraryPath===path||item.libraryPath.startsWith(`${path}/`);
+  }).sort((a,b)=>{
+    const ap=a.libraryPath.localeCompare(b.libraryPath,'ja');
+    return ap||a.title.localeCompare(b.title,'ja')||a.id.localeCompare(b.id);
+  });
+}
+function renderLibraryItemRow(item){
+  const key=libraryItemKey(item.id),selected=state.selected.has(key),active=state.libraryDetailId===item.id;
+  const secondary=[item.documentType,item.source,item.sourceDate].filter(Boolean).join(' · ');
+  return`<div class="library-item-row selectable-card ${selected?'selected':''} ${active?'active':''}" data-key="${esc(key)}" data-library-id="${esc(item.id)}" role="button" tabindex="0">
+    <div class="library-item-id">${esc(item.id)}</div>
+    <div class="library-item-content">
+      <div class="library-item-title">${esc(item.title||'UNTITLED')}</div>
+      ${secondary?`<div class="library-item-sub">${esc(secondary)}</div>`:''}
+    </div>
+  </div>`;
+}
+function renderLibraryDetail(item){
+  if(!item)return'<div class="library-detail-empty">資料を選択してください。</div>';
+  const compact=[
+    ['CATEGORY',item.category],['PATH',item.libraryPath],['TYPE',item.documentType],
+    ['SOURCE',item.source],['SOURCE DATE',item.sourceDate],['STATUS',item.status],
+    ['ADDED',item.added],['UPDATED',item.updated],['TAGS',(item.tags||[]).join(' / ')],
+    ['RELATED',(item.related||[]).join(' / ')],['SECRET REF',item.secretRef],
+    ['ORIGINAL',item.originalName],['FILE',item.fileName]
+  ].filter(([,value])=>String(value||'').trim());
+
+  return`<div class="library-detail">
+    <div class="library-detail-head">
+      <div class="library-detail-heading">
+        <span class="library-detail-id">${esc(item.id)}</span>
+        <span class="library-detail-title">${esc(item.title||'UNTITLED')}</span>
+      </div>
+      <div class="library-detail-actions">
+        <span class="panel-meta">${state.selected.has(libraryItemKey(item.id))?'SELECTED':'CLICK ROW TO SELECT'}</span>
+        <button class="ghost danger" data-library-delete="${esc(item.id)}">DELETE</button>
+      </div>
+    </div>
+    <div class="library-detail-meta-compact">${compact.map(([label,value])=>`<span class="library-meta-pair"><b>${esc(label)}</b><span>${esc(value)}</span></span>`).join('')}</div>
+    <div class="library-markdown-head">
+      <span>MARKDOWN BODY</span>
+      ${state.libraryQuery.trim()?`<span class="library-hit-count">${libraryHighlightCount(item.body||'')} HIT${libraryHighlightCount(item.body||'')===1?'':'S'}</span>`:''}
+    </div>
+    <pre class="library-markdown">${libraryHighlightHtml(item.body||'')}</pre>
+  </div>`;
+}
+
+function renderLibrary(){
+  const items=libraryFilteredItems();
+  let detail=libraryItemById(state.libraryDetailId);
+  if(!detail&&items[0]){detail=items[0];state.libraryDetailId=detail.id}
+
+  const root=libraryTree(state.libraryItems);
+  const pathLabel=state.libraryQuery.trim()
+    ? `SEARCH ALL / ${state.libraryQuery.trim()}`
+    : state.librarySelectedPath||'LIBRARY';
+
+  const rootExpanded=state.libraryExpanded.has('');
+
+  return`<div class="library-page ${rootExpanded?'':'library-root-collapsed'}">
+    <div class="library-toolbar">
+      <div class="library-search-group">
+        <span class="control-label">SEARCH</span>
+        <input class="text-input library-search" value="${esc(state.libraryQuery)}" placeholder="全文検索">
+        <button class="ghost" data-library-search-run>SEARCH</button>
+      </div>
+      <label class="library-filter"><span>CATEGORY</span><select class="minimal" data-library-filter="category">${libraryFilterOptions('category')}</select></label>
+      <label class="library-filter"><span>TYPE</span><select class="minimal" data-library-filter="documentType">${libraryFilterOptions('documentType')}</select></label>
+      <label class="library-filter"><span>SOURCE</span><select class="minimal" data-library-filter="source">${libraryFilterOptions('source')}</select></label>
+      <label class="library-filter"><span>STATUS</span><select class="minimal" data-library-filter="status">${libraryFilterOptions('status')}</select></label>
+      <button class="ghost" data-library-copy-selected>COPY SELECTED / ${selectedLibraryItems().length}</button>
+      <button class="ghost" data-library-copy-index>COPY INDEX</button>
+      <button class="ghost" data-library-export-index>EXPORT INDEX</button>
+    </div>
+    <div class="library-explorer">
+      <aside class="library-tree-pane">
+        ${state.libraryItems.length?renderLibraryTreeNode(root):'<div class="library-empty">LIBRARY ITEMはありません。</div>'}
+      </aside>
+      ${rootExpanded?`<section class="library-right">
+        <div class="library-pathbar"><span>${esc(pathLabel)}</span><span>${items.length} ITEM${items.length===1?'':'S'} / TOTAL ${state.libraryItems.length}</span></div>
+        <div class="library-right-grid">
+          <div class="library-list-pane">
+            <div class="library-list-head"><div>ID</div><div>TITLE / TYPE · SOURCE · DATE</div></div>
+            ${items.length?items.map(renderLibraryItemRow).join(''):'<div class="library-empty">一致する資料はありません。</div>'}
+          </div>
+          <div class="library-detail-pane">${renderLibraryDetail(detail)}</div>
+        </div>
+      </section>`:''}
+    </div>
+  </div>`;
+}
+
 function activeMenuId(){
   if(state.primary==='CURRENT')return state.currentSection;
   return state.primary;
@@ -4245,7 +5292,7 @@ function renderFiles(){
       <div class="source-reader-toolbar"><span class="ui-label">STORAGE</span><span class="panel-meta">LATEST ONLY / WEEKLY ACCUMULATES</span></div>
       <div class="files-backup-bar"><span class="files-backup-meta">${files.length} FILES</span><div class="files-backup-actions"><button class="ghost files-backup-btn" data-download-backup>DOWNLOAD BACKUP</button><button class="ghost files-restore-btn" data-restore-backup>RESTORE BACKUP</button></div></div>
       <div class="files-table"><div class="data-head"><div>TYPE</div><div>FILE</div><div>VERSION</div><div>STATUS</div><div>ACTION</div></div>
-    ${files.length?files.map(f=>`<div class="data-row ${f.name===selected?.name?'selected':''}" data-file-name="${esc(f.name)}"><div>${esc(f.type)}</div><div>${esc(f.name)}</div><div>${esc(f.period||f.timestamp||'—')}</div><div>${isActiveFile(f)?'<span class="file-active">ACTIVE</span>':'STORED'}</div><div class="file-action"><button class="ghost file-download" data-download-file="${esc(f.name)}">DOWNLOAD</button></div></div>`).join(''):'<div class="empty"><strong>NO FILES</strong>IMPORTまたはD&amp;Dしてください。</div>'}</div></div>
+    ${files.length?files.map(f=>`<div class="data-row ${f.name===selected?.name?'selected':''}" data-file-name="${esc(f.name)}"><div class="file-type-cell" title="${esc(f.type)}">${esc(f.type)}</div><div class="file-name-cell" title="${esc(f.name)}">${esc(f.name)}</div><div>${esc(f.period||f.timestamp||'—')}</div><div>${isActiveFile(f)?'<span class="file-active">ACTIVE</span>':'STORED'}</div><div class="file-action"><button class="ghost file-download" data-download-file="${esc(f.name)}">DOWNLOAD</button><button class="ghost danger file-delete" data-delete-file="${esc(f.name)}">DELETE</button></div></div>`).join(''):'<div class="empty"><strong>NO FILES</strong>IMPORTまたはD&amp;Dしてください。</div>'}</div></div>
     <div class="files-preview-pane">${renderFilePreview(selected)}</div>
   </div>`
 }
@@ -4263,6 +5310,23 @@ function downloadStoredFile(name){
   setTimeout(()=>URL.revokeObjectURL(url),1000);
   toast('DOWNLOAD');
 }
+async function deleteStoredFile(name){
+  const file=state.files.find(f=>f.name===name);
+  if(!file){toast('FILE NOT FOUND');return}
+  if(!confirm(`FILEを削除しますか？\n\n${file.type}｜${file.name}\n\nLCAPP内の保存データのみ削除します。`))return;
+  try{
+    await dbDelete(name);
+    state.files=state.files.filter(f=>f.name!==name);
+    if(state.filesSelected===name)state.filesSelected='';
+    if(state.searchBrowseFile===name)state.searchBrowseFile='';
+    refreshDerived();
+    render();
+    toast('FILE DELETED');
+  }catch(e){
+    console.error(e);
+    toast('DELETE FAILED');
+  }
+}
 function backupTimestamp(){
   const d=new Date();
   const p=n=>String(n).padStart(2,'0');
@@ -4272,9 +5336,10 @@ function downloadBackup(){
   const files=[...state.files].sort((a,b)=>a.name.localeCompare(b.name));
   const payload={
     format:'CONTEXT_LENS_BACKUP',
-    version:1,
+    version:2,
     createdAt:new Date().toISOString(),
     fileCount:files.length,
+    libraryItemCount:state.libraryItems.length,
     files:files.map(f=>({
       name:f.name,
       type:f.type,
@@ -4282,6 +5347,13 @@ function downloadBackup(){
       period:f.period||'',
       loadedAt:f.loadedAt||0,
       text:f.text
+    })),
+    libraryItems:state.libraryItems.map(item=>({
+      id:item.id,
+      fileName:item.fileName,
+      markdown:item.markdown,
+      lastModified:item.lastModified||0,
+      importedAt:item.importedAt||0
     }))
   };
   const json=JSON.stringify(payload,null,2);
@@ -4301,7 +5373,7 @@ function validateBackupPayload(payload){
   if(!payload||typeof payload!=='object')throw new Error('Invalid backup');
   if(payload.format!=='CONTEXT_LENS_BACKUP')throw new Error('Unsupported backup format');
   if(!Array.isArray(payload.files))throw new Error('Backup files missing');
-  const allowed=new Set(['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','WEEKLY','TOOLBOX','NEWS']);
+  const allowed=new Set(['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','WEEKLY','TOOLBOX','NEWS','LIBRARY_INDEX']);
   return payload.files.map((f,i)=>{
     if(!f||typeof f!=='object')throw new Error(`Invalid file at ${i+1}`);
     if(typeof f.name!=='string'||!f.name.trim())throw new Error(`Missing file name at ${i+1}`);
@@ -4365,6 +5437,17 @@ async function restoreBackupFile(file){
       restored++;
     }
 
+    if(Array.isArray(payload.libraryItems)){
+      for(const saved of payload.libraryItems){
+        try{
+          const item=parseLibraryItemMarkdown(saved.fileName||`library_${saved.id||Date.now()}.md`,saved.markdown||'',saved.lastModified||Date.now());
+          if(!item)continue;
+          await libraryDbPut(item);
+          upsertLibraryState(item);
+        }catch(e){console.warn('library restore skipped',e)}
+      }
+    }
+
     await pruneStoredFiles();
     refreshDerived();
     state.filesSelected='';
@@ -4425,6 +5508,14 @@ function contextForKey(key){
     return{
       label:`NEWS / ${section}`,
       text:`[NEWS / 外部世界の現在]\nNEWS更新日時：${updated||'—'}\nジャンル：${section}\nタイトル：${item.title}\n出どころ：${item.source||'—'}\nURL：${item.url||'—'}`
+    };
+  }
+  if(group==='LIBRARY'){
+    const item=libraryItemById(parts.slice(1).join('::'));
+    if(!item)return null;
+    return{
+      label:item.id,
+      text:libraryContextText(item)
     };
   }
   if(group==='SEARCH'){
@@ -4495,7 +5586,9 @@ function renderItemNotes(){
   shell.classList.add('open');list.innerHTML=contexts.map(({key,c})=>{
     const placeholder=key.startsWith('NEWS::')
       ? 'このNEWSについて聞きたいこと・相談内容を入力…'
-      : 'この項目への追記・修正・回答を入力…';
+      : key.startsWith('LIBRARY::')
+        ? 'この資料について聞きたいこと・相談内容を入力…'
+        : 'この項目への追記・修正・回答を入力…';
     return`<div class="item-note"><div class="item-note-meta"><span class="item-note-id">${esc(c.label)}</span><span class="item-note-label">${esc(c.text.split('\n')[0])}</span><span class="item-note-section">${esc(key.split('::')[0])}</span></div><textarea class="item-note-text" data-note-key="${esc(key)}" placeholder="${esc(placeholder)}">${esc(noteForKey(key))}</textarea></div>`;
   }).join('');
   document.querySelectorAll('[data-note-key]').forEach(t=>t.addEventListener('input',e=>{
@@ -4518,6 +5611,7 @@ function buildPrompt(){
   const hasProfile=ctx.some(x=>x.key.startsWith('PROFILE::'));
   const hasToolbox=ctx.some(x=>x.key.startsWith('TOOLBOX::'));
   const hasNews=ctx.some(x=>x.key.startsWith('NEWS::'));
+  const hasLibrary=ctx.some(x=>x.key.startsWith('LIBRARY::'));
   const hasSearch=ctx.some(x=>x.key.startsWith('SEARCH::'));
   const hasSearchMemory=ctx.some(x=>x.key.startsWith('SEARCH::')&&x.c.text.startsWith('[SEARCH / MEMORY INDEX'));
   const hasSearchCompleted=ctx.some(x=>x.key.startsWith('SEARCH::')&&x.c.text.startsWith('[SEARCH / COMPLETED'));
@@ -4527,7 +5621,7 @@ function buildPrompt(){
   if(hasReview)head+='AI REVIEWはその日の判断・優先順位・次の一手・注意点です。回答内容をAI REVIEWからOPEN QUESTIONへ自動変換したり、翌日へ自動持越ししたりせず、ユーザーの指示とLIVING CONTEXT側の記録ルールに従って必要なCURRENT項目・予定・日別ログ等へ反映してください。\n\n';
   if(hasOpenQuestion)head+='OPEN QUESTIONは翌日以降も追跡可能な未解決事項です。回答・判断・確認結果が得られた場合は、ユーザーの指示に従ってT04の現在状態等を更新してください。LCAPP側の都合でAI REVIEWへコピーしたり、解決・持越しを独自判定したりしないでください。\n\n';
   if(hasProfile)head+='PROFILE対象は長期的に安定して参照する人物・家族・仕事関係・所属・活動背景等の情報です。追記・修正指示のうち、長期的に保持すべき背景情報だけをPROFILEへ反映してください。一時的な進捗、今日だけの出来事、期限、未解決確認はPROFILEへ混在させず、必要に応じてCURRENTのT02・T04（OPEN QUESTION）・T10や日別ログへ反映してください。既存情報の訂正では重複を作らず、より新しい明示的情報を優先してください。\n\n';
-  if(hasToolbox)head+='TOOLBOX対象は、再利用するために保存された定型文・指示文です。TOOLBOXのCOPY本文を今回の作業指示として使用し、「この項目への追記・指示」がある場合はその内容も加味してください。ユーザーがTOOL自体の改訂を明示的に依頼していない限り、TOOLBOX正本を書き換える前提では扱わないでください。\n\n';  if(hasNews)head+='以下はNEWS画面で選択した外部ニュース項目です。NEWSはLIVING CONTEXTのCURRENT・Memory・PROFILE等とは独立した参照情報です。「この項目への追記・指示」に書かれた質問や相談へ回答してください。必要に応じてURL先の内容を確認・調査して構いませんが、ユーザーが明示的に依頼しない限り、NEWS内容をLIVING CONTEXTへ自動保存・反映する前提では扱わないでください。\n\n';
+  if(hasToolbox)head+='TOOLBOX対象は、再利用するために保存された定型文・指示文です。TOOLBOXのCOPY本文を今回の作業指示として使用し、「この項目への追記・指示」がある場合はその内容も加味してください。ユーザーがTOOL自体の改訂を明示的に依頼していない限り、TOOLBOX正本を書き換える前提では扱わないでください。\n\n';  if(hasNews)head+='以下はNEWS画面で選択した外部ニュース項目です。NEWSはLIVING CONTEXTのCURRENT・Memory・PROFILE等とは独立した参照情報です。「この項目への追記・指示」に書かれた質問や相談へ回答してください。必要に応じてURL先の内容を確認・調査して構いませんが、ユーザーが明示的に依頼しない限り、NEWS内容をLIVING CONTEXTへ自動保存・反映する前提では扱わないでください。\n\n';  if(hasLibrary)head+='以下はLIBRARYで選択した参照資料です。各LIBRARY ITEM Markdownを資料内容の正本として扱い、資料に書かれていない事実を補完せず、「この項目への追記・指示」にある質問・比較・整理へ回答してください。LIBRARYはLIVING CONTEXT本体とは別系統の参照情報であり、ユーザーが明示的に依頼しない限りCURRENT・Memory・PROFILE等へ自動反映しないでください。\n\n';
   if(hasSearch)head+='以下はSEARCHから個別に選択されたLIVING CONTEXTの記録です。「この項目への追記・指示」を、対象記録の修正・訂正・確認依頼として扱ってください。LCAPP表示だけで機械的に正本を書き換えず、このチャットからアクセスできる保存済みLIVING CONTEXTファイルを必要な範囲で確認し、根拠が取れた内容に基づいて反映してください。P番号は永久IDとして維持し、再採番・別Pとの推測統合はしないでください。\n\n';
   if(hasSearchMemory)head+='MEMORY INDEXは過去情報への索引であり、詳細事実の原本ではありません。MEMORYの訂正では、原本参照先のWEEKLY等を可能な限り確認し、記憶の要約・状態・基準日・再開条件・キーワード・原本参照のうち必要な箇所だけを修正してください。原本自体の事実も誤っているとユーザーが明示した場合は、その指示を尊重しつつ、どのファイルを訂正すべきか区別してください。\n\n';
   if(hasSearchCompleted)head+='COMPLETEDは完了・節目の正式記録です。訂正では該当P IDを維持し、完了・節目日、分野、概要、詳細記録の整合を確認してください。必要に応じて当時の日別ログ・WEEKLY・ORIGINAL等を確認し、完了記録だけを推測で変更しないでください。\n\n';
@@ -4556,7 +5650,8 @@ function updateComposer(){
   renderItemNotes();
 }
 function updateFooter(){
-  const n=state.files.length,summary=state.active.SUMMARY?.name||'NO SUMMARY';$('footerStatus').textContent=`${n} FILES · ${summary} · ${state.selected.size} SELECTED`
+  const n=state.files.length,lib=state.libraryItems.length,summary=state.active.SUMMARY?.name||'NO SUMMARY';
+  $('footerStatus').textContent=`${n} LC FILES · ${lib} LIBRARY · ${summary} · ${state.selected.size} SELECTED`
 }
 
 function render(){
@@ -4566,6 +5661,7 @@ function render(){
   if(state.primary==='NEWS')html=renderNews();
   if(state.primary==='SEARCH')html=renderSearch();
   if(state.primary==='TOOLBOX')html=renderToolbox();
+  if(state.primary==='LIBRARY')html=renderLibrary();
   if(state.primary==='FILES')html=renderFiles();
   $('mainView').innerHTML=html;
   enhanceIdReferences($('mainView'));
@@ -4586,6 +5682,7 @@ function bindDynamic(){
     const key=card?.dataset?.key;
     if(!key)return;
     if(card.dataset.memoryId)state.memorySelected=card.dataset.memoryId;
+    if(card.dataset.libraryId)state.libraryDetailId=card.dataset.libraryId;
     const next=!state.selected.has(key);
     toggleSelection(key,next);
     if(next){
@@ -4714,12 +5811,63 @@ function bindDynamic(){
     state.searchBrowseFile=b.dataset.searchBrowseFile;
     render();
   }));
+  const librarySearch=document.querySelector('.library-search');
+  if(librarySearch){
+    const commit=()=>{
+      state.libraryQuery=librarySearch.value.trim();
+      state.libraryDetailId='';
+      render();
+      requestAnimationFrame(()=>document.querySelector('.library-search-hit')?.scrollIntoView({block:'center'}));
+    };
+    librarySearch.addEventListener('input',()=>{state.libraryQuery=librarySearch.value});
+    librarySearch.addEventListener('change',commit);
+    librarySearch.addEventListener('keydown',e=>{
+      if(e.key==='Enter'&&!e.isComposing){e.preventDefault();commit()}
+    });
+  }
+  document.querySelector('[data-library-search-run]')?.addEventListener('click',()=>{
+    state.libraryQuery=(document.querySelector('.library-search')?.value||'').trim();
+    state.libraryDetailId='';
+    render();
+    requestAnimationFrame(()=>document.querySelector('.library-search-hit')?.scrollIntoView({block:'center'}));
+  });
+  document.querySelectorAll('[data-library-filter]').forEach(sel=>sel.addEventListener('change',()=>{
+    state.libraryFilters[sel.dataset.libraryFilter]=sel.value;
+    state.libraryDetailId='';
+    render();
+  }));
+  document.querySelectorAll('[data-library-toggle]').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const path=btn.dataset.libraryToggle??'';
+    if(state.libraryExpanded.has(path))state.libraryExpanded.delete(path);else state.libraryExpanded.add(path);
+    render();
+  }));
+  document.querySelectorAll('[data-library-folder]').forEach(row=>row.addEventListener('click',e=>{
+    if(e.target.closest('[data-library-toggle]'))return;
+    const path=row.dataset.libraryFolder||'';
+    state.librarySelectedPath=path;
+    state.libraryQuery='';
+    state.libraryDetailId='';
+    if(path)state.libraryExpanded.add(path);
+    render();
+  }));
+  document.querySelector('[data-library-copy-selected]')?.addEventListener('click',copySelectedLibraryItems);
+  document.querySelector('[data-library-copy-index]')?.addEventListener('click',copyLibraryIndex);
+  document.querySelector('[data-library-export-index]')?.addEventListener('click',exportLibraryIndex);
+  document.querySelector('[data-library-delete]')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    deleteLibraryItem(e.currentTarget.dataset.libraryDelete);
+  });
+
   document.querySelectorAll('[data-file-name]').forEach(r=>r.addEventListener('click',e=>{
-    if(e.target.closest('[data-download-file]'))return;
+    if(e.target.closest('[data-download-file],[data-delete-file]'))return;
     state.filesSelected=r.dataset.fileName;render()
   }));
   document.querySelectorAll('[data-download-file]').forEach(b=>b.addEventListener('click',e=>{
     e.stopPropagation();downloadStoredFile(b.dataset.downloadFile)
+  }));
+  document.querySelectorAll('[data-delete-file]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();deleteStoredFile(b.dataset.deleteFile)
   }));
   document.querySelector('[data-download-backup]')?.addEventListener('click',downloadBackup);
   document.querySelector('[data-restore-backup]')?.addEventListener('click',chooseBackupFile);
@@ -4773,16 +5921,31 @@ async function importFiles(files){
     await restoreBackupFile(f);
   }
 
-  let count=0;
+  let count=0,libraryCount=0,invalidLibrary=0;
   for(const f of markdown){
-    if(await ingest(f.name,await f.text(),f.lastModified))count++;
+    const txt=await f.text();
+    const fm=parseLibraryFrontmatter(txt);
+    if(fm&&String(fm.meta.type||'').toLowerCase()==='library_item'){
+      try{
+        if(await ingestLibraryItem(f.name,txt,f.lastModified))libraryCount++;
+      }catch(e){
+        console.warn(e);
+        invalidLibrary++;
+      }
+      continue;
+    }
+    if(await ingest(f.name,txt,f.lastModified))count++;
   }
 
   if(markdown.length){
     state.selected.clear();
     refreshDerived();
     render();
-    toast(`${count} FILE${count===1?'':'S'} LOADED`);
+    const parts=[];
+    if(count)parts.push(`${count} LC`);
+    if(libraryCount)parts.push(`${libraryCount} LIBRARY`);
+    if(invalidLibrary)parts.push(`${invalidLibrary} INVALID`);
+    toast(parts.length?`${parts.join(' / ')} LOADED`:'NO SUPPORTED FILES');
   }
 
   const unsupported=list.length-backups.length-markdown.length;
@@ -4791,8 +5954,21 @@ async function importFiles(files){
 async function pasteSource(){
   try{
     const txt=await navigator.clipboard.readText();if(!txt.trim()){toast('CLIPBOARD EMPTY');return}
+    const fm=parseLibraryFrontmatter(txt);
+    if(fm&&String(fm.meta.type||'').toLowerCase()==='library_item'){
+      try{
+        const id=String(fm.meta.id||'').trim().toUpperCase();
+        const name=String(fm.meta.original_name||'').trim()||`library_${id||Date.now()}.md`;
+        await ingestLibraryItem(name,txt,Date.now());
+        state.selected.clear();render();toast('LIBRARY LOADED');return;
+      }catch(e){console.warn(e);toast('INVALID LIBRARY ITEM');return}
+    }
     const type=classifyContent(txt);if(type==='UNKNOWN'){toast('UNKNOWN MARKDOWN');return}
-    const now=formatNowStamp();const name=type==='WEEKLY'?`living-context-weekly_pasted_${Date.now()}.md`:`living-context-${type==='MEMORY'?'memory-index':type==='COMPLETED'?'t09':type.toLowerCase()}_${now}.md`;
+    const now=formatNowStamp();const name=type==='WEEKLY'
+      ? `living-context-weekly_pasted_${Date.now()}.md`
+      : type==='LIBRARY_INDEX'
+        ? 'library-index.md'
+        : `living-context-${type==='MEMORY'?'memory-index':type==='COMPLETED'?'t09':type.toLowerCase()}_${now}.md`;
     await ingest(name,txt,Date.now(),type);state.selected.clear();render();toast(`${type} LOADED`)
   }catch{toast('CLIPBOARD BLOCKED')}
 }
@@ -4802,7 +5978,27 @@ $('fileInput').addEventListener('change',async e=>{await importFiles([...e.targe
 $('pasteBtn').addEventListener('click',pasteSource);
 $('copyPromptBtn').addEventListener('click',()=>copyText($('promptOutput').value));
 $('clearInputsBtn').addEventListener('click',()=>{state.selected.clear();state.notes.clear();saveNotes();render();toast('INPUTS CLEARED')});
-$('clearBtn').addEventListener('click',async()=>{if(!confirm('CONTEXT LENSに保存したLIVING CONTEXTファイルをすべて削除しますか？ MEMOTIMEは削除しません。'))return;await dbClear();state.files=[];state.selected.clear();refreshDerived();render();toast('DATA CLEARED')});
+$('clearBtn').addEventListener('click',async()=>{
+  if(!confirm('CONTEXT LENSに保存したLIVING CONTEXTファイルとLIBRARY ITEMをすべて削除しますか？ MEMOTIMEは削除しません。'))return;
+  try{
+    await dbClear();
+    await libraryDbClear();
+    state.files=[];
+    state.libraryItems=[];
+    state.libraryDetailId='';
+    state.librarySelectedPath='';
+    state.libraryExpanded=new Set(['']);
+    state.libraryQuery='';
+    state.libraryFilters={category:'ALL',documentType:'ALL',source:'ALL',status:'ALL'};
+    state.selected.clear();
+    refreshDerived();
+    render();
+    toast('ALL DATA CLEARED');
+  }catch(e){
+    console.error(e);
+    toast('CLEAR FAILED');
+  }
+});
 
 window.addEventListener('dragover',e=>{e.preventDefault()});
 window.addEventListener('drop',async e=>{
@@ -4854,6 +6050,8 @@ async function boot(){
     if(['MONTHS','6W'].includes(savedMode))state.calendarMode=savedMode;
   }catch{}
   try{state.files=await dbAll()}catch{state.files=[]}
+  try{state.libraryItems=await libraryDbAll()}catch{state.libraryItems=[]}
+  state.libraryItems.sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
   await pruneStoredFiles();
   refreshDerived();
   await migrateLegacy();
