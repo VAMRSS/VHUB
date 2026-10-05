@@ -3360,7 +3360,7 @@ body *{
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V9.4 · LIBRARY SELECT</div>
+  <div class="footer-side">CONTEXT LENS / V9.5 · FILE TYPES</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -3877,6 +3877,8 @@ function classifyFileName(name){
   const n=String(name||'');
   let m;
   if((m=n.match(/^library-index(?:_(\d{8}-\d{4}))?(?:\([^)]*\))?\.md$/i)))return{type:'LIBRARY_INDEX',timestamp:m[1]||'',period:''};
+  if((m=n.match(/^(?:library|living-context)?-?md-guide_v([0-9.]+)_(\d{8})(?:\([^)]*\))?\.md$/i)))return{type:'MD_GUIDE',timestamp:`${m[2]}_v${m[1]}`,period:''};
+  if((m=n.match(/^library-md-guide_v([0-9.]+)_(\d{8})(?:\([^)]*\))?\.md$/i)))return{type:'MD_GUIDE',timestamp:`${m[2]}_v${m[1]}`,period:''};
   if((m=n.match(/^living-context-weekly_(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})(?:\([^)]*\))?\.md$/i)))return{type:'WEEKLY',period:`${m[1]}_to_${m[2]}`,timestamp:`${m[1]}_${m[2]}`};
   const defs=[
     ['MEMORY',/^living-context-memory-index_(\d{8}-\d{4})(?:\([^)]*\))?\.md$/i],
@@ -3893,6 +3895,7 @@ function classifyFileName(name){
 function classifyContent(text){
   const s=normalize(text).slice(0,3000);
   if(/^---[\s\S]*?^type\s*:\s*library_index\s*$/im.test(s))return'LIBRARY_INDEX';
+  if(/^#\s+.*(?:LIBRARY\s+)?(?:MD|Markdown).*(?:ガイド|GUIDE)/mi.test(s)||/^#\s+.*MD化.*ガイド/mi.test(s))return'MD_GUIDE';
   if(/LIVING CONTEXT｜Memory Index/i.test(s)||/##\s*記憶索引/.test(s))return'MEMORY';
   if(/LIVING CONTEXT｜蓄積サマリー/.test(s))return'SUMMARY';
   if(/LIVING CONTEXT｜運用・引き継ぎガイド/.test(s))return'GUIDE';
@@ -3906,7 +3909,7 @@ function classifyContent(text){
 function fileRank(f){return `${f.timestamp||''}|${String(f.loadedAt||0).padStart(16,'0')}`}
 
 async function pruneStoredFiles(){
-  const singletonTypes=['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','TOOLBOX','LIBRARY_INDEX'];
+  const singletonTypes=['SUMMARY','MEMORY','GUIDE','MD_GUIDE','PROFILE','COMPLETED','ORIGINAL','TOOLBOX','LIBRARY_INDEX'];
   const keepNames=new Set();
 
   for(const type of singletonTypes){
@@ -3945,7 +3948,7 @@ async function pruneStoredFiles(){
 
 function refreshDerived(){
   const active={};
-  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE','TOOLBOX','LIBRARY_INDEX']){
+  for(const type of ['SUMMARY','MEMORY','PROFILE','COMPLETED','ORIGINAL','GUIDE','MD_GUIDE','TOOLBOX','LIBRARY_INDEX']){
     const list=state.files.filter(f=>f.type===type).sort((a,b)=>fileRank(b).localeCompare(fileRank(a)));
     active[type]=list[0]||null
   }
@@ -5937,7 +5940,7 @@ function validateBackupPayload(payload){
   if(!payload||typeof payload!=='object')throw new Error('Invalid backup');
   if(payload.format!=='CONTEXT_LENS_BACKUP')throw new Error('Unsupported backup format');
   if(!Array.isArray(payload.files))throw new Error('Backup files missing');
-  const allowed=new Set(['SUMMARY','MEMORY','GUIDE','PROFILE','COMPLETED','ORIGINAL','WEEKLY','TOOLBOX','NEWS','LIBRARY_INDEX']);
+  const allowed=new Set(['SUMMARY','MEMORY','GUIDE','MD_GUIDE','PROFILE','COMPLETED','ORIGINAL','WEEKLY','TOOLBOX','NEWS','LIBRARY_INDEX']);
   return payload.files.map((f,i)=>{
     if(!f||typeof f!=='object')throw new Error(`Invalid file at ${i+1}`);
     if(typeof f.name!=='string'||!f.name.trim())throw new Error(`Missing file name at ${i+1}`);
@@ -6595,7 +6598,9 @@ async function pasteSource(){
       ? `living-context-weekly_pasted_${Date.now()}.md`
       : type==='LIBRARY_INDEX'
         ? 'library-index.md'
-        : `living-context-${type==='MEMORY'?'memory-index':type==='COMPLETED'?'t09':type.toLowerCase()}_${now}.md`;
+        : type==='MD_GUIDE'
+          ? `library-md-guide_pasted_${now}.md`
+          : `living-context-${type==='MEMORY'?'memory-index':type==='COMPLETED'?'t09':type.toLowerCase()}_${now}.md`;
     await ingest(name,txt,Date.now(),type);state.selected.clear();render();toast(`${type} LOADED`)
   }catch{toast('CLIPBOARD BLOCKED')}
 }
