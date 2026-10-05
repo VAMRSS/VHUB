@@ -3030,6 +3030,240 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
 }
 
 
+/* v9.0 / unified title hierarchy + vertical rhythm */
+
+/* 1) Weight system
+   Bold is reserved for item/section titles only. */
+body,
+body *{
+  font-weight:400!important;
+}
+.panel-title,
+.item-title,
+.ai-block-title,
+.detail-title,
+.profile-section-title,
+.profile-subhead,
+.toolbox-title,
+.toolbox-detail-title,
+.toolbox-section-head,
+.news-section-head,
+.library-detail-title,
+.library-markdown-head>span:first-child,
+.daily-log-date,
+.daily-log-section-title,
+.daily-log-update-title,
+.calendar-month-title,
+.month-list-head,
+.schedule-overflow-head,
+.history-memory-title,
+.search-result-title,
+.empty strong{
+  font-weight:600!important;
+}
+
+/* 2) Common visual hierarchy
+   Title/header zones use the UI background; readable content and tables stay white. */
+.panel-head,
+.ai-block-head,
+.detail-head,
+.profile-section-head,
+.toolbox-detail-head,
+.toolbox-section-head,
+.news-section-head,
+.library-detail-head,
+.library-markdown-head,
+.calendar-month-head,
+.month-list-head,
+.schedule-overflow-head,
+.daily-log-day-head,
+.file-preview-head,
+.search-browse-preview-head,
+.source-reader-toolbar{
+  background:var(--bone);
+}
+
+.control-strip,
+.search-strip,
+.profile-toolbar,
+.news-toolbar,
+.library-toolbar,
+.files-backup-bar,
+.archive-switch,
+.schedule-toolbar{
+  background:var(--bone);
+}
+
+.section,
+.memory-layout,
+.profile-content,
+.toolbox-info,
+.toolbox-copy-body,
+.toolbox-notes,
+.news-list,
+.library-list-pane,
+.library-detail-pane,
+.library-detail-meta-compact,
+.library-markdown,
+.source-reader,
+.search-browse-source{
+  background:var(--white);
+}
+
+/* CURRENT: metadata/title side is the title zone; body remains readable white. */
+.item>.cell:nth-child(1),
+.item>.cell:nth-child(2){
+  background:var(--bone);
+}
+.item>.body-cell{
+  background:var(--white);
+}
+
+/* DAILY LOG: each internal block title becomes a header band. */
+.daily-log-section-title{
+  min-height:30px;
+  margin:-12px -12px 9px;
+  padding:0 12px;
+  display:flex;
+  align-items:center;
+  background:var(--bone);
+  border-bottom:.5px solid var(--divider);
+}
+.daily-log-update-meta{
+  background:var(--bone);
+}
+.daily-log-history summary{
+  background:var(--bone);
+}
+
+/* PROFILE subheads should read as full-width item headers, not bold text floating in white. */
+.profile-block:has(>.profile-subhead){
+  padding:0;
+}
+.profile-subhead{
+  min-height:32px;
+  margin:0;
+  padding:0 12px;
+  display:flex;
+  align-items:center;
+  background:var(--bone);
+  border-bottom:.5px solid var(--divider);
+}
+
+/* LIBRARY metadata is content, so keep it white. */
+.library-detail-meta-compact{
+  background:var(--white);
+}
+
+/* 3) Global AI REVIEW ticker: true optical/vertical centering. */
+.review-ticker{
+  align-items:stretch;
+}
+.review-ticker-label,
+.review-ticker-text,
+.review-ticker-index{
+  height:100%;
+  display:flex;
+  align-items:center;
+}
+.review-ticker-label,
+.review-ticker-index{
+  line-height:1;
+}
+
+/* 4) AI REVIEW cards: vertically center the ID and answer within the box. */
+.review-answer-item{
+  min-height:50px;
+  align-items:stretch;
+}
+.review-answer-id,
+.review-answer-body{
+  display:flex;
+  align-items:center;
+  padding-top:8px;
+  padding-bottom:8px;
+}
+.review-answer-body{
+  line-height:1.65;
+}
+
+/* 5) OPEN QUESTION: compact rows with stable vertical centering.
+   One-line rows no longer sit high; multi-line rows expand only as needed. */
+.open-question-item{
+  min-height:30px;
+  align-items:stretch;
+}
+.open-question-item>div{
+  display:flex;
+  align-items:center;
+  padding:5px 8px;
+}
+.open-question-item.oq-head{
+  min-height:28px;
+}
+.open-question-item.oq-head>div{
+  padding-top:5px;
+  padding-bottom:5px;
+  line-height:1.2;
+}
+.oq-id,
+.oq-meta{
+  line-height:1.35;
+}
+.oq-question,
+.oq-state{
+  line-height:1.45;
+}
+
+/* Selection remains visible without turning ordinary content areas into permanent tinted panels. */
+.item.selected,
+.review-answer-item.selected,
+.open-question-item.selected,
+.selectable-card.selected{
+  box-shadow:inset 3px 0 0 var(--signal);
+}
+
+
+/* v9.1 / focused layout corrections */
+
+/* SCHEDULE: controls end cleanly without a white section tail below 6W / 1M / 2M / 3M. */
+.schedule-section{
+  background:transparent;
+}
+.schedule-toolbar{
+  min-height:32px;
+  padding:0 10px;
+  margin:0;
+  background:transparent;
+  border-bottom:0;
+}
+.schedule-toolbar-actions{
+  min-height:32px;
+}
+
+/* ACTIVE: item titles use normal weight. */
+.item-title{
+  font-weight:400!important;
+}
+
+/* DAILY LOG / AI REVIEW:
+   use one fixed-width accent rail for the entire block so its thickness is constant. */
+.daily-log-review{
+  position:relative;
+  border-left:0;
+  padding-left:14px;
+}
+.daily-log-review::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:3px;
+  background:var(--signal);
+}
+
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -3101,7 +3335,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V8.9 · TYPOGRAPHY</div>
+  <div class="footer-side">CONTEXT LENS / V9.1 · HIERARCHY</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -4278,7 +4512,7 @@ function renderScheduleCalendar(sec){
     return !shown.has(d.year?ymKey(d.year,d.month):'');
   }).sort(scheduleSort);
 
-  return`<section class="section">
+  return`<section class="section schedule-section">
     ${calendarBody}
     ${overflow.length?`<div class="schedule-overflow"><div class="schedule-overflow-head">OUTSIDE / 表示期間外・日付未定</div><div class="schedule-overflow-grid">${overflow.map(renderScheduleEntry).join('')}</div></div>`:''}
     <div class="schedule-toolbar">
