@@ -2796,27 +2796,9 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
 }
 
 
-/* v8.7 / typography floor + fixed ChatGPT composer width */
-.library-page{
-  --library-min-font-size:8px;
-}
-/* LIBRARY follows the LCAPP minimum text size rule: never below 8px. */
-.library-toolbar .control-label,
-.library-toolbar input,
-.library-toolbar select,
-.library-toolbar button,
-.library-filter>span,
-.library-tree-count,
-.library-list-head,
-.library-item-id,
-.library-item-sub,
-.library-detail-id,
-.library-meta-pair,
-.library-meta-pair b,
-.library-markdown-head,
-.library-hit-count{
-  font-size:var(--library-min-font-size);
-}
+/* v8.7 / fixed ChatGPT composer width
+   8px remains the compact English/software baseline.
+   Japanese minimum typography is handled globally by v8.8. */
 
 /* Match the ChatGPT pane width used by the 720px application width.
    Wider application widths now expand only the browser/content pane. */
@@ -2842,6 +2824,209 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     min-width:0;
     max-width:none;
   }
+}
+
+
+/* v8.8 / Japanese-aware minimum typography
+   Japanese-containing display text is at least 9px.
+   English-only software chrome/buttons keep their existing size. */
+.jp-min9{
+  font-size:9px!important;
+}
+
+/* Compact metadata: preserve breathing room after the 8px -> 9px promotion. */
+.item-cat.jp-min9{
+  line-height:1.5;
+  margin-top:4px;
+}
+.field-label.jp-min9,
+.detail-label.jp-min9{
+  line-height:1.35;
+}
+.detail-label.jp-min9{
+  margin-bottom:6px;
+}
+
+/* Table/list headers with Japanese text get symmetric vertical room. */
+.data-head>div.jp-min9{
+  padding-top:9px;
+  padding-bottom:9px;
+  line-height:1.25;
+}
+.profile-table th.jp-min9,
+.history-table th.jp-min9{
+  padding-top:9px;
+  padding-bottom:9px;
+  line-height:1.25;
+}
+
+/* Calendar: Japanese weekdays/labels remain centered after enlargement. */
+.calendar-weekday.jp-min9{
+  padding-top:7px;
+  padding-bottom:7px;
+  line-height:1.25;
+}
+.calendar-event-label.jp-min9,
+.calendar-holiday-label.jp-min9,
+.calendar-event-label .jp-min9,
+.calendar-holiday-label .jp-min9{
+  line-height:1.4;
+}
+
+/* Section/subhead labels that may contain Japanese. */
+.profile-subhead.jp-min9,
+.history-subhead.jp-min9{
+  line-height:1.45;
+  margin-bottom:8px;
+}
+
+/* NEWS and LIBRARY compact secondary information. */
+.news-item-meta .jp-min9,
+.news-item-meta.jp-min9{
+  line-height:1.45;
+}
+.library-item-sub.jp-min9{
+  line-height:1.35;
+  margin-top:3px;
+}
+.library-meta-pair>span.jp-min9{
+  line-height:1.4;
+}
+.library-tree-count.jp-min9,
+.library-pathbar .jp-min9{
+  line-height:1.35;
+}
+
+/* Composer metadata may contain Japanese even though its chrome is compact. */
+.item-note-label.jp-min9,
+.item-note-meta .jp-min9{
+  line-height:1.4;
+}
+
+/* Japanese status/empty messages should not feel vertically pinched. */
+.empty.jp-min9,
+.library-empty.jp-min9,
+.library-detail-empty.jp-min9,
+.source-status.jp-min9{
+  line-height:1.55;
+}
+
+
+/* v8.9 / content typography +1px
+   Readable data/content text is enlarged by 1px.
+   UI chrome, buttons, IDs, category/status/type/source labels and metadata stay unchanged. */
+
+/* CURRENT / schedule / AI */
+.item-title{font-size:12px}
+.field-value{font-size:11px}
+.schedule-entry-title{font-size:11px}
+.schedule-entry-note{font-size:10px}
+.review-answer-body{font-size:12px}
+.oq-question{font-size:11px}
+
+/* DAILY LOG */
+.daily-log-bullets>div,
+.daily-log-review-item{font-size:11px}
+.daily-log-update-title{font-size:10px}
+.daily-log-update-line{font-size:11px}
+.daily-log-history-body{font-size:10px}
+.daily-log-muted{font-size:11px}
+
+/* MEMORY / SEARCH / ARCHIVE */
+.detail-value{font-size:12px}
+.memory-list .data-row>div:nth-child(2){font-size:11px}
+.search-result-title{font-size:12px}
+.search-result-snippet{font-size:11px}
+.history-memory-title{font-size:12px}
+.history-memory-summary{font-size:11px}
+.history-completed-summary{font-size:11px}
+.history-completed-detail pre{font-size:10px}
+.source-reader,
+.search-browse-source{font-size:12px}
+
+/* PROFILE */
+.profile-text{font-size:12px}
+.profile-list li{font-size:12px}
+.profile-row-body{font-size:12px}
+.profile-table td{font-size:11px}
+
+/* TOOLBOX */
+.toolbox-title{font-size:11px}
+.toolbox-detail-title{font-size:13px}
+.toolbox-copy-body{font-size:11px}
+.toolbox-notes{font-size:11px}
+
+/* NEWS */
+.news-item-title{font-size:12px}
+
+/* LIBRARY */
+.library-item-title{font-size:10px}
+.library-markdown{font-size:10px}
+
+/* ChatGPT consultation content */
+.item-note-text{font-size:12px}
+.prompt{font-size:13px}
+
+/* Spacing adjustments for enlarged content text */
+.schedule-entry{
+  padding-top:9px;
+  padding-bottom:9px;
+}
+.review-answer-check,
+.review-answer-id,
+.review-answer-body{
+  padding-top:11px;
+  padding-bottom:11px;
+}
+.daily-log-block{
+  padding-top:12px;
+  padding-bottom:12px;
+}
+.daily-log-update-body{
+  padding-top:9px;
+  padding-bottom:9px;
+}
+.profile-row-body{
+  padding-top:8px;
+  padding-bottom:8px;
+}
+.profile-table td{
+  padding-top:9px;
+  padding-bottom:9px;
+}
+.toolbox-copy-body{
+  padding-top:13px;
+  padding-bottom:13px;
+}
+.toolbox-notes{
+  padding-top:12px;
+}
+.news-item{
+  padding-top:12px;
+  padding-bottom:12px;
+}
+.library-item-row{
+  min-height:36px;
+}
+.library-list-head>div,
+.library-item-row>div{
+  padding-top:6px;
+  padding-bottom:6px;
+}
+.library-markdown{
+  padding-top:10px;
+}
+.item-note-text{
+  padding-top:11px;
+  padding-bottom:11px;
+}
+.prompt{
+  padding:15px;
+}
+.source-reader,
+.search-browse-source{
+  padding-top:15px;
+  padding-bottom:29px;
 }
 
 
@@ -2916,7 +3101,7 @@ mark{background:var(--signal-soft);color:inherit;padding:0}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V8.7 · LIBRARY</div>
+  <div class="footer-side">CONTEXT LENS / V8.9 · TYPOGRAPHY</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -5654,6 +5839,45 @@ function updateFooter(){
   $('footerStatus').textContent=`${n} LC FILES · ${lib} LIBRARY · ${summary} · ${state.selected.size} SELECTED`
 }
 
+const JAPANESE_TEXT_RE=/[\u3040-\u30ff\u3400-\u9fff々〆ヵヶ]/;
+function elementHasJapaneseText(el){
+  if(!el||el.nodeType!==1)return false;
+
+  if(el.matches('input,textarea')){
+    return JAPANESE_TEXT_RE.test(String(el.value||el.getAttribute('placeholder')||''));
+  }
+  if(el.matches('select')){
+    const option=el.options?.[el.selectedIndex];
+    return JAPANESE_TEXT_RE.test(String(option?.text||''));
+  }
+
+  return[...el.childNodes].some(node=>
+    node.nodeType===Node.TEXT_NODE &&
+    JAPANESE_TEXT_RE.test(String(node.nodeValue||''))
+  );
+}
+function applyJapaneseTypography(root=document.body){
+  if(!root)return;
+  const elements=root.matches?.('*')?[root,...root.querySelectorAll('*')]:[...root.querySelectorAll('*')];
+
+  for(const el of elements){
+    if(!(el instanceof HTMLElement))continue;
+
+    // Software/action buttons intentionally keep the existing compact size.
+    if(el.matches('button,.ghost,.tab-btn,.flat-action,.width-btn,.mt-primary'))continue;
+
+    const hasJapanese=elementHasJapaneseText(el);
+    if(!hasJapanese){
+      el.classList.remove('jp-min9');
+      continue;
+    }
+
+    const size=parseFloat(getComputedStyle(el).fontSize)||0;
+    if(size<9)el.classList.add('jp-min9');
+    else el.classList.remove('jp-min9');
+  }
+}
+
 function render(){
   renderMenuTabs();let html='';
   if(state.primary==='CURRENT')html=renderCurrent();
@@ -5669,7 +5893,10 @@ function render(){
   ws?.classList.toggle('files-mode',state.primary==='FILES');
   ws?.classList.toggle('news-mode',state.primary==='NEWS');
   ws?.classList.toggle('toolbox-mode',state.primary==='TOOLBOX');
-  bindDynamic();updateComposer();updateFooter()
+  bindDynamic();
+  updateComposer();
+  updateFooter();
+  applyJapaneseTypography(document.body);
 }
 function toggleSelection(key,on){if(on)state.selected.add(key);else state.selected.delete(key);render()}
 function bindDynamic(){
