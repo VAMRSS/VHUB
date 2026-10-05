@@ -3264,6 +3264,31 @@ body *{
 }
 
 
+/* v9.2 / LIBRARY browse selection is independent from ChatGPT context */
+.library-item-row.selected{
+  box-shadow:inset 3px 0 0 var(--signal);
+  background:var(--signal-soft);
+}
+.library-detail-actions{
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+
+/* v9.3 / LIBRARY view vs ChatGPT selection */
+.library-item-row.active:not(.selected){
+  background:#fafafa;
+  box-shadow:none;
+}
+.library-item-row.selected{
+  background:var(--signal-soft);
+  box-shadow:inset 3px 0 0 var(--signal);
+}
+.library-chatgpt-toggle.active{
+  color:var(--signal);
+}
+
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -3335,7 +3360,7 @@ body *{
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V9.1 · HIERARCHY</div>
+  <div class="footer-side">CONTEXT LENS / V9.4 · LIBRARY SELECT</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -3380,7 +3405,7 @@ const state={
   archiveSelected:'',archiveQuery:'',profileQuery:'',globalQuery:'',filesSelected:'',
   searchScope:'ALL',searchResultMap:new Map(),searchBrowseFile:'',searchNote:'',
   toolbox:[],toolboxSelected:'',
-  libraryItems:[],librarySelectedPath:'',libraryExpanded:new Set(['']),libraryDetailId:'',
+  libraryItems:[],librarySelected:new Set(),librarySelectedPath:'',libraryExpanded:new Set(['']),libraryDetailId:'',
   libraryQuery:'',libraryFilters:{category:'ALL',documentType:'ALL',source:'ALL',status:'ALL'},
   reviewItems:[],reviewIndex:0,reviewTimer:null
 };
@@ -3591,18 +3616,30 @@ function libraryItemKey(id){return`LIBRARY::${id}`}
 function libraryItemById(id){return state.libraryItems.find(x=>x.id===id)||null}
 function libraryContextText(item){
   if(!item)return'';
-  return`[LIBRARY ITEM]\nID: ${item.id}\nTITLE: ${item.title||'—'}\nSOURCE: ${item.source||'—'}\n---\n${item.body||''}`.trim();
+  const lines=[
+    '[LIBRARY ITEM]',
+    `ID: ${item.id}`,
+    `TITLE: ${item.title||'—'}`,
+    `CATEGORY: ${item.category||'—'}`,
+    `LIBRARY_PATH: ${item.libraryPath||'—'}`,
+    `DOCUMENT_TYPE: ${item.documentType||'—'}`,
+    `SOURCE: ${item.source||'—'}`,
+    `SOURCE_DATE: ${item.sourceDate||'—'}`,
+    `STATUS: ${item.status||'—'}`,
+    `TAGS: ${(item.tags||[]).join(' / ')||'—'}`,
+    `RELATED: ${(item.related||[]).join(' / ')||'—'}`,
+    `ORIGINAL_NAME: ${item.originalName||'—'}`,
+    `FILE: ${item.fileName||'—'}`
+  ];
+  if(item.secretRef)lines.push(`SECRET_REF: ${item.secretRef}`);
+  return lines.join('\n');
 }
 function selectedLibraryItems(){
   return[...state.selected]
     .filter(key=>key.startsWith('LIBRARY::'))
     .map(key=>libraryItemById(key.slice('LIBRARY::'.length)))
-    .filter(Boolean);
-}
-async function copySelectedLibraryItems(){
-  const items=selectedLibraryItems();
-  if(!items.length){toast('NO LIBRARY SELECTION');return}
-  await copyText(items.map(libraryContextText).join('\n\n--------------------\n\n'));
+    .filter(Boolean)
+    .sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
 }
 
 function libraryLocalDate(){
@@ -3691,6 +3728,112 @@ function downloadTextFile(name,content,mime='text/markdown;charset=utf-8'){
   a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+
+function libraryDownloadName(item){
+  let name=String(item?.fileName||`${item?.id||'library-item'}.md`).trim();
+  name=name.replace(/[\/\\:*?"<>|]/g,'_');
+  if(!/\.md$/i.test(name))name+='.md';
+  return name||`${item?.id||'library-item'}.md`;
+}
+function downloadLibraryItem(id){
+  const item=libraryItemById(id);
+  if(!item){toast('LIBRARY ITEM NOT FOUND');return}
+  downloadTextFile(libraryDownloadName(item),item.markdown||'');
+  toast('LIBRARY MD DOWNLOADED');
+}
+function zipCrc32(bytes){
+  if(!zipCrc32.table){
+    const table=new Uint32Array(256);
+    for(let n=0;n<256;n++){
+      let c=n;
+      for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);
+      table[n]=c>>>0;
+    }
+    zipCrc32.table=table;
+  }
+  let c=0xffffffff;
+  for(const b of bytes)c=zipCrc32.table[(c^b)&0xff]^(c>>>8);
+  return(c^0xffffffff)>>>0;
+}
+function zipDosStamp(date=new Date()){
+  const year=Math.max(1980,date.getFullYear());
+  return{
+    time:((date.getHours()&31)<<11)|((date.getMinutes()&63)<<5)|((Math.floor(date.getSeconds()/2))&31),
+    date:(((year-1980)&127)<<9)|(((date.getMonth()+1)&15)<<5)|(date.getDate()&31)
+  };
+}
+function zipLe16(value){
+  const a=new Uint8Array(2),v=new DataView(a.buffer);v.setUint16(0,value&0xffff,true);return a;
+}
+function zipLe32(value){
+  const a=new Uint8Array(4),v=new DataView(a.buffer);v.setUint32(0,value>>>0,true);return a;
+}
+function zipConcat(parts){
+  const size=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(size);
+  let offset=0;
+  for(const p of parts){out.set(p,offset);offset+=p.length}
+  return out;
+}
+function buildStoredZip(entries){
+  const enc=new TextEncoder(),locals=[],centrals=[];
+  let offset=0;
+  for(const entry of entries){
+    const nameBytes=enc.encode(entry.name);
+    const data=enc.encode(entry.text||'');
+    const crc=zipCrc32(data);
+    const stamp=zipDosStamp(entry.date||new Date());
+    const flags=0x0800;
+
+    const local=zipConcat([
+      zipLe32(0x04034b50),zipLe16(20),zipLe16(flags),zipLe16(0),
+      zipLe16(stamp.time),zipLe16(stamp.date),zipLe32(crc),
+      zipLe32(data.length),zipLe32(data.length),zipLe16(nameBytes.length),zipLe16(0),
+      nameBytes,data
+    ]);
+    locals.push(local);
+
+    const central=zipConcat([
+      zipLe32(0x02014b50),zipLe16(20),zipLe16(20),zipLe16(flags),zipLe16(0),
+      zipLe16(stamp.time),zipLe16(stamp.date),zipLe32(crc),
+      zipLe32(data.length),zipLe32(data.length),zipLe16(nameBytes.length),
+      zipLe16(0),zipLe16(0),zipLe16(0),zipLe16(0),zipLe32(0),zipLe32(offset),
+      nameBytes
+    ]);
+    centrals.push(central);
+    offset+=local.length;
+  }
+  const centralBlob=zipConcat(centrals);
+  const eocd=zipConcat([
+    zipLe32(0x06054b50),zipLe16(0),zipLe16(0),
+    zipLe16(entries.length),zipLe16(entries.length),
+    zipLe32(centralBlob.length),zipLe32(offset),zipLe16(0)
+  ]);
+  return zipConcat([...locals,centralBlob,eocd]);
+}
+function downloadAllLibraryZip(){
+  if(!state.libraryItems.length){toast('NO LIBRARY ITEMS');return}
+  const used=new Set();
+  const entries=[...state.libraryItems]
+    .sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}))
+    .map(item=>{
+      let name=libraryDownloadName(item);
+      if(used.has(name.toLowerCase()))name=`${item.id}_${name}`;
+      used.add(name.toLowerCase());
+      return{name,text:item.markdown||'',date:new Date(item.lastModified||Date.now())};
+    });
+  entries.push({name:'library-index.md',text:generateLibraryIndexMarkdown(),date:new Date()});
+  const bytes=buildStoredZip(entries);
+  const blob=new Blob([bytes],{type:'application/zip'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`library_${backupTimestamp()}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast(`${state.libraryItems.length} ITEMS ZIP DOWNLOADED`);
+}
 async function saveGeneratedLibraryIndex(){
   const md=generateLibraryIndexMarkdown();
   await ingest('library-index.md',md,Date.now(),'LIBRARY_INDEX');
@@ -3716,6 +3859,7 @@ async function deleteLibraryItem(id){
   try{
     await libraryDbDelete(id);
     state.libraryItems=state.libraryItems.filter(x=>x.id!==id);
+    state.librarySelected.delete(id);
     const key=libraryItemKey(id);
     state.selected.delete(key);
     state.notes.delete(key);
@@ -4967,7 +5111,8 @@ function renderLibraryDetail(item){
         <span class="library-detail-title">${esc(item.title||'UNTITLED')}</span>
       </div>
       <div class="library-detail-actions">
-        <span class="panel-meta">${state.selected.has(libraryItemKey(item.id))?'SELECTED':'CLICK ROW TO SELECT'}</span>
+        <button class="ghost library-chatgpt-toggle ${state.selected.has(libraryItemKey(item.id))?'active':''}" data-library-chatgpt-item="${esc(item.id)}">${state.selected.has(libraryItemKey(item.id))?'REMOVE FROM CHATGPT':'ADD TO CHATGPT'}</button>
+        <button class="ghost" data-library-download="${esc(item.id)}">DOWNLOAD MD</button>
         <button class="ghost danger" data-library-delete="${esc(item.id)}">DELETE</button>
       </div>
     </div>
@@ -5003,7 +5148,7 @@ function renderLibrary(){
       <label class="library-filter"><span>TYPE</span><select class="minimal" data-library-filter="documentType">${libraryFilterOptions('documentType')}</select></label>
       <label class="library-filter"><span>SOURCE</span><select class="minimal" data-library-filter="source">${libraryFilterOptions('source')}</select></label>
       <label class="library-filter"><span>STATUS</span><select class="minimal" data-library-filter="status">${libraryFilterOptions('status')}</select></label>
-      <button class="ghost" data-library-copy-selected>COPY SELECTED / ${selectedLibraryItems().length}</button>
+      <button class="ghost" data-library-download-all>DOWNLOAD ALL ZIP</button>
       <button class="ghost" data-library-copy-index>COPY INDEX</button>
       <button class="ghost" data-library-export-index>EXPORT INDEX</button>
     </div>
@@ -6040,7 +6185,7 @@ function buildPrompt(){
   if(hasReview)head+='AI REVIEWはその日の判断・優先順位・次の一手・注意点です。回答内容をAI REVIEWからOPEN QUESTIONへ自動変換したり、翌日へ自動持越ししたりせず、ユーザーの指示とLIVING CONTEXT側の記録ルールに従って必要なCURRENT項目・予定・日別ログ等へ反映してください。\n\n';
   if(hasOpenQuestion)head+='OPEN QUESTIONは翌日以降も追跡可能な未解決事項です。回答・判断・確認結果が得られた場合は、ユーザーの指示に従ってT04の現在状態等を更新してください。LCAPP側の都合でAI REVIEWへコピーしたり、解決・持越しを独自判定したりしないでください。\n\n';
   if(hasProfile)head+='PROFILE対象は長期的に安定して参照する人物・家族・仕事関係・所属・活動背景等の情報です。追記・修正指示のうち、長期的に保持すべき背景情報だけをPROFILEへ反映してください。一時的な進捗、今日だけの出来事、期限、未解決確認はPROFILEへ混在させず、必要に応じてCURRENTのT02・T04（OPEN QUESTION）・T10や日別ログへ反映してください。既存情報の訂正では重複を作らず、より新しい明示的情報を優先してください。\n\n';
-  if(hasToolbox)head+='TOOLBOX対象は、再利用するために保存された定型文・指示文です。TOOLBOXのCOPY本文を今回の作業指示として使用し、「この項目への追記・指示」がある場合はその内容も加味してください。ユーザーがTOOL自体の改訂を明示的に依頼していない限り、TOOLBOX正本を書き換える前提では扱わないでください。\n\n';  if(hasNews)head+='以下はNEWS画面で選択した外部ニュース項目です。NEWSはLIVING CONTEXTのCURRENT・Memory・PROFILE等とは独立した参照情報です。「この項目への追記・指示」に書かれた質問や相談へ回答してください。必要に応じてURL先の内容を確認・調査して構いませんが、ユーザーが明示的に依頼しない限り、NEWS内容をLIVING CONTEXTへ自動保存・反映する前提では扱わないでください。\n\n';  if(hasLibrary)head+='以下はLIBRARYで選択した参照資料です。各LIBRARY ITEM Markdownを資料内容の正本として扱い、資料に書かれていない事実を補完せず、「この項目への追記・指示」にある質問・比較・整理へ回答してください。LIBRARYはLIVING CONTEXT本体とは別系統の参照情報であり、ユーザーが明示的に依頼しない限りCURRENT・Memory・PROFILE等へ自動反映しないでください。\n\n';
+  if(hasToolbox)head+='TOOLBOX対象は、再利用するために保存された定型文・指示文です。TOOLBOXのCOPY本文を今回の作業指示として使用し、「この項目への追記・指示」がある場合はその内容も加味してください。ユーザーがTOOL自体の改訂を明示的に依頼していない限り、TOOLBOX正本を書き換える前提では扱わないでください。\n\n';  if(hasNews)head+='以下はNEWS画面で選択した外部ニュース項目です。NEWSはLIVING CONTEXTのCURRENT・Memory・PROFILE等とは独立した参照情報です。「この項目への追記・指示」に書かれた質問や相談へ回答してください。必要に応じてURL先の内容を確認・調査して構いませんが、ユーザーが明示的に依頼しない限り、NEWS内容をLIVING CONTEXTへ自動保存・反映する前提では扱わないでください。\n\n';  if(hasLibrary)head+='以下はLIBRARYで明示的にChatGPT対象へ追加された資料の参照情報です。本文全文はこのプロンプトには含まれていません。ID・FILE・TITLE等を手掛かりに、会話内・Project・添付等から該当LIBRARY ITEM Markdownへアクセスできる場合はその本文を確認して回答してください。本文へアクセスできない場合は、参照情報だけから資料内容を推測せず、必要な資料本文の提示を求めてください。LIBRARYはLIVING CONTEXT本体とは別系統であり、ユーザーが明示的に依頼しない限りCURRENT・Memory・PROFILE等へ自動反映しないでください。\n\n';
   if(hasSearch)head+='以下はSEARCHから個別に選択されたLIVING CONTEXTの記録です。「この項目への追記・指示」を、対象記録の修正・訂正・確認依頼として扱ってください。LCAPP表示だけで機械的に正本を書き換えず、このチャットからアクセスできる保存済みLIVING CONTEXTファイルを必要な範囲で確認し、根拠が取れた内容に基づいて反映してください。P番号は永久IDとして維持し、再採番・別Pとの推測統合はしないでください。\n\n';
   if(hasSearchMemory)head+='MEMORY INDEXは過去情報への索引であり、詳細事実の原本ではありません。MEMORYの訂正では、原本参照先のWEEKLY等を可能な限り確認し、記憶の要約・状態・基準日・再開条件・キーワード・原本参照のうち必要な箇所だけを修正してください。原本自体の事実も誤っているとユーザーが明示した場合は、その指示を尊重しつつ、どのファイルを訂正すべきか区別してください。\n\n';
   if(hasSearchCompleted)head+='COMPLETEDは完了・節目の正式記録です。訂正では該当P IDを維持し、完了・節目日、分野、概要、詳細記録の整合を確認してください。必要に応じて当時の日別ログ・WEEKLY・ORIGINAL等を確認し、完了記録だけを推測で変更しないでください。\n\n';
@@ -6142,8 +6287,12 @@ function bindDynamic(){
   const activateSelectableCard=(card)=>{
     const key=card?.dataset?.key;
     if(!key)return;
+    if(card.dataset.libraryId){
+      state.libraryDetailId=card.dataset.libraryId;
+      render();
+      return;
+    }
     if(card.dataset.memoryId)state.memorySelected=card.dataset.memoryId;
-    if(card.dataset.libraryId)state.libraryDetailId=card.dataset.libraryId;
     const next=!state.selected.has(key);
     toggleSelection(key,next);
     if(next){
@@ -6312,9 +6461,26 @@ function bindDynamic(){
     if(path)state.libraryExpanded.add(path);
     render();
   }));
-  document.querySelector('[data-library-copy-selected]')?.addEventListener('click',copySelectedLibraryItems);
+  document.querySelector('[data-library-chatgpt-item]')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    const id=e.currentTarget.dataset.libraryChatgptItem;
+    const key=libraryItemKey(id);
+    if(state.selected.has(key)){
+      state.selected.delete(key);
+      state.notes.delete(key);
+      saveNotes();
+    }else{
+      state.selected.add(key);
+    }
+    render();
+  });
+  document.querySelector('[data-library-download-all]')?.addEventListener('click',downloadAllLibraryZip);
   document.querySelector('[data-library-copy-index]')?.addEventListener('click',copyLibraryIndex);
   document.querySelector('[data-library-export-index]')?.addEventListener('click',exportLibraryIndex);
+  document.querySelector('[data-library-download]')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    downloadLibraryItem(e.currentTarget.dataset.libraryDownload);
+  });
   document.querySelector('[data-library-delete]')?.addEventListener('click',e=>{
     e.stopPropagation();
     deleteLibraryItem(e.currentTarget.dataset.libraryDelete);
@@ -6446,6 +6612,7 @@ $('clearBtn').addEventListener('click',async()=>{
     await libraryDbClear();
     state.files=[];
     state.libraryItems=[];
+    state.librarySelected.clear();
     state.libraryDetailId='';
     state.librarySelectedPath='';
     state.libraryExpanded=new Set(['']);
