@@ -3289,6 +3289,111 @@ body *{
 }
 
 
+/* v9.6 / Context Compiler MVP */
+.workspace.compiler-mode{
+  grid-template-columns:1fr;
+}
+.workspace.compiler-mode .browser{
+  border-right:0;
+}
+.workspace.compiler-mode .composer{
+  display:none;
+}
+.compiler-page{
+  min-height:560px;
+  background:var(--white);
+}
+.compiler-toolbar{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:6px 10px;
+  background:var(--bone);
+  border-bottom:.5px solid var(--divider);
+}
+.compiler-target-field{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.compiler-target-select{
+  width:min(520px,55vw);
+  min-width:240px;
+  font-size:9px;
+  text-transform:none;
+}
+.compiler-toolbar .panel-meta{
+  margin-left:auto;
+}
+.compiler-copy{
+  flex:0 0 auto;
+}
+.compiler-copy:disabled{
+  color:var(--muted);
+  cursor:default;
+}
+.compiler-principles{
+  min-height:28px;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:7px 16px;
+  padding:0 10px;
+  border-bottom:.5px solid var(--divider);
+  background:var(--white);
+  color:var(--muted);
+  font-family:var(--font-euro);
+  font-size:8px;
+  letter-spacing:.04em;
+}
+.compiler-preview-head{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:0 10px;
+  background:var(--bone);
+  border-bottom:.5px solid var(--divider);
+}
+.compiler-preview{
+  margin:0;
+  min-height:500px;
+  padding:15px 16px 30px;
+  background:var(--white);
+  font-family:var(--font-mono);
+  font-size:11px;
+  line-height:1.75;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+@media(min-width:901px){
+  .workspace.compiler-mode{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:700px){
+  .compiler-toolbar{
+    align-items:stretch;
+    flex-direction:column;
+    gap:7px;
+  }
+  .compiler-target-field{
+    width:100%;
+  }
+  .compiler-target-select{
+    flex:1 1 auto;
+    width:auto;
+    min-width:0;
+  }
+  .compiler-toolbar .panel-meta{
+    margin-left:0;
+  }
+}
+
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -3360,7 +3465,7 @@ body *{
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V9.5 · FILE TYPES</div>
+  <div class="footer-side">CONTEXT LENS / V9.6 · CONTEXT COMPILER</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -3388,6 +3493,7 @@ const MENU_TABS=[
   ['REVIEW','AI'],
   ['T10','SCHEDULE'],
   ['T02','ACTIVE'],
+  ['COMPILER','CONTEXT'],
   ['LOG','DAILY LOG'],
   ['NEWS','NEWS'],
   ['SEARCH','SEARCH'],
@@ -3407,6 +3513,7 @@ const state={
   toolbox:[],toolboxSelected:'',
   libraryItems:[],librarySelected:new Set(),librarySelectedPath:'',libraryExpanded:new Set(['']),libraryDetailId:'',
   libraryQuery:'',libraryFilters:{category:'ALL',documentType:'ALL',source:'ALL',status:'ALL'},
+  compilerTarget:'',
   reviewItems:[],reviewIndex:0,reviewTimer:null
 };
 
@@ -5173,6 +5280,350 @@ function renderLibrary(){
   </div>`;
 }
 
+
+function compilerExtractPids(value){
+  return uniq((String(value||'').match(/\bP\d{3,}\b/gi)||[]).map(x=>x.toUpperCase()));
+}
+function compilerHasPid(value,pid){
+  const target=String(pid||'').toUpperCase();
+  if(!/^P\d{3,}$/.test(target))return false;
+  const re=new RegExp(`(^|[^A-Z0-9])${libraryEscapeRegex(target)}(?!\\d)`,'i');
+  return re.test(String(value||''));
+}
+function compilerScheduleRelationEntries(item){
+  return Object.entries(item?.obj||{})
+    .filter(([key,value])=>/関連|related|relation/i.test(String(key))&&String(value||'').trim())
+    .map(([key,value])=>({key:String(key),value:String(value)}));
+}
+function compilerLibraryRelationInfo(item,pid){
+  const hits=[];
+  const add=(field,value)=>{
+    const values=Array.isArray(value)?value:[value];
+    if(values.some(v=>compilerHasPid(v,pid)))hits.push(field);
+  };
+  add('related',item.related||[]);
+  add('tags',item.tags||[]);
+  for(const [key,value] of Object.entries(item.metadata||{})){
+    if(['related','tags'].includes(String(key).toLowerCase()))continue;
+    if(/related|relation|p_?ids?|links?/i.test(String(key)))add(key,value);
+  }
+  return uniq(hits);
+}
+function compilerTargetIndex(){
+  const map=new Map();
+  const add=(pid,title='',source='')=>{
+    const id=String(pid||'').toUpperCase();
+    if(!/^P\d{3,}$/.test(id))return;
+    const cur=map.get(id)||{id,title:'',sources:new Set()};
+    if(title&&!cur.title)cur.title=String(title).trim();
+    if(source)cur.sources.add(source);
+    map.set(id,cur);
+  };
+
+  const t02=activeSummarySection('T02');
+  for(const item of t02?.items||[])add(item.id,item.title,'T02');
+
+  const t04=activeSummarySection('T04');
+  for(const item of t04?.items||[])add(item.id,item.title,'T04');
+
+  for(const m of state.memory||[])add(m.id,m.title,'MEMORY');
+
+  const t10=activeSummarySection('T10');
+  for(const item of t10?.items||[]){
+    for(const rel of compilerScheduleRelationEntries(item)){
+      for(const pid of compilerExtractPids(rel.value))add(pid,'','T10');
+    }
+  }
+
+  for(const item of state.libraryItems||[]){
+    const relationValues=[
+      ...(item.related||[]),
+      ...(item.tags||[]),
+      ...Object.entries(item.metadata||{})
+        .filter(([key])=>/related|relation|p_?ids?|links?/i.test(String(key)))
+        .flatMap(([,value])=>Array.isArray(value)?value:[value])
+    ];
+    for(const value of relationValues){
+      for(const pid of compilerExtractPids(value))add(pid,'','LIBRARY');
+    }
+  }
+
+  for(const log of state.summary.logs||[]){
+    for(const pid of compilerExtractPids(`${log.title}\n${log.text}`))add(pid,'','LOG');
+  }
+
+  return[...map.values()]
+    .map(x=>({...x,sources:[...x.sources]}))
+    .sort((a,b)=>{
+      const an=Number(a.id.replace(/\D/g,'')),bn=Number(b.id.replace(/\D/g,''));
+      return an-bn||a.id.localeCompare(b.id);
+    });
+}
+function compilerItemFields(item){
+  const out=[];
+  const seen=new Set();
+  for(const h of item?.headers||[]){
+    const key=String(h||'').trim();
+    const value=String(item?.obj?.[key]??'').trim();
+    if(!key||!value||seen.has(key))continue;
+    seen.add(key);out.push([key,value]);
+  }
+  for(const [key,value] of Object.entries(item?.obj||{})){
+    const k=String(key||'').trim(),v=String(value??'').trim();
+    if(!k||!v||seen.has(k))continue;
+    seen.add(k);out.push([k,v]);
+  }
+  if(!out.length){
+    if(item?.title)out.push(['タイトル',item.title]);
+    if(item?.category)out.push(['分類',item.category]);
+    if(item?.status)out.push(['状態',item.status]);
+    if(item?.next)out.push(['次の一歩',item.next]);
+    if(item?.updated)out.push(['最終更新',item.updated]);
+  }
+  return out;
+}
+function compilerBulletValue(value){
+  return String(value??'').replace(/\r?\n/g,'\n  ').trim();
+}
+function compilerFormatCurrentItem(item,sourceFile,sectionCode,sectionTitle){
+  const lines=[
+    `### ${item.id||sectionCode}${item.title?` | ${item.title}`:''}`,
+    `source: ${sourceFile||'NOT LOADED'}`,
+    `section: ${sectionCode}｜${sectionTitle||''}`.trim()
+  ];
+  for(const [key,value] of compilerItemFields(item))lines.push(`- ${key}: ${compilerBulletValue(value)}`);
+  return lines.join('\n');
+}
+function compilerFormatMemory(m,sourceFile){
+  const fields=Object.entries(m.obj||{}).filter(([,value])=>String(value||'').trim());
+  const lines=[
+    `### ${m.id}${m.title?` | ${m.title}`:''}`,
+    `source: ${sourceFile||'NOT LOADED'}`,
+    'section: MEMORY INDEX'
+  ];
+  if(fields.length){
+    for(const [key,value] of fields)lines.push(`- ${key}: ${compilerBulletValue(value)}`);
+  }else{
+    for(const [key,value] of [
+      ['種別',m.kind],['分野',m.field],['タイトル',m.title],['記憶の要約',m.summary],
+      ['状態',m.status],['基準日',m.date],['再開・見直し条件',m.reopen],
+      ['キーワード',m.keywords],['原本参照',m.source]
+    ])if(String(value||'').trim())lines.push(`- ${key}: ${compilerBulletValue(value)}`);
+  }
+  return lines.join('\n');
+}
+function compilerFence(value,language='text'){
+  const text=String(value||'');
+  const runs=text.match(/`+/g)||[];
+  const max=Math.max(3,...runs.map(x=>x.length));
+  const fence='`'.repeat(max+1);
+  return`${fence}${language}\n${text}\n${fence}`;
+}
+function compilerDailyLogExcerpts(pid){
+  const results=[];
+  const logs=[...(state.summary.logs||[])].sort((a,b)=>dailyLogDate(b).localeCompare(dailyLogDate(a)));
+
+  for(const log of logs){
+    const excerpts=[];
+    for(const block of parseDailyLogBlocks(log.text)){
+      const title=String(block.title||'').trim();
+      const lines=block.lines||[];
+      const blockText=[title,...lines].join('\n');
+      if(!compilerHasPid(blockText,pid))continue;
+
+      if(block.level===4){
+        excerpts.push({
+          title:title||'UPDATE',
+          text:[title?`#### ${title}`:'',...lines].filter(Boolean).join('\n').trim()
+        });
+        continue;
+      }
+
+      const bullets=dailyLogBulletItems(lines);
+      if(bullets.length){
+        const matched=compilerHasPid(title,pid)
+          ? bullets
+          : bullets.filter(x=>compilerHasPid(x,pid));
+        if(matched.length){
+          excerpts.push({
+            title:title||'LOG',
+            text:[title?`### ${title}`:'',...matched.map(x=>`- ${x}`)].filter(Boolean).join('\n')
+          });
+        }
+        continue;
+      }
+
+      const matchedLines=compilerHasPid(title,pid)
+        ? lines.filter(x=>String(x||'').trim())
+        : lines.filter(x=>compilerHasPid(x,pid));
+      if(matchedLines.length||compilerHasPid(title,pid)){
+        excerpts.push({
+          title:title||'LOG',
+          text:[title?`${'#'.repeat(Math.max(3,block.level||3))} ${title}`:'',...matchedLines].filter(Boolean).join('\n')
+        });
+      }
+    }
+    if(excerpts.length)results.push({log,excerpts});
+  }
+  return results;
+}
+function compilerCollect(pid){
+  const target=String(pid||'').toUpperCase();
+  const t02=activeSummarySection('T02');
+  const t04=activeSummarySection('T04');
+  const t10=activeSummarySection('T10');
+
+  const current=(t02?.items||[]).filter(it=>String(it.id||'').toUpperCase()===target);
+  const openQuestions=(t04?.items||[]).filter(it=>String(it.id||'').toUpperCase()===target);
+
+  const schedule=(t10?.items||[]).filter(item=>
+    compilerScheduleRelationEntries(item).some(rel=>compilerHasPid(rel.value,target))
+  );
+
+  const memory=(state.memory||[]).filter(m=>String(m.id||'').toUpperCase()===target);
+
+  const library=(state.libraryItems||[])
+    .map(item=>({item,matchedBy:compilerLibraryRelationInfo(item,target)}))
+    .filter(x=>x.matchedBy.length);
+
+  const history=compilerDailyLogExcerpts(target);
+
+  return{
+    target,current,openQuestions,schedule,memory,library,history,
+    summaryFile:state.active.SUMMARY?.name||'',
+    memoryFile:state.active.MEMORY?.name||''
+  };
+}
+function compilerSectionOrEmpty(parts){
+  return parts.length?parts.join('\n\n'):'（該当なし）';
+}
+function buildContextPackage(pid){
+  const data=compilerCollect(pid);
+  const generated=new Date().toISOString();
+  const t02=activeSummarySection('T02');
+  const t04=activeSummarySection('T04');
+  const t10=activeSummarySection('T10');
+
+  const current=data.current.map(item=>
+    compilerFormatCurrentItem(item,data.summaryFile,'T02',t02?.title||'')
+  );
+
+  const openQuestions=data.openQuestions.map(item=>
+    compilerFormatCurrentItem(item,data.summaryFile,'T04',t04?.title||'OPEN QUESTION')
+  );
+
+  const schedule=data.schedule.map(item=>{
+    const base=compilerFormatCurrentItem(item,data.summaryFile,'T10',t10?.title||'');
+    const matched=compilerScheduleRelationEntries(item)
+      .filter(rel=>compilerHasPid(rel.value,data.target))
+      .map(rel=>rel.key);
+    return`${base}\n- compiler_match: ${matched.join(' / ')||'関連項目'}`;
+  });
+
+  const memory=data.memory.map(m=>compilerFormatMemory(m,data.memoryFile));
+
+  const library=data.library.map(({item,matchedBy})=>{
+    const head=[
+      `### ${item.id}${item.title?` | ${item.title}`:''}`,
+      `source: ${item.fileName||'—'}`,
+      `matched_by: ${matchedBy.join(' / ')}`
+    ].join('\n');
+    return`${head}\n\n${compilerFence(item.markdown||'', 'markdown')}`;
+  });
+
+  const history=data.history.map(({log,excerpts})=>{
+    const body=excerpts.map(x=>compilerFence(x.text,'markdown')).join('\n\n');
+    return`### ${log.title}\nsource: ${data.summaryFile||'—'} / 直近日別ログ\n\n${body}`;
+  });
+
+  const libraryFiles=data.library.map(x=>x.item.fileName).filter(Boolean);
+
+  return`# LIVING CONTEXT PACKAGE
+
+generated: ${generated}
+target: ${data.target}
+
+## CURRENT
+
+${compilerSectionOrEmpty(current)}
+
+## OPEN QUESTIONS
+
+${compilerSectionOrEmpty(openQuestions)}
+
+## SCHEDULE
+
+${compilerSectionOrEmpty(schedule)}
+
+## MEMORY
+
+${compilerSectionOrEmpty(memory)}
+
+## RELATED LIBRARY
+
+${compilerSectionOrEmpty(library)}
+
+## RECENT HISTORY
+
+${compilerSectionOrEmpty(history)}
+
+## SOURCE INFO
+
+- SUMMARY: ${data.summaryFile||'NOT LOADED'}
+- CURRENT source priority: latest active SUMMARY
+- MEMORY INDEX: ${data.memoryFile||'NOT LOADED'}
+- LIBRARY matched items: ${data.library.length}${libraryFiles.length?` (${libraryFiles.join(', ')})`:''}
+- DAILY LOG source: ${data.summaryFile||'NOT LOADED'} / 直近日別ログ
+- WEEKLY: excluded in MVP
+- matching rule: exact P ID match in T02/T04, explicit relation fields in T10, same P ID in Memory Index, explicit LIBRARY relation metadata, and direct P ID mentions in recent daily logs
+- compiler behavior: extraction only; no summarization, no inference, no LC state mutation
+`;
+}
+function compilerCounts(data){
+  return[
+    `CURRENT ${data.current.length}`,
+    `OPEN ${data.openQuestions.length}`,
+    `SCHEDULE ${data.schedule.length}`,
+    `MEMORY ${data.memory.length}`,
+    `LIBRARY ${data.library.length}`,
+    `HISTORY ${data.history.length}`
+  ].join(' / ');
+}
+function renderCompiler(){
+  const targets=compilerTargetIndex();
+  const valid=new Set(targets.map(x=>x.id));
+  if(state.compilerTarget&&!valid.has(state.compilerTarget))state.compilerTarget='';
+
+  const target=state.compilerTarget;
+  const data=target?compilerCollect(target):null;
+  const preview=target?buildContextPackage(target):'P項目を選択すると、ここにCONTEXT PACKAGEのPreviewを表示します。';
+
+  return`<div class="compiler-page">
+    <div class="compiler-toolbar">
+      <label class="compiler-target-field">
+        <span class="control-label">TARGET</span>
+        <select class="minimal compiler-target-select">
+          <option value="">SELECT P ITEM</option>
+          ${targets.map(x=>`<option value="${esc(x.id)}" ${x.id===target?'selected':''}>${esc(`${x.id}${x.title?` | ${x.title}`:''}`)}</option>`).join('')}
+        </select>
+      </label>
+      <span class="panel-meta">${data?esc(compilerCounts(data)):`${targets.length} P ITEMS`}</span>
+      <button class="ghost compiler-copy" data-compiler-copy ${target?'':'disabled'}>COPY CONTEXT</button>
+    </div>
+    <div class="compiler-principles">
+      <span>EXTRACTION ONLY</span>
+      <span>SUMMARY PRIORITY</span>
+      <span>WEEKLY EXCLUDED</span>
+      <span>NO LC MUTATION</span>
+    </div>
+    <div class="compiler-preview-head">
+      <span class="ui-label">CONTEXT PREVIEW</span>
+      <span class="panel-meta">${target?esc(target):'NO TARGET'}</span>
+    </div>
+    <pre class="compiler-preview">${esc(preview)}</pre>
+  </div>`;
+}
+
 function activeMenuId(){
   if(state.primary==='CURRENT')return state.currentSection;
   return state.primary;
@@ -6268,6 +6719,7 @@ function render(){
   if(state.primary==='SEARCH')html=renderSearch();
   if(state.primary==='TOOLBOX')html=renderToolbox();
   if(state.primary==='LIBRARY')html=renderLibrary();
+  if(state.primary==='COMPILER')html=renderCompiler();
   if(state.primary==='FILES')html=renderFiles();
   $('mainView').innerHTML=html;
   enhanceIdReferences($('mainView'));
@@ -6275,6 +6727,7 @@ function render(){
   ws?.classList.toggle('files-mode',state.primary==='FILES');
   ws?.classList.toggle('news-mode',state.primary==='NEWS');
   ws?.classList.toggle('toolbox-mode',state.primary==='TOOLBOX');
+  ws?.classList.toggle('compiler-mode',state.primary==='COMPILER');
   bindDynamic();
   updateComposer();
   updateFooter();
@@ -6424,6 +6877,19 @@ function bindDynamic(){
     state.searchBrowseFile=b.dataset.searchBrowseFile;
     render();
   }));
+  const compilerTarget=document.querySelector('.compiler-target-select');
+  if(compilerTarget){
+    compilerTarget.addEventListener('change',()=>{
+      state.compilerTarget=compilerTarget.value;
+      render();
+    });
+  }
+  document.querySelector('[data-compiler-copy]')?.addEventListener('click',async()=>{
+    if(!state.compilerTarget){toast('SELECT P ITEM');return}
+    await copyText(buildContextPackage(state.compilerTarget));
+    toast('CONTEXT COPIED');
+  });
+
   const librarySearch=document.querySelector('.library-search');
   if(librarySearch){
     const commit=()=>{
