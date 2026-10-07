@@ -3394,6 +3394,20 @@ body *{
 }
 
 
+/* v9.7 / SCHEDULE unlimited same-day event display */
+.calendar-days{
+  grid-auto-rows:auto;
+  flex:0 0 auto;
+  align-items:stretch;
+}
+.calendar-day{
+  height:auto;
+}
+.week-calendar-days{
+  grid-auto-rows:auto;
+}
+
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -3465,7 +3479,7 @@ body *{
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V9.6 · CONTEXT COMPILER</div>
+  <div class="footer-side">CONTEXT LENS / V9.7 · SCHEDULE DISPLAY</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -4611,14 +4625,16 @@ function renderSixWeekCalendar(items,holidays=[]){
     const monthStart=d.getDate()===1;
     const headDate=i===0;
     const dateLabel=(headDate||monthStart)?`${d.getMonth()+1}/${d.getDate()}`:`${d.getDate()}`;
-    const holidayHtml=hol.length
-      ? `<span class="calendar-holiday-labels">${hol.slice(0,2).map(h=>`<span class="calendar-holiday-label ${holidayKindClass(holidayType(h))}">${esc(holidayName(h))}</span>`).join('')}</span>`
+    const visibleHolidays=calendarVisibleHolidays(hol);
+    const layout=calendarCellLayout(ev.length,visibleHolidays.length);
+    const holidayHtml=visibleHolidays.length
+      ? `<span class="calendar-holiday-labels">${visibleHolidays.map(h=>`<span class="calendar-holiday-label ${holidayKindClass(holidayType(h))}">${esc(holidayName(h))}</span>`).join('')}</span>`
       : '';
     const holidayTitle=hol.length?` title="${esc(holidayTitleText(hol))}"`:'';
     const eventHtml=ev.length
-      ? `<span class="calendar-event-labels ${hol.length?'with-holiday':''}">${ev.slice(0,hol.length?1:2).map(e=>`<span class="calendar-event-label ${state.selected.has(`CUR::T10::${e.id||String(e.index)}`)?'selected':''}" data-schedule-key="${esc(`CUR::T10::${e.id||String(e.index)}`)}" title="${esc(scheduleHoverText(e))}">${esc(scheduleCalendarLabel(e))}</span>`).join('')}</span>`
+      ? `<span class="calendar-event-labels ${visibleHolidays.length?'with-holiday':''}" style="top:${layout.eventTop}px">${ev.map(e=>`<span class="calendar-event-label ${state.selected.has(`CUR::T10::${e.id||String(e.index)}`)?'selected':''}" data-schedule-key="${esc(`CUR::T10::${e.id||String(e.index)}`)}" title="${esc(scheduleHoverText(e))}">${esc(scheduleCalendarLabel(e))}</span>`).join('')}</span>`
       : '';
-    cells+=`<button class="calendar-day week-calendar-day ${weekendClass} ${holidayClass} ${kindClasses} ${monthClass} ${ev.length?'has-events':''} ${isPast?'is-past':''} ${isToday?'today':''} ${state.selected.has(`DATE::${iso}`)?'add-target':''}" data-cal-date="${iso}"${holidayTitle}>
+    cells+=`<button class="calendar-day week-calendar-day ${weekendClass} ${holidayClass} ${kindClasses} ${monthClass} ${ev.length?'has-events':''} ${isPast?'is-past':''} ${isToday?'today':''} ${state.selected.has(`DATE::${iso}`)?'add-target':''}" data-cal-date="${iso}" style="min-height:${layout.minHeight}px"${holidayTitle}>
       <span class="calendar-day-num">${dateLabel}${isToday?'<span class="calendar-today-tag">[TODAY]</span>':''}</span>
       ${holidayHtml}
       ${eventHtml}
@@ -4652,6 +4668,16 @@ function scheduleTitle(it){return(it.obj?.['予定・期限']||it.title||'').tri
 function scheduleNote(it){return(it.obj?.['現在の確認事項']||'').trim()}
 function scheduleCalendarLabel(it){
   return[scheduleTime(it),scheduleTitle(it)].filter(Boolean).join(' ');
+}
+function calendarVisibleHolidays(items){
+  return(items||[]).slice(0,2);
+}
+function calendarCellLayout(eventCount,holidayCount){
+  const h=Math.min(Math.max(Number(holidayCount)||0,0),2);
+  const e=Math.max(Number(eventCount)||0,0);
+  const eventTop=h?22+h*14+2:20;
+  const minHeight=Math.max(54,eventTop+e*14+6);
+  return{eventTop,minHeight};
 }
 function scheduleHoverText(it){
   const fields=nonEmptyFields(it);
@@ -4710,14 +4736,16 @@ function renderMonth(date,items,holidays=[]){
     const weekendClass=weekday===0?'weekend-sun':weekday===6?'weekend-sat':'';
     const holidayClass=hol.length?'is-holiday':'';
     const kindClasses=uniq(hol.map(h=>holidayKindClass(holidayType(h)))).map(x=>`holiday-${x}`).join(' ');
-    const holidayHtml=hol.length
-      ? `<span class="calendar-holiday-labels">${hol.slice(0,2).map(h=>`<span class="calendar-holiday-label ${holidayKindClass(holidayType(h))}">${esc(holidayName(h))}</span>`).join('')}</span>`
+    const visibleHolidays=calendarVisibleHolidays(hol);
+    const layout=calendarCellLayout(ev.length,visibleHolidays.length);
+    const holidayHtml=visibleHolidays.length
+      ? `<span class="calendar-holiday-labels">${visibleHolidays.map(h=>`<span class="calendar-holiday-label ${holidayKindClass(holidayType(h))}">${esc(holidayName(h))}</span>`).join('')}</span>`
       : '';
     const title=hol.length?` title="${esc(holidayTitle(hol))}"`:'';
-    cells+=`<button class="calendar-day ${weekendClass} ${holidayClass} ${kindClasses} ${ev.length?'has-events':''} ${isPast?'is-past':''} ${isToday?'today':''} ${state.selected.has(`DATE::${iso}`)?'add-target':''}" data-cal-date="${iso}"${title}>
+    cells+=`<button class="calendar-day ${weekendClass} ${holidayClass} ${kindClasses} ${ev.length?'has-events':''} ${isPast?'is-past':''} ${isToday?'today':''} ${state.selected.has(`DATE::${iso}`)?'add-target':''}" data-cal-date="${iso}" style="min-height:${layout.minHeight}px"${title}>
       <span class="calendar-day-num">${day}${isToday?'<span class="calendar-today-tag">[TODAY]</span>':''}</span>
       ${holidayHtml}
-      ${ev.length?`<span class="calendar-event-labels ${hol.length?'with-holiday':''}">${ev.slice(0,hol.length?1:2).map(e=>`<span class="calendar-event-label ${state.selected.has(`CUR::T10::${e.id||String(e.index)}`)?'selected':''}" data-schedule-key="${esc(`CUR::T10::${e.id||String(e.index)}`)}" title="${esc(scheduleHoverText(e))}">${esc(scheduleCalendarLabel(e))}</span>`).join('')}</span>`:''}
+      ${ev.length?`<span class="calendar-event-labels ${visibleHolidays.length?'with-holiday':''}" style="top:${layout.eventTop}px">${ev.map(e=>`<span class="calendar-event-label ${state.selected.has(`CUR::T10::${e.id||String(e.index)}`)?'selected':''}" data-schedule-key="${esc(`CUR::T10::${e.id||String(e.index)}`)}" title="${esc(scheduleHoverText(e))}">${esc(scheduleCalendarLabel(e))}</span>`).join('')}</span>`:''}
     </button>`
   }
 
