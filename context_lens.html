@@ -3408,6 +3408,163 @@ body *{
 }
 
 
+/* v9.8 / simplified Markdown presentation for LIBRARY + FILES */
+.library-markdown.md-view,
+.file-preview-source.md-view{
+  white-space:normal;
+  font-family:inherit;
+}
+.md-view{
+  color:var(--black);
+}
+.md-view>*:first-child{margin-top:0}
+.md-view>*:last-child{margin-bottom:0}
+.md-view h1,
+.md-view h2,
+.md-view h3,
+.md-view h4,
+.md-view h5,
+.md-view h6{
+  margin:18px 0 8px;
+  padding:0 0 5px;
+  border-bottom:.5px solid var(--divider);
+  font-family:var(--font-euro);
+  line-height:1.45;
+  font-weight:600!important;
+}
+.md-view h1{font-size:15px}
+.md-view h2{font-size:13px}
+.md-view h3{font-size:12px}
+.md-view h4{font-size:11px}
+.md-view h5,
+.md-view h6{font-size:10px}
+.md-view p{
+  margin:7px 0 10px;
+  line-height:1.75;
+}
+.md-view ul,
+.md-view ol{
+  margin:7px 0 11px;
+  padding-left:22px;
+}
+.md-view li{
+  margin:2px 0;
+  line-height:1.7;
+}
+.md-view blockquote{
+  margin:9px 0 11px;
+  padding:7px 10px;
+  border-left:3px solid var(--divider);
+  background:#fafafa;
+  color:var(--mid);
+  line-height:1.7;
+}
+.md-view hr{
+  border:0;
+  border-top:.5px solid var(--divider);
+  margin:14px 0;
+}
+.md-view code{
+  font-family:var(--font-mono);
+  font-size:.95em;
+  background:#f4f4f4;
+  padding:1px 3px;
+}
+.md-view .md-code-block{
+  margin:9px 0 12px;
+  padding:9px 10px;
+  overflow:auto;
+  background:#f7f7f7;
+  border:.5px solid var(--divider);
+  white-space:pre;
+  line-height:1.6;
+}
+.md-view .md-code-block code{
+  padding:0;
+  background:transparent;
+}
+.md-table-wrap{
+  width:100%;
+  margin:9px 0 13px;
+  overflow:auto;
+  border-top:.5px solid var(--divider);
+  border-left:.5px solid var(--divider);
+}
+.md-table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:auto;
+}
+.md-table th,
+.md-table td{
+  min-width:90px;
+  padding:6px 8px;
+  vertical-align:top;
+  text-align:left;
+  border-right:.5px solid var(--divider);
+  border-bottom:.5px solid var(--divider);
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.md-table th{
+  background:var(--bone);
+  font-family:var(--font-euro);
+  font-size:8px;
+  font-weight:400!important;
+}
+.md-table td{
+  background:var(--white);
+}
+.md-frontmatter{
+  margin:0 0 12px;
+  border-bottom:.5px solid var(--divider);
+}
+.md-frontmatter summary{
+  min-height:28px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-family:var(--font-euro);
+  font-size:8px;
+  color:var(--muted);
+}
+.md-frontmatter pre{
+  margin:0 0 10px;
+  padding:8px 9px;
+  background:#f7f7f7;
+  font-family:var(--font-mono);
+  font-size:9px;
+  line-height:1.6;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.md-view a{
+  color:inherit;
+  text-decoration:underline;
+  text-decoration-thickness:.5px;
+  text-underline-offset:2px;
+}
+.md-view strong{
+  font-weight:600!important;
+}
+.md-view em{
+  font-style:italic;
+}
+.md-empty{
+  color:var(--muted);
+}
+.file-preview-source.md-view{
+  padding:14px 16px 28px;
+  font-size:11px;
+  line-height:1.75;
+}
+.library-markdown.md-view{
+  padding:10px 12px 22px;
+  font-size:10px;
+  line-height:1.7;
+}
+
+
 </style>
 </head>
 <body data-width-mode="fit">
@@ -3479,7 +3636,7 @@ body *{
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav></div>
-  <div class="footer-side">CONTEXT LENS / V9.7 · SCHEDULE DISPLAY</div>
+  <div class="footer-side">CONTEXT LENS / V9.8 · SCHEDULE DISPLAY</div>
 </footer>
 
 <div class="toast" id="toast">READY</div>
@@ -5200,6 +5357,180 @@ function libraryHighlightCount(value,query=state.libraryQuery){
   const re=new RegExp(terms.map(libraryEscapeRegex).join('|'),'gi');
   return(source.match(re)||[]).length;
 }
+
+function markdownInlineHtml(value,query=''){
+  let html=esc(String(value??''));
+
+  const terms=librarySearchTerms(query);
+  if(terms.length){
+    const sorted=[...terms].sort((a,b)=>b.length-a.length);
+    const re=new RegExp(`(${sorted.map(libraryEscapeRegex).join('|')})`,'gi');
+    const lowered=new Set(sorted.map(x=>x.toLowerCase()));
+    html=html.split(re).map(part=>
+      lowered.has(part.toLowerCase())
+        ? `<mark class="library-search-hit">${part}</mark>`
+        : part
+    ).join('');
+  }
+
+  // Inline code first, then simple emphasis and links.
+  html=html.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  html=html.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
+  html=html.replace(/__([^_\n]+)__/g,'<strong>$1</strong>');
+  html=html.replace(/(^|[\s(])\*([^*\n]+)\*(?=$|[\s).,!?:;])/g,'$1<em>$2</em>');
+  html=html.replace(/(^|[\s(])_([^_\n]+)_(?=$|[\s).,!?:;])/g,'$1<em>$2</em>');
+
+  html=html.replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+|mailto:[^)\s]+)\)/gi,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  return html;
+}
+function markdownSplitTableRow(line){
+  let value=String(line||'').trim();
+  if(value.startsWith('|'))value=value.slice(1);
+  if(value.endsWith('|'))value=value.slice(0,-1);
+
+  const cells=[];let current='',escaped=false;
+  for(const ch of value){
+    if(escaped){current+=ch;escaped=false;continue}
+    if(ch==='\\'){escaped=true;current+=ch;continue}
+    if(ch==='|'){cells.push(current.trim());current='';continue}
+    current+=ch;
+  }
+  cells.push(current.trim());
+  return cells.map(cell=>cell.replace(/\\\|/g,'|'));
+}
+function markdownIsTableSeparator(line){
+  const cells=markdownSplitTableRow(line);
+  return cells.length>0&&cells.every(cell=>/^:?-{3,}:?$/.test(cell.trim()));
+}
+function markdownStripFrontmatter(md){
+  const lines=normalize(md).split('\n');
+  if(lines[0]?.trim()!=='---')return{frontmatter:[],lines};
+  let end=-1;
+  for(let i=1;i<lines.length;i++){
+    if(lines[i].trim()==='---'){end=i;break}
+  }
+  if(end<0)return{frontmatter:[],lines};
+  return{frontmatter:lines.slice(1,end),lines:lines.slice(end+1)};
+}
+function renderMarkdownSimple(md,query=''){
+  const source=String(md||'');
+  if(!source.trim())return'<div class="md-empty">（内容なし）</div>';
+
+  const parsed=markdownStripFrontmatter(source);
+  const lines=parsed.lines;
+  const out=[];
+
+  if(parsed.frontmatter.length){
+    out.push(`<details class="md-frontmatter"><summary>FRONTMATTER</summary><pre>${esc(parsed.frontmatter.join('\n'))}</pre></details>`);
+  }
+
+  let i=0;
+  let paragraph=[];
+  const flushParagraph=()=>{
+    if(!paragraph.length)return;
+    const body=paragraph.map(line=>markdownInlineHtml(line,query)).join('<br>');
+    out.push(`<p>${body}</p>`);
+    paragraph=[];
+  };
+
+  while(i<lines.length){
+    const line=lines[i];
+    const trim=line.trim();
+
+    if(/^```/.test(trim)){
+      flushParagraph();
+      const lang=trim.replace(/^```+/,'').trim();
+      const code=[];i++;
+      while(i<lines.length&&!/^```/.test(lines[i].trim())){
+        code.push(lines[i]);i++;
+      }
+      if(i<lines.length)i++;
+      out.push(`<pre class="md-code-block"><code${lang?` data-lang="${esc(lang)}"`:''}>${esc(code.join('\n'))}</code></pre>`);
+      continue;
+    }
+
+    if(!trim){
+      flushParagraph();
+      i++;
+      continue;
+    }
+
+    const heading=trim.match(/^(#{1,6})\s+(.+)$/);
+    if(heading){
+      flushParagraph();
+      const level=Math.min(6,heading[1].length);
+      out.push(`<h${level}>${markdownInlineHtml(heading[2],query)}</h${level}>`);
+      i++;
+      continue;
+    }
+
+    if(/^(\*{3,}|-{3,}|_{3,})$/.test(trim)){
+      flushParagraph();
+      out.push('<hr>');
+      i++;
+      continue;
+    }
+
+    if(i+1<lines.length&&line.includes('|')&&markdownIsTableSeparator(lines[i+1])){
+      flushParagraph();
+      const headers=markdownSplitTableRow(line);
+      i+=2;
+      const rows=[];
+      while(i<lines.length&&lines[i].includes('|')&&lines[i].trim()){
+        rows.push(markdownSplitTableRow(lines[i]));
+        i++;
+      }
+      const cols=Math.max(headers.length,...rows.map(r=>r.length));
+      const headHtml=Array.from({length:cols},(_,c)=>`<th>${markdownInlineHtml(headers[c]||'',query)}</th>`).join('');
+      const bodyHtml=rows.map(row=>`<tr>${Array.from({length:cols},(_,c)=>`<td>${markdownInlineHtml(row[c]||'',query)}</td>`).join('')}</tr>`).join('');
+      out.push(`<div class="md-table-wrap"><table class="md-table"><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`);
+      continue;
+    }
+
+    const unordered=trim.match(/^[-+*]\s+(.+)$/);
+    if(unordered){
+      flushParagraph();
+      const items=[];
+      while(i<lines.length){
+        const m=lines[i].trim().match(/^[-+*]\s+(.+)$/);
+        if(!m)break;
+        items.push(m[1]);i++;
+      }
+      out.push(`<ul>${items.map(item=>`<li>${markdownInlineHtml(item,query)}</li>`).join('')}</ul>`);
+      continue;
+    }
+
+    const ordered=trim.match(/^\d+[.)]\s+(.+)$/);
+    if(ordered){
+      flushParagraph();
+      const items=[];
+      while(i<lines.length){
+        const m=lines[i].trim().match(/^\d+[.)]\s+(.+)$/);
+        if(!m)break;
+        items.push(m[1]);i++;
+      }
+      out.push(`<ol>${items.map(item=>`<li>${markdownInlineHtml(item,query)}</li>`).join('')}</ol>`);
+      continue;
+    }
+
+    if(/^>\s?/.test(trim)){
+      flushParagraph();
+      const quote=[];
+      while(i<lines.length&&/^>\s?/.test(lines[i].trim())){
+        quote.push(lines[i].trim().replace(/^>\s?/,''));i++;
+      }
+      out.push(`<blockquote>${quote.map(line=>markdownInlineHtml(line,query)).join('<br>')}</blockquote>`);
+      continue;
+    }
+
+    paragraph.push(line);
+    i++;
+  }
+
+  flushParagraph();
+  return out.join('');
+}
 function libraryFilteredItems(){
   const terms=librarySearchTerms().map(x=>x.toLowerCase());
   const f=state.libraryFilters;
@@ -5259,7 +5590,7 @@ function renderLibraryDetail(item){
       <span>MARKDOWN BODY</span>
       ${state.libraryQuery.trim()?`<span class="library-hit-count">${libraryHighlightCount(item.body||'')} HIT${libraryHighlightCount(item.body||'')===1?'':'S'}</span>`:''}
     </div>
-    <pre class="library-markdown">${libraryHighlightHtml(item.body||'')}</pre>
+    <div class="library-markdown md-view">${renderMarkdownSimple(item.body||'',state.libraryQuery)}</div>
   </div>`;
 }
 
@@ -6327,7 +6658,7 @@ function isActiveFile(f){
 }
 function renderFilePreview(file){
   if(!file)return'<div class="empty"><strong>SELECT FILE</strong>左側からファイルを選択してください。</div>';
-  return`<div class="file-preview-head"><span class="ui-label">${esc(file.type)}</span><span class="file-preview-name">${esc(file.name)}</span><button class="ghost file-preview-download" data-download-file="${esc(file.name)}">DOWNLOAD</button></div><pre class="file-preview-source">${esc(file.text)}</pre>`
+  return`<div class="file-preview-head"><span class="ui-label">${esc(file.type)}</span><span class="file-preview-name">${esc(file.name)}</span><button class="ghost file-preview-download" data-download-file="${esc(file.name)}">DOWNLOAD</button></div><div class="file-preview-source md-view">${renderMarkdownSimple(file.text||'')}</div>`
 }
 function renderFiles(){
   const files=[...state.files].sort((a,b)=>(b.loadedAt||0)-(a.loadedAt||0));
