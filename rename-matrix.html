@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RENAME MATRIX</title>
+<style>
+:root{
+  --bone:#f6f6f6;--white:#ffffff;--black:#0a0a0a;--divider:#e6e6e6;--muted:#b2b2b2;--mid:#6e6e6e;
+  --signal:#c81f3a;--signal-soft:rgba(200,31,58,.16);--signal-mid:rgba(200,31,58,.24);--signal-strong:rgba(200,31,58,.32);
+  --green:#168a52;--green-soft:rgba(22,138,82,.16);--green-mid:rgba(22,138,82,.24);--green-strong:rgba(22,138,82,.32);
+  --font-euro:"Eurostile","Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-body:"Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-mono:"BIZ UDPGothic","Noto Sans Mono CJK JP","Yu Gothic UI",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bone);color:var(--black)}
+body{font-family:var(--font-body);font-size:12px;line-height:1.65}
+button,select,textarea,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:1px solid var(--black);outline-offset:-1px}
+[hidden]{display:none!important}
+
+/* LABEL BASE */
+.lbl,.brand-mark,.sep,.ghost,.header-center,.meta,.control-label,.toggle,select,.editor-index,.editor-title,.state,
+.metric-label,.footer-main,.footer-side,.toast,.primary-action,.change-no,.change-kind,.status,.rule-no,.rule-type,.src-meta,.tok{
+  font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:50;height:86px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;padding:0 20px;background:var(--white);border-bottom:.5px solid var(--divider)}
+.brand-cluster,.header-actions{display:flex;align-items:center;gap:10px;min-width:0}
+.header-actions{justify-content:flex-end}
+.brand-mark{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.signal-block{width:9px;height:9px;background:var(--signal);flex:0 0 auto}
+.sep{color:var(--black)}
+.header-center{text-align:center;color:var(--muted);white-space:nowrap}
+
+/* GHOST */
+.ghost{appearance:none;border:0;border-radius:0;background:transparent;color:var(--black);padding:0;font-weight:400}
+.ghost:hover{color:#666}
+.ghost.active{font-weight:700}
+.ghost.danger{color:var(--signal)}
+.ghost:disabled{color:var(--muted);cursor:default}
+
+/* PAGE */
+.page{width:100%;padding:34px 20px 110px}
+.hero{margin-bottom:42px}
+.meta{margin-bottom:7px}
+.wordmark,.record-heading{margin:0;font-family:var(--font-euro);font-size:30px;line-height:1;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}
+.hero-copy{margin:14px 0 0;max-width:840px;font-size:12px;line-height:1.75;color:#343434}
+
+/* CONTROL STRIP */
+.control-strip{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;padding:10px 0;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);margin-bottom:20px}
+.control-group{display:flex;align-items:center;gap:8px}
+.spacer{flex:1}
+select{border:0;border-radius:0;background:transparent;color:var(--black);padding:0 18px 0 0;min-height:22px;cursor:pointer}
+.toggle{display:flex;align-items:center;gap:7px;white-space:nowrap;cursor:pointer}
+.toggle input{width:12px;height:12px;margin:0;accent-color:var(--signal);cursor:pointer}
+.text-input{width:100%;border:0;border-bottom:.5px solid var(--divider);border-radius:0;background:transparent;color:var(--black);padding:8px 0;outline:0}
+.text-input:focus{border-bottom-color:var(--black)}
+.control-strip .text-input{width:180px;padding:4px 0}
+.primary-action{border:0;border-radius:0;background:var(--black);color:var(--white);padding:9px 12px}
+.primary-action:hover{background:#333}
+.primary-action:disabled{background:var(--muted);cursor:default}
+
+/* WORKSPACE */
+.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider);background:var(--white)}
+.editor-panel{min-width:0;display:flex;flex-direction:column}
+.editor-panel + .editor-panel{border-left:.5px solid var(--divider)}
+.editor-head{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;min-height:42px;padding:0 10px;border-bottom:.5px solid var(--divider)}
+.editor-index,.editor-title{font-weight:700}
+.editor-title .jp,.rule-type .jp{font-family:var(--font-body);font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;margin-left:7px}
+.head-count{color:var(--mid);font-variant-numeric:tabular-nums}
+.head-actions{display:flex;align-items:center;gap:8px}
+.panel-body{flex:1 0 auto;height:390px;overflow:auto;background:var(--white)}
+.editor-foot{min-height:34px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 10px;border-top:.5px solid var(--divider)}
+.state{display:flex;align-items:center;gap:7px}
+.state-line{width:18px;height:1px;background:var(--muted)}
+.state-line.changed{background:var(--signal)}
+.state-line.same{background:var(--black)}
+.state-line.ok{background:var(--green)}
+
+/* DROP */
+.drop-zone{min-height:180px;display:grid;place-items:center;background:var(--white);border-bottom:.5px solid var(--divider);text-align:center;cursor:pointer;transition:.16s}
+.drop-zone:hover,.drop-zone.over{background:#fafafa}
+.drop-zone.over{box-shadow:inset 0 -1px 0 var(--black)}
+.drop-title{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:7px}
+.drop-copy{font-size:11px;line-height:1.7;color:#777}
+.src-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:14px;align-items:center;padding:10px;border-bottom:.5px solid var(--divider)}
+.src-name{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src-meta{color:var(--mid);white-space:nowrap}
+.src-meta.ok{color:var(--green)}
+.empty{padding:28px 10px;border-bottom:.5px solid var(--divider);font-size:12px;color:#777}
+
+/* RULES */
+.rule{display:grid;grid-template-columns:20px 12px 92px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px;border-bottom:.5px solid var(--divider)}
+.rule.off .params,.rule.off .rule-type{opacity:.4}
+.rule.drag-over{box-shadow:inset 0 1px 0 var(--black)}
+.rule-no{color:var(--muted);padding-top:6px;font-variant-numeric:tabular-nums;cursor:grab}
+.rule > input[type=checkbox]{width:12px;height:12px;margin:5px 0 0;accent-color:var(--signal);cursor:pointer}
+.rule-type{font-weight:700;padding-top:6px}
+.rule-type .jp{display:block;margin:5px 0 0}
+.rule-err{color:var(--signal);margin-top:5px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em}
+.params{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;min-width:0}
+.field{display:flex;align-items:center;gap:7px;min-width:0}
+.field .text-input{width:104px;padding:4px 0;font-family:var(--font-mono);font-size:12px}
+.field.num .text-input{width:46px}
+.field.wide{flex:1 1 100%}
+.field.wide .text-input{width:100%}
+.field.area{flex:1 1 100%;align-items:flex-start}
+.list-area{width:100%;height:120px;margin:0;padding:6px 0;border:0;border-bottom:.5px solid var(--divider);border-radius:0;font-family:var(--font-mono);font-size:14px;line-height:1.9;resize:vertical;outline:0;background:transparent;color:var(--black)}
+.list-area:focus{border-bottom-color:var(--black)}
+.list-area::placeholder,.text-input::placeholder{color:var(--muted)}
+.rule-actions{display:flex;align-items:center;gap:6px;padding-top:6px;white-space:nowrap}
+.tokens{display:flex;flex-wrap:wrap;gap:7px 12px;align-items:center;padding:10px;border-top:.5px solid var(--divider);background:var(--white)}
+.tok{appearance:none;border:0;background:transparent;padding:0;color:var(--black);text-transform:none;font-family:var(--font-mono);font-size:11px;letter-spacing:0}
+.tok:hover{color:#666}
+.tok .jp{font-family:var(--font-body);color:#777;margin-left:4px;font-size:11px}
+.preset-save{display:flex;align-items:center;gap:8px;flex:1}
+.preset-save .text-input{max-width:160px;padding:4px 0}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin-top:42px;border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider)}
+.metric{min-width:0;padding:10px 10px 11px}
+.metric + .metric{border-left:.5px solid var(--divider)}
+.metric-label{margin-bottom:9px}
+.metric-value{font-family:var(--font-euro);font-size:22px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric.changed .metric-value{color:var(--signal)}
+.metric.positive .metric-value{color:var(--green)}
+.process{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:10px 0;border-bottom:.5px solid var(--divider)}
+.progress{height:2px;background:var(--divider)}
+.progress > span{display:block;height:100%;width:0;background:var(--signal);transition:.16s}
+
+/* RECORD */
+.record{margin-top:42px}
+.record-head{display:flex;align-items:flex-end;gap:18px;margin-bottom:10px;flex-wrap:wrap}
+.record-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:2px}
+.rows{max-height:62vh;overflow:auto;background:var(--white);border-top:.5px solid var(--divider)}
+.change-row{display:grid;grid-template-columns:30px 54px 86px minmax(0,1fr) minmax(0,1fr);border-bottom:.5px solid var(--divider)}
+.change-row > div{padding:10px;min-width:0}
+.change-row > div + div{border-left:.5px solid var(--divider)}
+.change-row.head{position:sticky;top:0;z-index:2;background:var(--white)}
+.change-row.head > div{padding:9px 10px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+.hjp{font-family:var(--font-body);font-size:11px;font-weight:400;letter-spacing:0;margin-left:7px;text-transform:none}
+.change-row:not(.head):hover{background:#fafafa}
+.change-row.issue{box-shadow:inset 3px 0 0 var(--signal)}
+.change-row.excluded .nm{color:var(--muted)}
+.change-row.drag-over{box-shadow:inset 0 1px 0 var(--black)}
+.change-row input[type=checkbox]{width:12px;height:12px;margin:2px 0 0;accent-color:var(--signal);cursor:pointer}
+.change-no{color:var(--muted);font-variant-numeric:tabular-nums;padding-top:3px}
+.status{font-weight:700;padding-top:3px}
+.status.changed{color:var(--green)}
+.status.issue{color:var(--signal)}
+.status.same,.status.excluded{color:var(--muted)}
+.status .msg{display:block;margin-top:5px;font-weight:400}
+.nm{font-family:var(--font-mono);font-size:12px;line-height:1.7;overflow-wrap:anywhere;word-break:break-word}
+.nm .d{background:var(--signal-soft);color:var(--signal)}
+.nm .a{background:var(--green-soft);color:var(--green)}
+.path{font-size:11px;color:#777;margin-top:2px;overflow-wrap:anywhere}
+.c-to{cursor:text}
+.edit-input{width:100%;border:0;border-bottom:.5px solid var(--black);padding:0;background:transparent;font-family:var(--font-mono);font-size:12px;line-height:1.7;outline:0}
+.more{padding:10px;border-bottom:.5px solid var(--divider);background:var(--white)}
+.log{max-height:240px;overflow:auto;background:var(--white);border-top:.5px solid var(--divider)}
+.log-row{display:grid;grid-template-columns:70px 70px minmax(0,1fr);border-bottom:.5px solid var(--divider)}
+.log-row > div{padding:7px 10px;min-width:0}
+.log-row > div + div{border-left:.5px solid var(--divider)}
+.log-row .t{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:9px}
+.log-row .k{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;font-weight:700;padding-top:9px}
+.log-row .k.ok{color:var(--green)}
+.log-row .k.error{color:var(--signal)}
+.log-row .m{font-family:var(--font-mono);font-size:12px;overflow-wrap:anywhere}
+
+/* FOOTER / TOAST */
+.footer-strip{position:fixed;left:0;right:0;bottom:0;z-index:40;min-height:52px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px;padding:0 20px;background:var(--bone);border-top:.5px solid var(--divider)}
+.footer-side{color:var(--muted)}
+.toast{position:fixed;left:20px;bottom:66px;z-index:100;padding:7px 9px;background:var(--black);color:var(--white);border-radius:0;opacity:0;transform:translateY(5px);transition:.16s;pointer-events:none}
+.toast.show{opacity:1;transform:none}
+
+@media(max-width:900px){
+  .header{grid-template-columns:1fr auto;height:auto;min-height:72px;padding:14px}
+  .header-center{display:none}
+  .header-actions,.brand-cluster{flex-wrap:wrap}
+  .page{padding:28px 14px 100px}
+  .editor-grid{grid-template-columns:1fr}
+  .editor-panel + .editor-panel{border-left:0;border-top:.5px solid var(--divider)}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metric:nth-child(odd){border-left:0}
+  .metric:nth-child(n+3){border-top:.5px solid var(--divider)}
+  .metric:last-child{grid-column:1 / -1}
+  .record-head{align-items:flex-start;flex-direction:column}
+  .rule{grid-template-columns:20px 12px minmax(0,1fr)}
+  .rule .params,.rule .rule-actions{grid-column:1 / -1}
+  .change-row{grid-template-columns:30px 40px minmax(0,1fr)}
+  .change-row .status{display:none}
+  .change-row .c-to{grid-column:3}
+  .change-row .c-from{grid-column:3;border-left:0!important}
+  .change-row > .c-to{border-left:0!important;border-top:.5px solid var(--divider)}
+  .change-row > div:nth-child(2){border-left:.5px solid var(--divider)}
+  .change-row.head .h-st,.change-row.head .h-to{display:none}
+  .footer-strip{padding:0 14px}
+  .toast{left:14px}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand-cluster">
+    <div class="brand-mark"><span class="signal-block"></span><strong>RENAME MATRIX</strong></div>
+    <span class="sep">/</span>
+    <button class="ghost active" id="btn-open" title="CTRL / ⌘ + O">OPEN FOLDER</button>
+    <button class="ghost" id="btn-add">ADD FILES</button>
+  </div>
+  <div class="header-center">BATCH FILE RENAME / LOCAL PROCESSING / NO FILE UPLOAD</div>
+  <div class="header-actions">
+    <button class="ghost" id="btn-undo" disabled>UNDO</button>
+    <span class="sep">/</span>
+    <button class="ghost" id="btn-import">IMPORT</button>
+    <span class="sep">/</span>
+    <button class="ghost" id="btn-export">EXPORT</button>
+    <span class="sep">/</span>
+    <button class="ghost danger" id="btn-clear">CLEAR</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="meta">TOOL / FILE RENAME / 01</div>
+    <h1 class="wordmark">BATCH RENAME</h1>
+    <p class="hero-copy">フォルダやファイルをドロップし、規則を選ぶだけで複数ファイルを一括リネームします。プレビューは入力と同時に更新され、重複名・使用不可文字は実行前に検出されます。処理はすべてブラウザ内で完結し、ファイルが外部へ送信されることはありません。</p>
+  </section>
+
+  <section class="control-strip">
+    <div class="control-group">
+      <span class="control-label">PRESET</span>
+      <select id="sel-preset" aria-label="preset"></select>
+    </div>
+    <div class="control-group">
+      <span class="control-label">SORT</span>
+      <select id="sel-sort" aria-label="sort">
+        <option value="name">NAME ASC</option>
+        <option value="name-d">NAME DESC</option>
+        <option value="mtime">MODIFIED ASC</option>
+        <option value="mtime-d">MODIFIED DESC</option>
+        <option value="size">SIZE ASC</option>
+        <option value="size-d">SIZE DESC</option>
+        <option value="type">TYPE</option>
+        <option value="manual">MANUAL (DRAG)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <span class="control-label">FILTER</span>
+      <input class="text-input" id="inp-filter" placeholder="NAME / .EXT / FOLDER" aria-label="filter" spellcheck="false">
+    </div>
+    <label class="toggle"><input type="checkbox" id="opt-sub" checked>SUBFOLDERS</label>
+    <label class="toggle"><input type="checkbox" id="opt-suffix">AUTO SUFFIX</label>
+    <label class="toggle"><input type="checkbox" id="opt-keep" checked>KEEP FOLDERS IN ZIP</label>
+    <div class="spacer"></div>
+    <div class="control-group">
+      <span class="control-label">OUTPUT</span>
+      <select id="sel-output" aria-label="output">
+        <option value="auto">AUTO</option>
+        <option value="inplace">IN PLACE</option>
+        <option value="zip">ZIP DOWNLOAD</option>
+        <option value="ps1">PS1 SCRIPT</option>
+        <option value="csv">CSV LIST</option>
+      </select>
+    </div>
+    <button class="primary-action" id="btn-run" title="CTRL / ⌘ + ENTER">RUN</button>
+  </section>
+
+  <section class="workspace editor-grid">
+    <div class="editor-panel" id="panel-src">
+      <div class="editor-head">
+        <div class="editor-index">A</div>
+        <div class="editor-title">SOURCE<span class="jp">対象ファイル</span></div>
+        <div class="state head-count" id="src-count">0 FILES</div>
+        <div class="head-actions"><button class="ghost" id="btn-open2">OPEN FOLDER</button><span class="sep">/</span><button class="ghost" id="btn-add2">ADD FILES</button></div>
+      </div>
+      <div class="panel-body">
+        <div class="drop-zone" id="drop" tabindex="0" role="button" aria-label="drop files or folders">
+          <div>
+            <div class="drop-title">DROP FILES OR FOLDERS</div>
+            <div class="drop-copy">ここにファイル・フォルダをドロップ、またはクリックしてフォルダを選択<br>フォルダ単位で読み込むと、元の場所で直接リネームできます</div>
+          </div>
+        </div>
+        <div id="src-list"></div>
+      </div>
+      <div class="editor-foot">
+        <div class="state"><span class="state-line" id="src-line"></span><span id="src-state">WAITING</span></div>
+        <div class="state" id="fs-support"></div>
+      </div>
+    </div>
+
+    <div class="editor-panel" id="panel-rules">
+      <div class="editor-head">
+        <div class="editor-index">B</div>
+        <div class="editor-title">RULES<span class="jp">変換規則（上から順に適用）</span></div>
+        <div class="state head-count" id="rule-count">0 RULES</div>
+        <div class="head-actions">
+          <select id="sel-add" aria-label="add rule"></select>
+        </div>
+      </div>
+      <div class="panel-body" id="rules"></div>
+      <div class="tokens" id="tokens"></div>
+      <div class="editor-foot">
+        <div class="preset-save">
+          <input class="text-input" id="inp-preset" placeholder="PRESET NAME" aria-label="preset name" spellcheck="false">
+          <button class="ghost" id="btn-psave">SAVE PRESET</button>
+          <span class="sep">/</span>
+          <button class="ghost danger" id="btn-pdel">DELETE</button>
+        </div>
+        <div class="state"><span class="state-line" id="rule-line"></span><span id="rule-state">NO RULE</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="metrics">
+    <div class="metric"><div class="metric-label">FILES</div><div class="metric-value" id="m-files">0</div></div>
+    <div class="metric"><div class="metric-label">INCLUDED</div><div class="metric-value" id="m-inc">0</div></div>
+    <div class="metric positive" id="mm-chg"><div class="metric-label">CHANGED</div><div class="metric-value" id="m-chg">0</div></div>
+    <div class="metric" id="mm-iss"><div class="metric-label">ISSUES</div><div class="metric-value" id="m-iss">0</div></div>
+    <div class="metric"><div class="metric-label">OUTPUT</div><div class="metric-value" id="m-out">ZIP</div></div>
+  </section>
+  <div class="process">
+    <div class="state"><span class="state-line" id="proc-line"></span><span id="proc-state">READY</span></div>
+    <div class="progress"><span id="prog"></span></div>
+    <div class="state" id="proc-count">0 / 0</div>
+  </div>
+
+  <section class="record">
+    <div class="record-head">
+      <h2 class="record-heading">PREVIEW</h2>
+      <div class="record-tools" id="tabs"></div>
+      <div class="spacer"></div>
+      <div class="record-tools">
+        <button class="ghost" id="btn-incall">INCLUDE ALL</button><span class="sep">/</span>
+        <button class="ghost" id="btn-excall">EXCLUDE ALL</button><span class="sep">/</span>
+        <button class="ghost" id="btn-resetedit">RESET EDITS</button><span class="sep">/</span>
+        <button class="ghost" id="btn-copy">COPY</button><span class="sep">/</span>
+        <button class="ghost" id="btn-csv">CSV</button>
+      </div>
+    </div>
+    <div class="rows" id="rows"></div>
+  </section>
+
+  <section class="record">
+    <div class="record-head">
+      <h2 class="record-heading">LOG</h2>
+      <div class="spacer"></div>
+      <div class="record-tools"><button class="ghost" id="btn-logclear">CLEAR LOG</button></div>
+    </div>
+    <div class="log" id="log"></div>
+  </section>
+</main>
+
+<footer class="footer-strip">
+  <div class="footer-main" id="footer-main">READY</div>
+  <div class="footer-side">RENAME MATRIX / V1.0</div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<input type="file" id="file-add" multiple hidden>
+<input type="file" id="file-dir" webkitdirectory multiple hidden>
+<input type="file" id="file-import" accept=".json,application/json" hidden>
+
+<script>
+'use strict';
+/* ================= UTIL ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const escRe=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const coll=new Intl.Collator('ja',{numeric:true,sensitivity:'base'});
+const FS_OK=typeof window.showDirectoryPicker==='function';
+const DROP_HANDLE=typeof DataTransferItem!=='undefined'&&'getAsFileSystemHandle' in DataTransferItem.prototype;
+const SYS=new Set(['.ds_store','thumbs.db','desktop.ini']);
+const LS='rename-matrix.';
+let uid=0;
+const pad=(n,d)=>(n<0?'-':'')+String(Math.abs(Math.trunc(n))).padStart(Math.max(1,d|0),'0');
+function split(name){const i=name.lastIndexOf('.');return i>0?[name.slice(0,i),name.slice(i+1)]:[name,''];}
+const join=(b,e)=>e!==''?b+'.'+e:b;
+function fmtDate(d,f){
+  const p2=n=>String(n).padStart(2,'0');
+  const m={YYYY:d.getFullYear(),YY:String(d.getFullYear()).slice(2),MM:p2(d.getMonth()+1),DD:p2(d.getDate()),HH:p2(d.getHours()),mm:p2(d.getMinutes()),ss:p2(d.getSeconds())};
+  return String(f||'YYYYMMDD').replace(/YYYY|YY|MM|DD|HH|mm|ss/g,k=>m[k]);
+}
+function stamp(){return fmtDate(new Date(),'YYYYMMDD_HHmmss');}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+function lsGet(k,d){try{const v=localStorage.getItem(LS+k);return v?JSON.parse(v):d;}catch(_){return d;}}
+function lsSet(k,v){try{localStorage.setItem(LS+k,JSON.stringify(v));}catch(_){}}
+
+/* ================= RULE DEFINITIONS ================= */
+const RULES={
+  replace:{l:'REPLACE',jp:'置換',d:{find:'',repl:'',regex:false,cs:false,scope:'base'},f:[
+    ['find','text','FIND'],['repl','text','TO'],['regex','bool','REGEX'],['cs','bool','MATCH CASE'],
+    ['scope','sel','SCOPE',[['base','NAME'],['full','NAME + EXT']]]]},
+  insert:{l:'INSERT',jp:'挿入',d:{text:'',pos:'start',at:1,anchor:''},f:[
+    ['text','text','TEXT'],['pos','sel','AT',[['start','START'],['end','END'],['index','INDEX'],['before','BEFORE TEXT'],['after','AFTER TEXT']]],
+    ['at','num','INDEX',null,p=>p.pos==='index'],['anchor','text','ANCHOR',null,p=>p.pos==='before'||p.pos==='after']]},
+  remove:{l:'REMOVE',jp:'文字削除',d:{mode:'first',n:1,from:1,text:''},f:[
+    ['mode','sel','MODE',[['first','FIRST N'],['last','LAST N'],['range','RANGE'],['before','BEFORE TEXT'],['after','AFTER TEXT'],['brackets','BRACKETS'],['digits','DIGITS']]],
+    ['from','num','FROM',null,p=>p.mode==='range'],['n','num','COUNT',null,p=>['first','last','range'].includes(p.mode)],
+    ['text','text','ANCHOR',null,p=>p.mode==='before'||p.mode==='after']]},
+  number:{l:'NUMBER',jp:'連番',d:{start:1,step:1,digits:3,pos:'start',sep:'_',perFolder:false},f:[
+    ['start','num','START'],['step','num','STEP'],['digits','num','DIGITS'],
+    ['pos','sel','AT',[['start','START'],['end','END'],['replace','REPLACE NAME']]],['sep','text','SEP',null,p=>p.pos!=='replace'],['perFolder','bool','PER FOLDER']]},
+  date:{l:'DATE',jp:'日付',d:{src:'mdate',fmt:'YYYYMMDD',pos:'start',sep:'_'},f:[
+    ['src','sel','SOURCE',[['mdate','MODIFIED'],['today','TODAY']]],['fmt','text','FORMAT'],
+    ['pos','sel','AT',[['start','START'],['end','END']]],['sep','text','SEP']]},
+  template:{l:'TEMPLATE',jp:'書式で再構成',d:{pattern:'{name}'},f:[['pattern','text','PATTERN','wide']]},
+  case:{l:'CASE',jp:'大文字・小文字',d:{mode:'lower',scope:'base'},f:[
+    ['mode','sel','MODE',[['lower','LOWER'],['upper','UPPER'],['title','TITLE'],['sentence','SENTENCE']]],
+    ['scope','sel','SCOPE',[['base','NAME'],['ext','EXT'],['both','NAME + EXT']]]]},
+  clean:{l:'CLEAN',jp:'整形',d:{nfkc:true,space:'_',collapse:true,trim:true,strip:true},f:[
+    ['nfkc','bool','NFKC (全角英数→半角)'],['space','sel','SPACE',[['keep','KEEP'],['_','TO _'],['-','TO -'],['','REMOVE']]],
+    ['collapse','bool','COLLAPSE'],['trim','bool','TRIM'],['strip','bool','STRIP INVALID']]},
+  pad:{l:'PAD',jp:'数字ゼロ埋め',d:{digits:3},f:[['digits','num','DIGITS']]},
+  ext:{l:'EXT',jp:'拡張子',d:{mode:'lower',value:''},f:[
+    ['mode','sel','MODE',[['lower','LOWER'],['upper','UPPER'],['set','SET'],['remove','REMOVE']]],['value','text','VALUE',null,p=>p.mode==='set']]},
+  list:{l:'LIST',jp:'名前リスト',d:{mode:'order',keepExt:true,text:''},f:[
+    ['mode','sel','MODE',[['order','BY ORDER'],['map','OLD → NEW']]],['keepExt','bool','KEEP EXT'],['text','area','LIST']]},
+};
+const LIST_PH={order:'1行 = 1ファイル（プレビューの並び順に適用）\n例:\n会議資料_表紙\n会議資料_本文',map:'旧名[TAB または ,]新名\n例:\nIMG_0001.jpg,外観_北面\nIMG_0002.jpg,外観_南面'};
+
+const BUILTIN=[
+  {name:'NUMBER PREFIX  001_NAME',rules:[{t:'number',p:{start:1,step:1,digits:3,pos:'start',sep:'_',perFolder:false}}]},
+  {name:'DATE PREFIX  YYYYMMDD_NAME',rules:[{t:'date',p:{src:'mdate',fmt:'YYYYMMDD',pos:'start',sep:'_'}}]},
+  {name:'FOLDER + NUMBER  FOLDER_001',rules:[{t:'template',p:{pattern:'{parent}_{fn:3}'}}]},
+  {name:'DATE + NUMBER  YYYYMMDD_001',rules:[{t:'template',p:{pattern:'{mdate:YYYYMMDD}_{n:3}'}}]},
+  {name:'CLEAN UP  全角→半角 / 空白→_',rules:[{t:'clean',p:{nfkc:true,space:'_',collapse:true,trim:true,strip:true}},{t:'ext',p:{mode:'lower',value:''}}]},
+  {name:'REMOVE BRACKETS  (…) [ … ] 【…】',rules:[{t:'remove',p:{mode:'brackets',n:1,from:1,text:''}},{t:'clean',p:{nfkc:false,space:'keep',collapse:true,trim:true,strip:true}}]},
+  {name:'ZERO PAD  1 → 001',rules:[{t:'pad',p:{digits:3}}]},
+  {name:'LOWERCASE ALL',rules:[{t:'case',p:{mode:'lower',scope:'both'}}]},
+  {name:'NAME LIST  リスト貼付',rules:[{t:'list',p:{mode:'order',keepExt:true,text:''}}]},
+  {name:'CLEAR RULES',rules:[]},
+];
+const TOKENS=[['{name}','元の名前'],['{n:3}','連番'],['{fn:3}','フォルダ内連番'],['{parent}','フォルダ名'],['{mdate:YYYYMMDD}','更新日'],['{date:YYYYMMDD}','今日'],['{ext}','拡張子'],['{base}','現在の名前']];
+
+/* ================= STATE ================= */
+const state={
+  files:[],roots:[],dirs:new Map(),
+  rules:[],presets:lsGet('presets',[]),
+  res:new Map(),counts:{},
+  sort:lsGet('sort','name'),filter:'',tab:'all',limit:1000,
+  opt:Object.assign({sub:true,suffix:false,keep:true,output:'auto'},lsGet('opt',{})),
+  history:[],log:[],busy:false,lastFocus:null,lastCheck:-1,visible:[],
+};
+function newRule(t,p){return {id:++uid,t,on:true,p:Object.assign({},RULES[t].d,p||{})};}
+state.rules=(lsGet('rules',[])||[]).filter(r=>RULES[r.t]).map(r=>Object.assign(newRule(r.t,r.p),{on:r.on!==false}));
+const saveRules=()=>lsSet('rules',state.rules.map(r=>({t:r.t,on:r.on,p:r.p})));
+const saveOpt=()=>{lsSet('opt',state.opt);lsSet('sort',state.sort);};
+
+/* ================= TOKENS / RULE APPLY ================= */
+function seqArgs(a){const x=(a||'').split(':');const n=v=>v!==undefined&&v!==''&&!isNaN(+v)?+v:null;return [n(x[0])??1,n(x[1])??1,n(x[2])??1];}
+function tok(s,c,b){
+  if(!s)return '';
+  if(s.indexOf('{')<0)return s;
+  return s.replace(/\{(\w+)(?::([^}]*))?\}/g,(m,k,a)=>{
+    switch(k.toLowerCase()){
+      case 'name':return c.origBase;
+      case 'base':return b;
+      case 'ext':return c.origExt;
+      case 'n':{const [d,st,sp]=seqArgs(a);return pad(st+c.i*sp,d);}
+      case 'fn':{const [d,st,sp]=seqArgs(a);return pad(st+c.fi*sp,d);}
+      case 'i':return String(c.i+1);
+      case 'parent':return c.parent;
+      case 'date':return fmtDate(new Date(),a||'YYYYMMDD');
+      case 'mdate':return fmtDate(new Date(c.f.lastModified),a||'YYYYMMDD');
+      default:return m;
+    }
+  });
+}
+function changeCase(s,m){
+  if(m==='upper')return s.toUpperCase();
+  if(m==='lower')return s.toLowerCase();
+  if(m==='title')return s.toLowerCase().replace(/(^|[\s_\-.(\[])(\p{L})/gu,(x,a,b)=>a+b.toUpperCase());
+  if(m==='sentence'){const t=s.toLowerCase();return t.charAt(0).toUpperCase()+t.slice(1);}
+  return s;
+}
+const BRACKETS=/\s*(?:\([^)]*\)|（[^）]*）|\[[^\]]*\]|［[^］]*］|【[^】]*】|〔[^〕]*〕|「[^」]*」|『[^』]*』|\{[^}]*\})\s*/g;
+function listCache(r){
+  if(r._k===r.p.text+'|'+r.p.mode)return r._c;
+  const lines=String(r.p.text||'').split(/\r?\n/);
+  let c;
+  if(r.p.mode==='map'){c=new Map();for(const ln of lines){const m=ln.match(/^(.*?)(?:\t|,)(.*)$/);if(m&&m[1].trim())c.set(m[1].trim().toLowerCase(),m[2].trim());}}
+  else c=lines.map(l=>l.trim());
+  r._k=r.p.text+'|'+r.p.mode;r._c=c;return c;
+}
+function applyRule(r,b,e,c){
+  const p=r.p;
+  switch(r.t){
+    case 'replace':{
+      if(!p.find)return [b,e];
+      const full=p.scope==='full';let s=full?join(b,e):b;
+      const rep=tok(p.repl,c,b);
+      const re=new RegExp(p.regex?p.find:escRe(p.find),'g'+(p.cs?'':'i')+'u');
+      s=p.regex?s.replace(re,rep):s.replace(re,()=>rep);
+      return full?split(s):[s,e];
+    }
+    case 'insert':{
+      const t=tok(p.text,c,b);if(!t)return [b,e];
+      if(p.pos==='start')return [t+b,e];
+      if(p.pos==='end')return [b+t,e];
+      if(p.pos==='index'){let i=+p.at||1;i=i<0?b.length+i+1:i-1;i=Math.max(0,Math.min(b.length,i));return [b.slice(0,i)+t+b.slice(i),e];}
+      if(!p.anchor)return [b,e];
+      const k=b.indexOf(p.anchor);if(k<0)return [b,e];
+      const at=p.pos==='before'?k:k+p.anchor.length;
+      return [b.slice(0,at)+t+b.slice(at),e];
+    }
+    case 'remove':{
+      const n=Math.max(0,+p.n||0);
+      if(p.mode==='first')return [b.slice(n),e];
+      if(p.mode==='last')return [b.slice(0,Math.max(0,b.length-n)),e];
+      if(p.mode==='range'){const f=Math.max(1,+p.from||1)-1;return [b.slice(0,f)+b.slice(f+n),e];}
+      if(p.mode==='brackets')return [b.replace(BRACKETS,' ').replace(/\s{2,}/g,' ').trim(),e];
+      if(p.mode==='digits')return [b.replace(/[0-9０-９]/g,''),e];
+      if(!p.text)return [b,e];
+      const k=b.indexOf(p.text);if(k<0)return [b,e];
+      return p.mode==='before'?[b.slice(k),e]:[b.slice(0,k+p.text.length),e];
+    }
+    case 'number':{
+      const idx=p.perFolder?c.fi:c.i;
+      const v=pad((+p.start||0)+idx*(p.step===''?1:+p.step||0),+p.digits||1);
+      if(p.pos==='replace')return [v,e];
+      return p.pos==='end'?[b+(p.sep||'')+v,e]:[v+(p.sep||'')+b,e];
+    }
+    case 'date':{
+      const d=p.src==='today'?new Date():new Date(c.f.lastModified);
+      const v=fmtDate(d,p.fmt||'YYYYMMDD');
+      return p.pos==='end'?[b+(p.sep||'')+v,e]:[v+(p.sep||'')+b,e];
+    }
+    case 'template':{const v=tok(p.pattern,c,b);return [v,e];}
+    case 'case':{
+      return [p.scope==='ext'?b:changeCase(b,p.mode),p.scope==='base'?e:changeCase(e,p.mode==='title'||p.mode==='sentence'?'lower':p.mode)];
+    }
+    case 'clean':{
+      let s=b;
+      if(p.nfkc)s=s.normalize('NFKC');
+      if(p.space!=='keep')s=s.replace(/[\s\u3000]+/g,p.space);
+      if(p.strip)s=s.replace(/[\\/:*?"<>|\x00-\x1f]/g,'');
+      if(p.collapse)s=s.replace(/([_\-. ])\1+/g,'$1').replace(/[_-]{2,}/g,m=>m[0]);
+      if(p.trim)s=s.replace(/^[\s_\-.]+|[\s_\-.]+$/g,'');
+      return [s,p.nfkc?e.normalize('NFKC'):e];
+    }
+    case 'pad':{const d=Math.max(1,+p.digits||1);return [b.replace(/\d+/g,m=>m.length<d?m.padStart(d,'0'):m),e];}
+    case 'ext':{
+      if(p.mode==='lower')return [b,e.toLowerCase()];
+      if(p.mode==='upper')return [b,e.toUpperCase()];
+      if(p.mode==='remove')return [b,''];
+      if(p.mode==='set')return [b,String(p.value||'').replace(/^\.+/,'')];
+      return [b,e];
+    }
+    case 'list':{
+      const c2=listCache(r);
+      let v;
+      if(p.mode==='map')v=c2.get(c.orig.toLowerCase())??c2.get(c.origBase.toLowerCase());
+      else v=c2[c.i];
+      if(!v)return [b,e];
+      return p.keepExt?[v,e]:split(v);
+    }
+  }
+  return [b,e];
+}
+
+/* ================= VALIDATION ================= */
+function validate(n){
+  if(!n)return 'EMPTY NAME';
+  if(/[\\/:*?"<>|\x00-\x1f]/.test(n))return 'INVALID CHAR';
+  if(/[ .]$/.test(n))return 'ENDS WITH DOT / SPACE';
+  if(/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i.test(n))return 'RESERVED NAME';
+  if(new Blob([n]).size>255)return 'TOO LONG';
+  return null;
+}
+
+/* ================= SORT / COMPUTE ================= */
+function sortKey(f){return f.path+'\u0000'+f.name;}
+function sorted(){
+  const a=state.files.slice();
+  const s=state.sort;
+  const byName=(x,y)=>coll.compare(x.path,y.path)||coll.compare(x.name,y.name);
+  if(s==='manual')a.sort((x,y)=>x.order-y.order);
+  else if(s==='name')a.sort(byName);
+  else if(s==='name-d')a.sort((x,y)=>-byName(x,y));
+  else if(s==='mtime')a.sort((x,y)=>x.lastModified-y.lastModified||byName(x,y));
+  else if(s==='mtime-d')a.sort((x,y)=>y.lastModified-x.lastModified||byName(x,y));
+  else if(s==='size')a.sort((x,y)=>x.size-y.size||byName(x,y));
+  else if(s==='size-d')a.sort((x,y)=>y.size-x.size||byName(x,y));
+  else if(s==='type')a.sort((x,y)=>coll.compare(split(x.name)[1],split(y.name)[1])||byName(x,y));
+  return a;
+}
+function compute(){
+  const list=sorted();
+  state.order=list;
+  const res=new Map();
+  const ruleErr=new Map();
+  let i=0;const fcount=new Map();
+  for(const f of list){
+    if(!f.include){res.set(f.id,{to:f.name,status:'excluded',msg:''});continue;}
+    const fi=fcount.get(f.dirKey)||0;fcount.set(f.dirKey,fi+1);
+    const [ob,oe]=split(f.name);
+    const c={f,i,fi,orig:f.name,origBase:ob,origExt:oe,parent:f.path.split('/').filter(Boolean).pop()||''};
+    let b=ob,e=oe;
+    for(const r of state.rules){
+      if(!r.on)continue;
+      try{[b,e]=applyRule(r,b,e,c);}catch(err){ruleErr.set(r.id,err.message.slice(0,60));}
+    }
+    let to=join(b,e);
+    const edited=f.override!==null&&f.override!==undefined;
+    if(edited)to=f.override;
+    res.set(f.id,{to,status:to===f.name?'same':'changed',msg:'',edited});
+    i++;
+  }
+  /* validation + conflicts per directory */
+  const groups=new Map();
+  for(const f of list){(groups.get(f.dirKey)||groups.set(f.dirKey,[]).get(f.dirKey)).push(f);}
+  for(const [key,fs] of groups){
+    const dir=state.dirs.get(key);
+    for(const f of fs){const r=res.get(f.id);if(r.status==='changed'){const v=validate(r.to);if(v){r.status='issue';r.msg=v;}}}
+    let loop=0,again=true;
+    while(again&&loop++<6){
+      again=false;
+      const stay=new Set();
+      if(dir)for(const n of dir.names)stay.add(n);
+      for(const f of fs){const r=res.get(f.id);if(r.status==='changed')stay.delete(f.name.toLowerCase());}
+      const used=new Set(stay);
+      for(const f of fs){
+        const r=res.get(f.id);if(r.status!=='changed')continue;
+        let t=r.to.toLowerCase();
+        if(used.has(t)){
+          if(state.opt.suffix){
+            const [bb,ee]=split(r.to);let k=2,cand;
+            do{cand=join(bb+'_'+k,ee);k++;}while(used.has(cand.toLowerCase())&&k<10000);
+            r.to=cand;t=cand.toLowerCase();r.msg='SUFFIXED';
+            if(r.to===f.name)r.status='same';
+          }else{r.status='issue';r.msg='DUPLICATE';again=true;continue;}
+        }
+        used.add(t);
+      }
+    }
+  }
+  const cnt={all:state.files.length,inc:0,changed:0,issue:0,same:0,excluded:0};
+  for(const r of res.values()){cnt[r.status]++;if(r.status!=='excluded')cnt.inc++;}
+  state.res=res;state.counts=cnt;state.ruleErr=ruleErr;
+}
+
+/* ================= RENDER ================= */
+let raf=0;
+function update(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();});}
+function render(){
+  compute();
+  renderRows();renderTabs();renderMetrics();renderSources();renderRuleState();renderFooter();
+}
+function diff(a,b){
+  let p=0;while(p<a.length&&p<b.length&&a[p]===b[p])p++;
+  let s=0;while(s<a.length-p&&s<b.length-p&&a[a.length-1-s]===b[b.length-1-s])s++;
+  const mid=(x)=>x.slice(p,x.length-s);
+  const pre=esc(a.slice(0,p)),sufA=esc(a.slice(a.length-s)),sufB=esc(b.slice(b.length-s));
+  return [pre+(mid(a)?'<span class="d">'+esc(mid(a))+'</span>':'')+sufA, pre+(mid(b)?'<span class="a">'+esc(mid(b))+'</span>':'')+sufB];
+}
+const ST_LABEL={changed:'CHANGED',same:'NO CHANGE',issue:'ISSUE',excluded:'EXCLUDED'};
+function renderRows(){
+  const box=$('#rows');
+  if(!state.files.length){box.innerHTML='<div class="empty">ファイルまたはフォルダを読み込むと、変更前後の名前がここに表示されます。</div>';state.visible=[];return;}
+  const q=state.filter.trim().toLowerCase();
+  const vis=[];
+  state.order.forEach((f,idx)=>{
+    const r=state.res.get(f.id);
+    if(state.tab!=='all'&&r.status!==state.tab)return;
+    if(q&&!(f.name.toLowerCase().includes(q)||r.to.toLowerCase().includes(q)||f.path.toLowerCase().includes(q)))return;
+    vis.push([f,idx]);
+  });
+  state.visible=vis.map(v=>v[0]);
+  const manual=state.sort==='manual';
+  const head='<div class="change-row head"><div><input type="checkbox" id="chk-all" aria-label="toggle visible" '+(vis.length&&vis.every(([f])=>f.include)?'checked':'')+'></div><div>NO</div><div class="h-st">STATUS</div><div>ORIGINAL<span class="hjp">変更前</span></div><div class="h-to">RENAMED<span class="hjp">変更後（ダブルクリックで個別編集）</span></div></div>';
+  if(!vis.length){box.innerHTML=head+'<div class="empty">該当するファイルはありません。</div>';return;}
+  const out=[head];
+  const lim=Math.min(vis.length,state.limit);
+  for(let k=0;k<lim;k++){
+    const [f,idx]=vis[k];const r=state.res.get(f.id);
+    const [da,db]=r.status==='changed'||r.status==='issue'?diff(f.name,r.to):[esc(f.name),esc(r.to)];
+    const cls=r.status==='issue'?' issue':r.status==='excluded'?' excluded':'';
+    const label=r.edited&&r.status==='changed'?'EDITED':ST_LABEL[r.status];
+    out.push('<div class="change-row'+cls+'" data-id="'+f.id+'"'+(manual?' draggable="true"':'')+'>'+
+      '<div><input type="checkbox" class="inc" '+(f.include?'checked':'')+' aria-label="include"></div>'+
+      '<div class="change-no">'+String(idx+1).padStart(3,'0')+'</div>'+
+      '<div class="status '+r.status+'">'+label+(r.msg?'<span class="msg">'+r.msg+'</span>':'')+'</div>'+
+      '<div class="c-from"><div class="nm">'+da+'</div>'+(f.path?'<div class="path">'+esc(f.path)+'</div>':'')+'</div>'+
+      '<div class="c-to"><div class="nm">'+(r.status==='excluded'?'—':db)+'</div></div></div>');
+  }
+  if(vis.length>lim)out.push('<div class="more"><button class="ghost" id="btn-more">SHOW ALL '+vis.length+'</button></div>');
+  box.innerHTML=out.join('');
+}
+function renderTabs(){
+  const c=state.counts;
+  const t=[['all','ALL',c.all],['changed','CHANGED',c.changed],['issue','ISSUES',c.issue],['same','NO CHANGE',c.same],['excluded','EXCLUDED',c.excluded]];
+  $('#tabs').innerHTML=t.map(([k,l,n],i)=>(i?'<span class="sep">/</span>':'')+'<button class="ghost'+(state.tab===k?' active':'')+(k==='issue'&&n?' danger':'')+'" data-tab="'+k+'">'+l+' '+(n||0)+'</button>').join('');
+}
+const OUT_LABEL={inplace:'IN PLACE',zip:'ZIP',ps1:'PS1',csv:'CSV'};
+function resolveMode(){
+  if(state.opt.output!=='auto')return state.opt.output;
+  const inc=state.files.filter(f=>f.include);
+  if(inc.length&&inc.every(f=>f.handle&&f.root.handle))return 'inplace';
+  return 'zip';
+}
+function renderMetrics(){
+  const c=state.counts;
+  $('#m-files').textContent=c.all;$('#m-inc').textContent=c.inc;$('#m-chg').textContent=c.changed;$('#m-iss').textContent=c.issue;
+  $('#mm-iss').classList.toggle('changed',c.issue>0);
+  const m=resolveMode();
+  $('#m-out').textContent=OUT_LABEL[m];
+  $('#btn-run').textContent='RUN / '+OUT_LABEL[m];
+  $('#btn-undo').disabled=!state.history.length||state.busy;
+  $('#btn-run').disabled=state.busy;
+}
+function renderSources(){
+  const n=state.files.length;
+  const folders=state.dirs.size;
+  $('#src-count').textContent=n+' FILES / '+folders+' FOLDERS';
+  $('#src-list').innerHTML=state.roots.map(r=>{
+    const cnt=state.files.filter(f=>f.root===r).length;
+    return '<div class="src-row" data-root="'+r.id+'"><div class="src-name">'+esc(r.name)+'</div><div class="src-meta">'+cnt+' FILES</div><div class="src-meta'+(r.handle?' ok':'')+'">'+(r.handle?'IN PLACE READY':'ZIP / SCRIPT')+'</div><button class="ghost danger" data-act="rm-root">REMOVE</button></div>';
+  }).join('');
+  const inplace=n&&state.files.every(f=>f.handle);
+  $('#src-line').className='state-line'+(n?(inplace?' ok':' same'):'');
+  $('#src-state').textContent=!n?'WAITING':inplace?'IN PLACE READY':'DOWNLOAD OUTPUT';
+}
+function renderRuleState(){
+  const on=state.rules.filter(r=>r.on).length;
+  $('#rule-count').textContent=state.rules.length+' RULES';
+  $('#rule-state').textContent=on?on+' ACTIVE':'NO RULE';
+  $('#rule-line').className='state-line'+(on?' changed':'');
+  for(const r of state.rules){const el=document.getElementById('err-'+r.id);if(el)el.textContent=state.ruleErr.has(r.id)?'ERROR':'';}
+}
+function renderFooter(){
+  const c=state.counts;
+  const st=state.busy?'RUNNING':c.all?'READY':'WAITING';
+  $('#footer-main').textContent=st+' · '+c.all+' FILES · '+c.changed+' CHANGED'+(c.issue?' · '+c.issue+' ISSUES':'')+' · CTRL / ⌘ + ENTER RUN · CTRL / ⌘ + Z UNDO · CTRL / ⌘ + O OPEN';
+}
+
+/* ---------- RULE UI ---------- */
+function fieldHTML(r,fd){
+  const [k,type,label,opt]=fd;const v=r.p[k];
+  if(type==='bool')return '<label class="toggle"><input type="checkbox" data-k="'+k+'" '+(v?'checked':'')+'>'+esc(label)+'</label>';
+  if(type==='sel')return '<label class="field"><span class="control-label">'+label+'</span><select data-k="'+k+'">'+opt.map(([a,b])=>'<option value="'+esc(a)+'"'+(a===v?' selected':'')+'>'+b+'</option>').join('')+'</select></label>';
+  if(type==='area')return '<label class="field area"><textarea class="list-area" data-k="'+k+'" spellcheck="false" placeholder="'+esc(LIST_PH[r.p.mode]||'')+'">'+esc(v)+'</textarea></label>';
+  const num=type==='num';
+  return '<label class="field'+(num?' num':'')+(opt==='wide'?' wide':'')+'"><span class="control-label">'+label+'</span><input class="text-input" '+(num?'type="number" ':'')+'data-k="'+k+'" data-type="'+type+'" value="'+esc(v)+'" spellcheck="false" autocomplete="off"></label>';
+}
+function renderRules(){
+  const box=$('#rules');
+  if(!state.rules.length){box.innerHTML='<div class="empty">右上の ADD RULE から規則を追加するか、PRESET を選択してください。規則は上から順に適用されます。</div>';renderRuleState();return;}
+  box.innerHTML=state.rules.map((r,i)=>{
+    const d=RULES[r.t];
+    const fields=d.f.filter(f=>!f[4]||f[4](r.p)).map(f=>fieldHTML(r,f)).join('');
+    return '<div class="rule'+(r.on?'':' off')+'" data-i="'+i+'">'+
+      '<div class="rule-no" draggable="true" title="DRAG TO REORDER">'+String(i+1).padStart(2,'0')+'</div>'+
+      '<input type="checkbox" class="rule-on" '+(r.on?'checked':'')+' aria-label="enable rule">'+
+      '<div class="rule-type">'+d.l+'<span class="jp">'+d.jp+'</span><div class="rule-err" id="err-'+r.id+'"></div></div>'+
+      '<div class="params">'+fields+'</div>'+
+      '<div class="rule-actions"><button class="ghost" data-act="up" aria-label="move up">UP</button><span class="sep">/</span><button class="ghost" data-act="down" aria-label="move down">DOWN</button><span class="sep">/</span><button class="ghost" data-act="dup">DUP</button><span class="sep">/</span><button class="ghost danger" data-act="del">DEL</button></div></div>';
+  }).join('');
+  renderRuleState();
+}
+function renderPresets(){
+  const sel=$('#sel-preset');
+  sel.innerHTML='<option value="">SELECT…</option><optgroup label="BUILT-IN">'+BUILTIN.map((p,i)=>'<option value="b:'+i+'">'+esc(p.name)+'</option>').join('')+'</optgroup>'+
+    (state.presets.length?'<optgroup label="SAVED">'+state.presets.map((p,i)=>'<option value="u:'+i+'">'+esc(p.name)+'</option>').join('')+'</optgroup>':'');
+}
+function applyPreset(p){
+  state.rules=p.rules.map(r=>Object.assign(newRule(r.t,JSON.parse(JSON.stringify(r.p))),{on:r.on!==false}));
+  saveRules();renderRules();update();
+  toast(p.rules.length?'PRESET APPLIED':'RULES CLEARED');
+  const first=$('#rules .text-input, #rules .list-area');if(first&&p.rules.length)first.focus();
+}
+
+/* ================= LOG / TOAST / PROGRESS ================= */
+function log(kind,msg){
+  state.log.unshift({t:fmtDate(new Date(),'HH:mm:ss'),k:kind,m:msg});
+  if(state.log.length>1000)state.log.length=1000;
+  renderLogSoon();
+}
+let logRaf=0;
+function renderLogSoon(){if(logRaf)return;logRaf=requestAnimationFrame(()=>{logRaf=0;
+  $('#log').innerHTML=state.log.length?state.log.map(e=>'<div class="log-row"><div class="t">'+e.t+'</div><div class="k '+e.k+'">'+e.k.toUpperCase()+'</div><div class="m">'+esc(e.m)+'</div></div>').join(''):'<div class="empty">実行結果・読み込み・エラーがここに記録されます。</div>';
+});}
+let toastT=0;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1600);}
+function setProgress(done,total,label){
+  $('#prog').style.width=(total?Math.round(done/total*100):0)+'%';
+  $('#proc-count').textContent=done+' / '+total;
+  if(label)$('#proc-state').textContent=label;
+  $('#proc-line').className='state-line'+(state.busy?' changed':done&&done===total?' ok':'');
+}
+
+/* ================= LOADING ================= */
+function ensureDir(key,handle){let d=state.dirs.get(key);if(!d){d={handle:handle||null,names:new Set()};state.dirs.set(key,d);}return d;}
+function addFile(o){
+  state.files.push({id:++uid,name:o.name,path:o.path,file:o.file,handle:o.handle||null,dirKey:o.dirKey,root:o.root,
+    lastModified:o.file.lastModified,size:o.file.size,include:true,override:null,order:state.files.length});
+  o.root.count++;
+}
+async function walk(dh,path,root,depth){
+  const key='h:'+root.id+':'+path;const dir=ensureDir(key,dh);
+  const subs=[];
+  for await (const [name,h] of dh.entries()){
+    dir.names.add(name.toLowerCase());
+    if(h.kind==='file'){
+      if(SYS.has(name.toLowerCase()))continue;
+      try{const file=await h.getFile();addFile({name,path,file,handle:h,dirKey:key,root});}
+      catch(err){log('error','READ FAILED: '+path+name);}
+      if(root.count%200===0)setProgress(root.count,root.count,'LOADING');
+    }else if(state.opt.sub)subs.push([h,name]);
+  }
+  for(const [h,n] of subs)await walk(h,path+n+'/',root,depth+1);
+}
+async function loadDirHandle(dh){
+  for(const r of state.roots){try{if(r.handle&&await r.handle.isSameEntry(dh)){toast('ALREADY LOADED');return 0;}}catch(_){}}
+  const root={id:++uid,name:dh.name,handle:dh,count:0};
+  state.roots.push(root);
+  await walk(dh,dh.name+'/',root,0);
+  log('info','LOADED '+root.count+' FILES FROM '+dh.name+(state.opt.sub?' (WITH SUBFOLDERS)':''));
+  return root.count;
+}
+function addLoose(items,name){
+  if(!items.length)return 0;
+  const root={id:++uid,name,handle:null,count:0};
+  state.roots.push(root);
+  for(const it of items){
+    if(SYS.has(it.file.name.toLowerCase()))continue;
+    const key='l:'+root.id+':'+it.path;const dir=ensureDir(key,null);
+    dir.names.add(it.file.name.toLowerCase());
+    addFile({name:it.file.name,path:it.path,file:it.file,dirKey:key,root});
+  }
+  log('info','LOADED '+root.count+' FILES: '+name+' (DOWNLOAD OUTPUT)');
+  return root.count;
+}
+function afterLoad(n){
+  state.files.forEach((f,i)=>f.order=i);
+  if(state.sort==='manual'){const s=sorted();s.forEach((f,i)=>f.order=i);}
+  setProgress(0,0,'READY');
+  update();
+  if(n)toast(n+' FILES LOADED');
+}
+async function openFolder(){
+  if(!FS_OK){$('#file-dir').click();return;}
+  try{
+    const dh=await window.showDirectoryPicker({id:'rename-matrix',mode:'readwrite'});
+    setProgress(0,0,'LOADING');
+    const n=await loadDirHandle(dh);afterLoad(n);
+  }catch(err){if(err.name!=='AbortError'){log('error',err.message);toast('OPEN FAILED');}}
+}
+function readEntry(en,path,out,depth){
+  return new Promise(res=>{
+    if(en.isFile){en.file(f=>{out.push({file:f,path});res();},()=>res());}
+    else if(en.isDirectory){
+      if(depth>0&&!state.opt.sub){res();return;}
+      const rd=en.createReader();const all=[];
+      const next=()=>rd.readEntries(async ents=>{
+        if(!ents.length){for(const e of all)await readEntry(e,path+en.name+'/',out,depth+1);res();}
+        else{all.push(...ents);next();}
+      },()=>res());
+      next();
+    }else res();
+  });
+}
+async function handleDrop(dt){
+  const items=[...(dt.items||[])].filter(i=>i.kind==='file');
+  let n=0;setProgress(0,0,'LOADING');
+  if(items.length&&DROP_HANDLE){
+    const hs=(await Promise.all(items.map(i=>i.getAsFileSystemHandle().catch(()=>null)))).filter(Boolean);
+    const loose=[];
+    for(const h of hs){
+      if(h.kind==='directory')n+=await loadDirHandle(h);
+      else loose.push({file:await h.getFile(),path:''});
+    }
+    if(loose.length){n+=addLoose(loose,'DROPPED FILES ('+loose.length+')');log('info','単体ファイルはダウンロード出力になります。元の場所で直接リネームするにはフォルダごとドロップしてください。');}
+  }else if(items.length&&items[0].webkitGetAsEntry){
+    const ents=items.map(i=>i.webkitGetAsEntry()).filter(Boolean);
+    const out=[];for(const en of ents)await readEntry(en,'',out,0);
+    n+=addLoose(out,ents.length===1?ents[0].name:'DROPPED ('+ents.length+' ITEMS)');
+  }else if(dt.files&&dt.files.length){
+    n+=addLoose([...dt.files].map(f=>({file:f,path:''})),'DROPPED FILES');
+  }
+  afterLoad(n);
+}
+
+/* ================= RENAME ENGINE ================= */
+async function ensurePerm(h){
+  if(!h||!h.queryPermission)return true;
+  if(await h.queryPermission({mode:'readwrite'})==='granted')return true;
+  return (await h.requestPermission({mode:'readwrite'}))==='granted';
+}
+async function renameEntry(f,to){
+  const dir=state.dirs.get(f.dirKey);
+  let moved=false;
+  if(f.handle&&typeof f.handle.move==='function'){
+    try{await f.handle.move(to);moved=true;}catch(err){if(!dir||!dir.handle)throw err;}
+  }
+  if(!moved){
+    if(!dir||!dir.handle)throw new Error('NO WRITE ACCESS');
+    const src=await f.handle.getFile();
+    const nh=await dir.handle.getFileHandle(to,{create:true});
+    const w=await nh.createWritable();await w.write(src);await w.close();
+    await dir.handle.removeEntry(f.name);
+    f.handle=nh;
+  }
+  if(dir){dir.names.delete(f.name.toLowerCase());dir.names.add(to.toLowerCase());}
+  f.name=to;
+}
+async function renameBatch(batch,label){
+  state.busy=true;renderMetrics();renderFooter();
+  const done=[];let fail=0;
+  const tag=Date.now().toString(36);let k=0;
+  const groups=new Map();
+  for(const it of batch){it.from=it.f.name;(groups.get(it.f.dirKey)||groups.set(it.f.dirKey,[]).get(it.f.dirKey)).push(it);}
+  const total=batch.length;let n=0;
+  setProgress(0,total,label);
+  const phase2=[];
+  for(const items of groups.values()){
+    const orig=new Set(items.map(it=>it.from.toLowerCase()));
+    for(const it of items){
+      if(orig.has(it.to.toLowerCase())){
+        const tmp='~rm-'+tag+'-'+(++k)+'.tmp';
+        try{await renameEntry(it.f,tmp);phase2.push(it);}
+        catch(err){fail++;log('error',it.from+' : '+err.message);setProgress(++n,total);}
+      }else phase2.push(it);
+    }
+  }
+  for(const it of phase2){
+    try{await renameEntry(it.f,it.to);done.push({f:it.f,from:it.from,to:it.to});log('ok',it.f.path+it.from+'  →  '+it.to);}
+    catch(err){
+      fail++;log('error',it.from+'  →  '+it.to+' : '+err.message);
+      if(it.f.name!==it.from){try{await renameEntry(it.f,it.from);}catch(_){log('error','RESTORE FAILED: '+it.f.name);}}
+    }
+    setProgress(++n,total);
+  }
+  state.busy=false;
+  return {done,fail};
+}
+async function run(){
+  if(state.busy)return;
+  compute();
+  const mode=resolveMode();
+  const list=state.order.filter(f=>f.include);
+  if(!list.length){toast('NO FILES');return;}
+  const changed=list.filter(f=>state.res.get(f.id).status==='changed');
+  const issues=list.filter(f=>state.res.get(f.id).status==='issue').length;
+  if(mode==='csv'){exportCSV();return;}
+  if(mode==='zip'){await exportZip(list);return;}
+  if(!changed.length){toast(issues?'RESOLVE ISSUES FIRST':'NO CHANGES');return;}
+  if(mode==='ps1'){exportPS1(changed);return;}
+  const able=changed.filter(f=>f.handle&&f.root.handle);
+  const skipped=changed.length-able.length;
+  if(!able.length){toast('NO WRITE ACCESS / USE ZIP');log('error','元の場所へ書き込めるファイルがありません。OPEN FOLDER で読み込むか、OUTPUT を ZIP に切り替えてください。');return;}
+  try{
+    for(const r of new Set(able.map(f=>f.root))){
+      if(!await ensurePerm(r.handle)){toast('PERMISSION DENIED');log('error','PERMISSION DENIED: '+r.name);return;}
+    }
+  }catch(err){toast('PERMISSION ERROR');log('error',err.message);return;}
+  const map=new Map(able.map(f=>[f.id,state.res.get(f.id).to]));
+  able.forEach(f=>f.override=null);
+  const r=await renameBatch(able.map(f=>({f,to:map.get(f.id)})),'RENAMING');
+  if(r.done.length)state.history.push(r.done);
+  const msg=r.done.length+' RENAMED'+(r.fail?' · '+r.fail+' FAILED':'')+(skipped?' · '+skipped+' SKIPPED':'')+(issues?' · '+issues+' ISSUES SKIPPED':'');
+  log(r.fail?'error':'ok','DONE: '+msg);
+  setProgress(r.done.length,able.length,r.fail?'DONE WITH ERRORS':'DONE');
+  toast(msg);update();
+}
+async function undo(){
+  if(state.busy)return;
+  const last=state.history.pop();
+  if(!last){toast('NOTHING TO UNDO');return;}
+  try{for(const r of new Set(last.map(d=>d.f.root)))if(!await ensurePerm(r.handle)){state.history.push(last);toast('PERMISSION DENIED');return;}}
+  catch(err){state.history.push(last);toast('PERMISSION ERROR');return;}
+  const r=await renameBatch(last.slice().reverse().map(d=>({f:d.f,to:d.from})),'UNDOING');
+  log(r.fail?'error':'ok','UNDO: '+r.done.length+' RESTORED'+(r.fail?' · '+r.fail+' FAILED':''));
+  setProgress(r.done.length,last.length,'UNDONE');
+  toast('UNDONE');update();
+}
+
+/* ================= EXPORTS ================= */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function dosTime(d){return {t:(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1),d:((Math.max(1980,d.getFullYear())-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate()};}
+async function exportZip(list){
+  state.busy=true;renderMetrics();
+  const enc=new TextEncoder();const parts=[];const central=[];let off=0;const used=new Set();
+  let n=0;setProgress(0,list.length,'PACKING ZIP');
+  let total=0;
+  for(const f of list){
+    const r=state.res.get(f.id);
+    let name=r.status==='changed'?r.to:f.name;
+    let path=(state.opt.keep?f.path:'')+name;
+    while(used.has(path.toLowerCase())){const [b,e]=split(name);name=join(b+'_dup',e);path=(state.opt.keep?f.path:'')+name;}
+    used.add(path.toLowerCase());
+    const data=new Uint8Array(await f.file.arrayBuffer());
+    total+=data.length;
+    if(total>4000*1024*1024){state.busy=false;toast('ZIP TOO LARGE');log('error','ZIP は 4GB 未満にしてください。');setProgress(0,0,'READY');return;}
+    const nb=enc.encode(path);const crc=crc32(data);const dt=dosTime(new Date(f.lastModified));
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);
+    lh.setUint16(10,dt.t,true);lh.setUint16(12,dt.d,true);lh.setUint32(14,crc,true);lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);
+    lh.setUint16(26,nb.length,true);lh.setUint16(28,0,true);
+    parts.push(lh,nb,data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);
+    ch.setUint16(12,dt.t,true);ch.setUint16(14,dt.d,true);ch.setUint32(16,crc,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);
+    ch.setUint16(28,nb.length,true);ch.setUint32(42,off,true);
+    central.push(ch,nb);
+    off+=30+nb.length+data.length;
+    setProgress(++n,list.length);
+  }
+  const cdSize=central.reduce((s,p)=>s+p.byteLength,0);
+  const end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);end.setUint16(8,list.length,true);end.setUint16(10,list.length,true);end.setUint32(12,cdSize,true);end.setUint32(16,off,true);
+  download(new Blob([...parts,...central,end],{type:'application/zip'}),'renamed_'+stamp()+'.zip');
+  state.busy=false;
+  const ch=list.filter(f=>state.res.get(f.id).status==='changed').length;
+  log('ok','ZIP EXPORTED: '+list.length+' FILES ('+ch+' RENAMED)');
+  setProgress(list.length,list.length,'EXPORTED');toast('ZIP EXPORTED');update();
+}
+function relPath(f,strip){const p=strip?f.path.split('/').slice(1).join('/'):f.path;return p.replace(/\//g,'\\');}
+function exportPS1(changed){
+  const roots=new Set(changed.map(f=>f.path.split('/')[0]));
+  const strip=roots.size===1&&changed.every(f=>f.path);
+  const rootName=strip?[...roots][0]:'';
+  const q=s=>"'"+String(s).replace(/'/g,"''")+"'";
+  const lines=[
+    '# RENAME MATRIX / V1.0  '+fmtDate(new Date(),'YYYY-MM-DD HH:mm'),
+    strip?'# このスクリプトをフォルダ「'+rootName+'」の直下に保存して実行してください。':'# このスクリプトを対象ファイル（またはフォルダ）と同じ場所に保存して実行してください。',
+    '# 元に戻す: .\\'+'rename_xxx.ps1 -Undo',
+    'param([switch]$Undo)',
+    "$ErrorActionPreference='Stop'",
+    'Set-Location -LiteralPath $PSScriptRoot',
+    '$pairs=@(',
+    ...changed.map(f=>'  ,@('+q(relPath(f,strip))+','+q(f.name)+','+q(state.res.get(f.id).to)+')'),
+    ')',
+    "$tag=[guid]::NewGuid().ToString('N').Substring(0,8)",
+    '$tmp=@();$i=0',
+    'foreach($p in $pairs){',
+    '  if($Undo){$a=$p[2];$b=$p[1]}else{$a=$p[1];$b=$p[2]}',
+    '  $src=if($p[0]){Join-Path $p[0] $a}else{$a}',
+    '  $t="~rm-$tag-$i.tmp";$i++',
+    '  Rename-Item -LiteralPath $src -NewName $t',
+    '  $tmp+=,@($p[0],$t,$b)',
+    '}',
+    'foreach($q in $tmp){',
+    '  $src=if($q[0]){Join-Path $q[0] $q[1]}else{$q[1]}',
+    '  Rename-Item -LiteralPath $src -NewName $q[2]',
+    '}',
+    'Write-Host ("DONE: "+$pairs.Count+" FILES")',
+  ];
+  const name='rename_'+stamp()+'.ps1';
+  download(new Blob(['\ufeff'+lines.join('\r\n').replace('rename_xxx.ps1',name)],{type:'text/plain'}),name);
+  log('ok','PS1 EXPORTED: '+changed.length+' FILES'+(strip?' / PLACE IN '+rootName:''));
+  toast('SCRIPT EXPORTED');
+}
+function csvRows(){
+  const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+  const rows=[['folder','original','renamed','status','note'].join(',')];
+  for(const f of state.order){const r=state.res.get(f.id);rows.push([f.path,f.name,r.to,r.status,r.msg].map(q).join(','));}
+  return rows.join('\r\n');
+}
+function exportCSV(){
+  if(!state.files.length){toast('NO FILES');return;}
+  download(new Blob(['\ufeff'+csvRows()],{type:'text/csv'}),'rename_list_'+stamp()+'.csv');
+  log('ok','CSV EXPORTED: '+state.files.length+' ROWS');toast('CSV EXPORTED');
+}
+async function copyList(){
+  if(!state.files.length){toast('NO FILES');return;}
+  const txt=state.order.map(f=>f.name+'\t'+state.res.get(f.id).to).join('\n');
+  try{await navigator.clipboard.writeText(txt);toast('COPIED');}catch(_){toast('COPY FAILED');}
+}
+
+/* ================= EVENTS ================= */
+function clearAll(){
+  state.files=[];state.roots=[];state.dirs=new Map();state.history=[];state.limit=1000;
+  setProgress(0,0,'READY');update();toast('CLEARED');log('info','CLEARED');
+}
+$('#btn-open').onclick=openFolder;$('#btn-open2').onclick=openFolder;
+$('#btn-add').onclick=()=>$('#file-add').click();$('#btn-add2').onclick=()=>$('#file-add').click();
+$('#drop').onclick=openFolder;
+$('#drop').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openFolder();}};
+$('#file-add').onchange=e=>{const fs=[...e.target.files];const n=addLoose(fs.map(f=>({file:f,path:''})),fs.length===1?fs[0].name:'SELECTED FILES ('+fs.length+')');e.target.value='';afterLoad(n);};
+$('#file-dir').onchange=e=>{const fs=[...e.target.files];if(!fs.length)return;
+  const items=fs.map(f=>{const rp=f.webkitRelativePath||f.name;return {file:f,path:rp.slice(0,rp.length-f.name.length)};}).filter(it=>state.opt.sub||it.path.split('/').filter(Boolean).length<=1);
+  const n=addLoose(items,(fs[0].webkitRelativePath||'').split('/')[0]||'FOLDER');e.target.value='';afterLoad(n);};
+$('#btn-clear').onclick=clearAll;
+$('#btn-undo').onclick=undo;
+$('#btn-run').onclick=run;
+$('#btn-csv').onclick=exportCSV;
+$('#btn-copy').onclick=copyList;
+$('#btn-logclear').onclick=()=>{state.log=[];renderLogSoon();};
+$('#btn-incall').onclick=()=>{state.visible.forEach(f=>f.include=true);update();};
+$('#btn-excall').onclick=()=>{state.visible.forEach(f=>f.include=false);update();};
+$('#btn-resetedit').onclick=()=>{let n=0;state.files.forEach(f=>{if(f.override!==null){f.override=null;n++;}});update();toast(n+' EDITS RESET');};
+$('#btn-export').onclick=()=>{
+  const data={app:'RENAME MATRIX',version:'1.0',rules:state.rules.map(r=>({t:r.t,on:r.on,p:r.p})),presets:state.presets};
+  download(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'rename-matrix_rules_'+stamp()+'.json');toast('EXPORTED');
+};
+$('#btn-import').onclick=()=>$('#file-import').click();
+$('#file-import').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const d=JSON.parse(await f.text());
+    if(Array.isArray(d.rules)){state.rules=d.rules.filter(r=>RULES[r.t]).map(r=>Object.assign(newRule(r.t,r.p),{on:r.on!==false}));saveRules();renderRules();}
+    if(Array.isArray(d.presets)){for(const p of d.presets){const i=state.presets.findIndex(x=>x.name===p.name);if(i>=0)state.presets[i]=p;else state.presets.push(p);}lsSet('presets',state.presets);renderPresets();}
+    update();toast('IMPORTED');log('info','IMPORTED: '+f.name);
+  }catch(err){toast('IMPORT FAILED');log('error','IMPORT FAILED: '+err.message);}
+};
+
+/* control strip */
+$('#sel-preset').onchange=e=>{
+  const v=e.target.value;if(!v)return;
+  const [k,i]=v.split(':');const p=k==='b'?BUILTIN[+i]:state.presets[+i];
+  if(p){applyPreset(p);if(k==='u')$('#inp-preset').value=p.name;}
+  e.target.value='';
+};
+$('#sel-sort').value=state.sort;
+$('#sel-sort').onchange=e=>{
+  if(e.target.value==='manual'&&state.sort!=='manual'){sorted().forEach((f,i)=>f.order=i);}
+  state.sort=e.target.value;saveOpt();update();
+};
+$('#inp-filter').oninput=e=>{state.filter=e.target.value;update();};
+$('#opt-sub').checked=state.opt.sub;$('#opt-suffix').checked=state.opt.suffix;$('#opt-keep').checked=state.opt.keep;
+$('#sel-output').value=state.opt.output;
+$('#opt-sub').onchange=e=>{state.opt.sub=e.target.checked;saveOpt();toast(e.target.checked?'SUBFOLDERS ON (NEXT LOAD)':'SUBFOLDERS OFF (NEXT LOAD)');};
+$('#opt-suffix').onchange=e=>{state.opt.suffix=e.target.checked;saveOpt();update();};
+$('#opt-keep').onchange=e=>{state.opt.keep=e.target.checked;saveOpt();};
+$('#sel-output').onchange=e=>{state.opt.output=e.target.value;saveOpt();update();};
+
+/* add rule select */
+$('#sel-add').innerHTML='<option value="">+ ADD RULE</option>'+Object.entries(RULES).map(([k,d])=>'<option value="'+k+'">'+d.l+' / '+d.jp+'</option>').join('');
+$('#sel-add').onchange=e=>{
+  const t=e.target.value;if(!t)return;
+  state.rules.push(newRule(t));saveRules();renderRules();update();e.target.value='';
+  const last=$('#rules .rule:last-child');if(last){last.scrollIntoView({block:'nearest'});const inp=last.querySelector('.text-input, .list-area');if(inp)inp.focus();}
+};
+
+/* token buttons */
+$('#tokens').innerHTML='<span class="control-label">TOKENS</span>'+TOKENS.map(([t,j])=>'<button class="tok" data-tok="'+esc(t)+'" title="クリックで入力欄に挿入">'+esc(t)+'<span class="jp">'+j+'</span></button>').join('');
+$('#tokens').onclick=e=>{
+  const b=e.target.closest('[data-tok]');if(!b)return;
+  const t=b.dataset.tok;let inp=state.lastFocus;
+  if(!inp||!document.body.contains(inp)){
+    state.rules.push(newRule('template',{pattern:t}));saveRules();renderRules();update();toast('TEMPLATE ADDED');return;
+  }
+  const s=inp.selectionStart??inp.value.length,en=inp.selectionEnd??inp.value.length;
+  inp.value=inp.value.slice(0,s)+t+inp.value.slice(en);
+  inp.focus();inp.setSelectionRange(s+t.length,s+t.length);
+  inp.dispatchEvent(new Event('input',{bubbles:true}));
+};
+
+/* rules panel events */
+const rulesBox=$('#rules');
+function ruleOf(el){const row=el.closest('.rule');return row?state.rules[+row.dataset.i]:null;}
+rulesBox.addEventListener('focusin',e=>{if(e.target.matches('.text-input:not([type=number]), .list-area'))state.lastFocus=e.target;});
+rulesBox.addEventListener('input',e=>{
+  const el=e.target,r=ruleOf(el);if(!r||!el.dataset.k)return;
+  if(el.type==='checkbox')return;
+  r.p[el.dataset.k]=el.dataset.type==='num'?(el.value===''?'':+el.value):el.value;
+  if(el.tagName==='SELECT')return;
+  saveRules();update();
+});
+rulesBox.addEventListener('change',e=>{
+  const el=e.target,r=ruleOf(el);if(!r)return;
+  if(el.classList.contains('rule-on')){r.on=el.checked;el.closest('.rule').classList.toggle('off',!r.on);saveRules();update();return;}
+  if(el.type==='checkbox'&&el.dataset.k){r.p[el.dataset.k]=el.checked;saveRules();update();return;}
+  if(el.tagName==='SELECT'&&el.dataset.k){r.p[el.dataset.k]=el.value;saveRules();renderRules();update();}
+});
+rulesBox.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const row=b.closest('.rule');const i=+row.dataset.i;const a=b.dataset.act;const R=state.rules;
+  if(a==='up'&&i>0)[R[i-1],R[i]]=[R[i],R[i-1]];
+  else if(a==='down'&&i<R.length-1)[R[i+1],R[i]]=[R[i],R[i+1]];
+  else if(a==='dup')R.splice(i+1,0,Object.assign(newRule(R[i].t,JSON.parse(JSON.stringify(R[i].p))),{on:R[i].on}));
+  else if(a==='del')R.splice(i,1);
+  else return;
+  saveRules();renderRules();update();
+});
+let dragRule=-1;
+rulesBox.addEventListener('dragstart',e=>{
+  if(!e.target.classList||!e.target.classList.contains('rule-no'))return;
+  const row=e.target.closest('.rule');
+  dragRule=+row.dataset.i;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','rule');
+});
+rulesBox.addEventListener('dragover',e=>{if(dragRule<0)return;e.preventDefault();e.stopPropagation();const row=e.target.closest('.rule');rulesBox.querySelectorAll('.drag-over').forEach(x=>x.classList.remove('drag-over'));if(row)row.classList.add('drag-over');});
+rulesBox.addEventListener('drop',e=>{
+  if(dragRule<0)return;e.preventDefault();e.stopPropagation();
+  const row=e.target.closest('.rule');if(row){const to=+row.dataset.i;const [m]=state.rules.splice(dragRule,1);state.rules.splice(to,0,m);saveRules();renderRules();update();}
+  dragRule=-1;
+});
+rulesBox.addEventListener('dragend',()=>{dragRule=-1;rulesBox.querySelectorAll('.drag-over').forEach(x=>x.classList.remove('drag-over'));});
+
+/* presets save/delete */
+$('#btn-psave').onclick=()=>{
+  const name=$('#inp-preset').value.trim();
+  if(!name){$('#inp-preset').focus();toast('ENTER PRESET NAME');return;}
+  if(!state.rules.length){toast('NO RULES');return;}
+  const p={name,rules:state.rules.map(r=>({t:r.t,on:r.on,p:r.p}))};
+  const i=state.presets.findIndex(x=>x.name===name);if(i>=0)state.presets[i]=JSON.parse(JSON.stringify(p));else state.presets.push(JSON.parse(JSON.stringify(p)));
+  lsSet('presets',state.presets);renderPresets();toast(i>=0?'PRESET UPDATED':'PRESET SAVED');
+};
+$('#inp-preset').onkeydown=e=>{if(e.key==='Enter')$('#btn-psave').click();};
+$('#btn-pdel').onclick=()=>{
+  const name=$('#inp-preset').value.trim();const i=state.presets.findIndex(x=>x.name===name);
+  if(i<0){toast('PRESET NOT FOUND');return;}
+  state.presets.splice(i,1);lsSet('presets',state.presets);renderPresets();$('#inp-preset').value='';toast('PRESET DELETED');
+};
+
+/* sources */
+$('#src-list').onclick=e=>{
+  const b=e.target.closest('[data-act="rm-root"]');if(!b)return;
+  const id=+b.closest('.src-row').dataset.root;
+  state.files=state.files.filter(f=>f.root.id!==id);
+  state.roots=state.roots.filter(r=>r.id!==id);
+  for(const k of [...state.dirs.keys()])if(k.split(':')[1]===String(id))state.dirs.delete(k);
+  state.history=state.history.map(h=>h.filter(d=>d.f.root.id!==id)).filter(h=>h.length);
+  update();toast('REMOVED');
+};
+
+/* preview rows */
+const rowsBox=$('#rows');
+rowsBox.addEventListener('click',e=>{
+  if(e.target.id==='btn-more'){state.limit=1e9;update();return;}
+  if(e.target.id==='chk-all'){const v=e.target.checked;state.visible.forEach(f=>f.include=v);update();return;}
+  if(e.target.classList.contains('inc')){
+    const id=+e.target.closest('.change-row').dataset.id;
+    const idx=state.visible.findIndex(f=>f.id===id);const v=e.target.checked;
+    if(e.shiftKey&&state.lastCheck>=0){const [a,b]=[Math.min(idx,state.lastCheck),Math.max(idx,state.lastCheck)];for(let k=a;k<=b;k++)state.visible[k].include=v;}
+    else state.visible[idx].include=v;
+    state.lastCheck=idx;update();
+  }
+});
+rowsBox.addEventListener('dblclick',e=>{
+  const cell=e.target.closest('.c-to');if(!cell)return;
+  const row=cell.closest('.change-row');const f=state.files.find(x=>x.id===+row.dataset.id);if(!f||!f.include)return;
+  const r=state.res.get(f.id);
+  cell.innerHTML='<input class="edit-input" spellcheck="false" aria-label="edit name">';
+  const inp=cell.firstChild;inp.value=r.to;inp.focus();
+  const [b]=split(r.to);inp.setSelectionRange(0,b.length);
+  let doneFlag=false;
+  const commit=ok=>{
+    if(doneFlag)return;doneFlag=true;
+    if(ok){const v=inp.value.trim();f.override=null;
+      if(v){compute();const auto=state.res.get(f.id).to;f.override=v===auto?null:v;}
+    }
+    update();
+  };
+  inp.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();commit(true);}else if(ev.key==='Escape'){ev.preventDefault();commit(false);}};
+  inp.onblur=()=>commit(true);
+});
+let dragRow=null;
+rowsBox.addEventListener('dragstart',e=>{const row=e.target.closest&&e.target.closest('.change-row[draggable]');if(!row)return;dragRow=+row.dataset.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','row');});
+rowsBox.addEventListener('dragover',e=>{if(dragRow===null)return;e.preventDefault();e.stopPropagation();rowsBox.querySelectorAll('.drag-over').forEach(x=>x.classList.remove('drag-over'));const row=e.target.closest('.change-row:not(.head)');if(row)row.classList.add('drag-over');});
+rowsBox.addEventListener('drop',e=>{
+  if(dragRow===null)return;e.preventDefault();e.stopPropagation();
+  const row=e.target.closest('.change-row:not(.head)');
+  if(row){const list=sorted();const from=list.findIndex(f=>f.id===dragRow);const [m]=list.splice(from,1);const to=list.findIndex(f=>f.id===+row.dataset.id);list.splice(to,0,m);list.forEach((f,i)=>f.order=i);update();}
+  dragRow=null;
+});
+rowsBox.addEventListener('dragend',()=>{dragRow=null;rowsBox.querySelectorAll('.drag-over').forEach(x=>x.classList.remove('drag-over'));});
+$('#tabs').onclick=e=>{const b=e.target.closest('[data-tab]');if(!b)return;state.tab=b.dataset.tab;state.lastCheck=-1;update();};
+
+/* global drag & drop */
+let dragDepth=0;
+const isFileDrag=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
+window.addEventListener('dragenter',e=>{if(!isFileDrag(e))return;dragDepth++;$('#drop').classList.add('over');});
+window.addEventListener('dragleave',e=>{if(!isFileDrag(e))return;dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)$('#drop').classList.remove('over');});
+window.addEventListener('dragover',e=>{if(isFileDrag(e)){e.preventDefault();e.dataTransfer.dropEffect='copy';}});
+window.addEventListener('drop',e=>{if(!isFileDrag(e))return;e.preventDefault();dragDepth=0;$('#drop').classList.remove('over');handleDrop(e.dataTransfer);});
+
+/* keyboard */
+window.addEventListener('keydown',e=>{
+  const mod=e.ctrlKey||e.metaKey;
+  const typing=e.target.matches('input:not([type=checkbox]),textarea,select');
+  if(mod&&e.key==='Enter'){e.preventDefault();run();}
+  else if(mod&&(e.key==='o'||e.key==='O')){e.preventDefault();openFolder();}
+  else if(mod&&!e.shiftKey&&(e.key==='z'||e.key==='Z')&&!typing){e.preventDefault();undo();}
+  else if(e.key==='Escape'&&e.target.id==='inp-filter'){e.target.value='';state.filter='';update();}
+});
+
+/* ================= INIT ================= */
+$('#fs-support').textContent=FS_OK?'DIRECT RENAME SUPPORTED':'DIRECT RENAME UNSUPPORTED / ZIP';
+if(!FS_OK)log('info','このブラウザは直接リネームに未対応です。Chrome / Edge では元の場所で直接リネームできます。ここでは ZIP・PS1 スクリプトで出力します。');
+renderPresets();renderRules();renderLogSoon();setProgress(0,0,'READY');update();
+</script>
+</body>
+</html>
