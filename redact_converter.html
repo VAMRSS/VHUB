@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>REDACT CONVERTER</title>
+<style>
+/* REDACT CONVERTER / V1.1 — ONE-SCREEN LAYOUT (UI ref: WEB APP UI SYSTEM v1.3) */
+:root{
+  --app-max-width:100vw;
+  --bone:#f6f6f6;--white:#ffffff;--black:#0a0a0a;--divider:#e6e6e6;--muted:#b2b2b2;--mid:#6e6e6e;
+  --signal:#c81f3a;--signal-soft:rgba(200,31,58,.16);--green:#168a52;--green-soft:rgba(22,138,82,.16);
+  --font-euro:"Eurostile","Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+  --font-body:"Helvetica Neue",Arial,"Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;
+}
+body[data-width-mode="fit"]{--app-max-width:100vw}
+body[data-width-mode="720"]{--app-max-width:720px}
+body[data-width-mode="960"]{--app-max-width:960px}
+body[data-width-mode="1200"]{--app-max-width:1200px}
+body[data-width-mode="1440"]{--app-max-width:1440px}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bone);color:var(--black)}
+body{font-family:var(--font-body);font-size:12px;line-height:1.5;display:flex;flex-direction:column;overflow:hidden}
+button,select,textarea,input{font:inherit;border-radius:0}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.3}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:1px solid var(--black);outline-offset:-1px}
+.lbl,.control-label,.meta{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+.meta{color:var(--mid);font-variant-numeric:tabular-nums}
+.sep{color:var(--muted);font-size:8px;font-family:var(--font-euro)}
+
+/* header */
+.header{flex:0 0 auto;height:40px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:0 12px;background:var(--white);border-bottom:.5px solid var(--divider)}
+.brand-cluster,.header-actions{display:flex;align-items:center;gap:9px;min-width:0}
+.header-actions{justify-content:flex-end}
+.brand-mark{display:flex;align-items:center;gap:7px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.signal-block{width:9px;height:9px;background:var(--signal)}
+.header-center{font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+
+/* buttons */
+.ghost{appearance:none;border:0;background:transparent;color:var(--black);padding:0;min-height:16px;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.ghost:hover{color:#666}
+.ghost.active{font-weight:700}
+.ghost.active.sig{color:var(--signal)}
+.ghost.danger{color:var(--signal)}
+.ghost.bracket::before{content:"[";color:var(--muted);margin-right:.3em}
+.ghost.bracket::after{content:"]";color:var(--muted);margin-left:.3em}
+.primary-action{border:0;background:var(--black);color:var(--white);padding:6px 10px;font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.primary-action:hover{background:#333}
+
+/* shell */
+.app-shell{flex:1;min-height:0;width:min(100%,var(--app-max-width));margin:0 auto}
+.page{height:100%;display:flex;flex-direction:column;padding:0 12px}
+
+/* control strip = settings + export */
+.control-strip{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;padding:5px 0;border-bottom:.5px solid var(--divider)}
+.control-group{display:flex;align-items:center;gap:6px}
+.spacer{flex:1}
+select{appearance:none;-webkit-appearance:none;border:0;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4'%3E%3Cpath d='M0 0h7L3.5 4z' fill='%230a0a0a'/%3E%3C/svg%3E") no-repeat right 3px center;color:var(--black);padding:0 14px 0 0;min-height:20px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+input[type=range]{width:70px;accent-color:var(--black);margin:0}
+.num{min-width:16px;display:inline-block;font-family:var(--font-euro);font-size:8px}
+.text-input{border:0;border-bottom:.5px solid var(--divider);background:transparent;color:var(--black);padding:3px 0;outline:0;font-size:11px;width:110px}
+.text-input:focus{border-bottom-color:var(--black)}
+.progress{position:absolute;left:0;right:0;bottom:-1px;height:2px}
+.progress > span{display:block;height:100%;width:0;background:var(--signal);transition:width .16s}
+.tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* workspace */
+.workspace{flex:1;min-height:0;margin:6px 0;display:grid;grid-template-columns:200px minmax(0,1fr) 210px;background:var(--white);border-top:.5px solid var(--divider);border-bottom:.5px solid var(--divider)}
+.panel{display:flex;flex-direction:column;min-width:0;min-height:0}
+.panel + .panel{border-left:.5px solid var(--divider)}
+.editor-head{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;min-height:28px;padding:0 8px;border-bottom:.5px solid var(--divider)}
+.editor-title{font-family:var(--font-euro);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.editor-title .jp{font-family:var(--font-body);font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;margin-left:6px}
+.head-actions{display:flex;align-items:center;gap:7px;justify-content:flex-end}
+.scroll{flex:1;min-height:0;overflow:auto}
+
+/* files */
+.file-row{display:grid;grid-template-columns:36px minmax(0,1fr);gap:7px;padding:5px 8px;border-bottom:.5px solid var(--divider);cursor:pointer}
+.file-row:hover{background:#fafafa}
+.file-row.selected{box-shadow:inset 2px 0 0 var(--signal);background:#fafafa}
+.file-row.drag-over{box-shadow:inset 0 2px 0 var(--black)}
+.file-row.dragging{opacity:.4}
+.file-name{font-size:11px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-meta{margin-top:2px}
+.file-acts{display:flex;gap:6px;margin-top:3px;align-items:center}
+.empty{padding:12px 8px;font-size:11px;color:#777;line-height:1.7}
+
+/* thumbs */
+.tbox{position:relative;background:var(--bone);overflow:hidden;flex:0 0 auto}
+.tpage{position:absolute;left:50%;top:50%;background:#fff}
+.tpage img{display:block;width:100%;height:100%}
+.tpage .tr{position:absolute;background:#000}
+.tpage .tr.w{background:#fff;outline:.5px solid #ccc}
+.tbox .tmsg{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-euro);font-size:7px;color:var(--muted)}
+
+/* viewer */
+.viewer{flex:1;min-height:0;overflow:auto;background:var(--bone);position:relative}
+.viewer-stage{min-width:100%;min-height:100%;display:flex;align-items:center;justify-content:center;padding:10px}
+#viewCanvas{display:block;background:#fff;outline:.5px solid var(--divider);touch-action:none;cursor:crosshair}
+.viewer-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;cursor:pointer}
+.viewer-empty .big{font-family:var(--font-euro);font-size:22px;line-height:1;font-weight:700;letter-spacing:1px}
+.viewer-empty p{margin:8px 0 0;font-size:11px;color:#343434}
+.page-strip{height:82px;flex:0 0 auto;border-top:.5px solid var(--divider);display:flex;overflow-x:auto;overflow-y:hidden;background:var(--white)}
+.pthumb{flex:0 0 auto;width:62px;padding:5px 5px 4px;border-right:.5px solid var(--divider);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+.pthumb:hover{background:#fafafa}
+.pthumb.current{box-shadow:inset 0 -2px 0 var(--signal);background:#fafafa}
+.pthumb.excluded .tbox{opacity:.25}
+.pthumb .pinfo{display:flex;width:100%;justify-content:space-between}
+.pthumb .rc{color:var(--signal)}
+.pthumb .ex{position:absolute;top:22px;left:0;right:0;text-align:center;color:var(--signal)}
+
+/* side */
+.side-block{padding:8px;border-bottom:.5px solid var(--divider)}
+.side-block:last-child{border-bottom:0}
+.side-kicker{display:flex;justify-content:space-between;gap:6px;margin-bottom:6px;font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:var(--mid)}
+.kv{display:grid;grid-template-columns:32px 1fr;gap:7px 6px;align-items:center}
+.rect-row{display:grid;grid-template-columns:14px 1fr auto;gap:6px;align-items:center;padding:3px 0;border-bottom:.5px solid var(--divider);cursor:pointer}
+.rect-row:last-child{border-bottom:0}
+.rect-row.sel{box-shadow:inset 2px 0 0 var(--signal);padding-left:5px}
+.sw{width:10px;height:10px;background:#000}
+.sw.w{background:#fff;outline:.5px solid #999}
+
+/* footer */
+.footer-strip{flex:0 0 auto;min-height:30px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px;padding:0 12px;background:var(--bone);border-top:.5px solid var(--divider)}
+.footer-main,.footer-side,.width-switcher{font-family:var(--font-euro);font-size:8px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase}
+.footer-main{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap;overflow:hidden}
+.footer-main #statusText{overflow:hidden;text-overflow:ellipsis}
+#lastOut{display:flex;align-items:center;gap:6px;color:var(--mid);min-width:0}
+.state-line{width:18px;height:1px;background:var(--muted);flex:0 0 auto}
+.state-line.run{background:var(--signal)}
+.state-line.done{background:var(--black)}
+.footer-side{justify-self:end;color:var(--mid);white-space:nowrap}
+#mRedWrap.changed{color:var(--signal);font-weight:700}
+.width-switcher{display:flex;gap:5px}
+.width-btn{appearance:none;border:0;background:transparent;color:var(--muted);padding:0;cursor:pointer;font:inherit;letter-spacing:inherit}
+.width-btn:hover,.width-btn.active{color:var(--black)}
+.width-btn.active{font-weight:700}
+
+.toast{position:fixed;left:12px;bottom:40px;z-index:100;padding:7px 9px;background:var(--black);color:var(--white);font-family:var(--font-euro);font-size:8px;letter-spacing:.04em;text-transform:uppercase;opacity:0;transform:translateY(5px);transition:.16s;pointer-events:none}
+.toast.show{opacity:1;transform:none}
+.drop-overlay{position:fixed;inset:0;z-index:200;background:rgba(10,10,10,.24);display:none;align-items:center;justify-content:center;pointer-events:none}
+.drop-overlay.show{display:flex}
+.drop-overlay div{background:var(--white);padding:20px 34px;text-align:center;font-family:var(--font-euro);font-size:22px;font-weight:700;letter-spacing:1px}
+input[type=file]{display:none}
+
+@media(max-width:1100px){.workspace{grid-template-columns:170px minmax(0,1fr) 190px}.header-center{display:none}}
+@media(max-width:900px){
+  body{display:block;overflow:auto}
+  .header{position:sticky;top:0;z-index:50;grid-template-columns:1fr auto}
+  .page{height:auto}
+  .workspace{grid-template-columns:1fr}
+  .panel + .panel{border-left:0;border-top:.5px solid var(--divider)}
+  .files-panel .scroll{max-height:200px}
+  .viewer{height:60vh;flex:none}
+  .footer-strip{position:sticky;bottom:0}
+  .footer-side{display:none}
+}
+</style>
+</head>
+<body data-width-mode="fit">
+
+<header class="header">
+  <div class="brand-cluster">
+    <div class="brand-mark"><span class="signal-block"></span><strong>REDACT CONVERTER</strong></div>
+    <span class="sep">/</span>
+    <button class="ghost active" id="addBtn" type="button">ADD FILES</button>
+  </div>
+  <div class="header-center">LOCAL PROCESSING / NO FILE UPLOAD</div>
+  <div class="header-actions">
+    <button class="ghost" id="undoBtn" type="button" title="Ctrl+Z">UNDO</button><span class="sep">/</span>
+    <button class="ghost" id="redoBtn" type="button" title="Ctrl+Y">REDO</button><span class="sep">/</span>
+    <button class="ghost danger" id="clearAllBtn" type="button">CLEAR</button>
+  </div>
+</header>
+
+<div class="app-shell">
+  <main class="page">
+    <section class="control-strip" aria-label="Settings and export">
+      <div class="control-group" title="PDFを画像化する解像度"><span class="control-label">DPI</span>
+        <select id="optDpi"><option value="1.5">108</option><option value="2" selected>144</option><option value="3">216</option><option value="4.1667">300</option></select></div>
+      <div class="control-group" title="画像出力の形式"><span class="control-label">IMG</span>
+        <select id="optFormat"><option value="image/jpeg" selected>JPEG</option><option value="image/png">PNG</option><option value="image/webp">WEBP</option></select></div>
+      <div class="control-group" title="JPEG / WEBP 品質"><span class="control-label">Q</span>
+        <input id="optQuality" type="range" min="50" max="100" step="1" value="92"><span class="num" id="optQualityVal">92</span></div>
+      <div class="control-group" title="HYBRID：黒塗りページのみ画像化（他は文字検索可のまま）／ FLATTEN：全ページ画像化"><span class="control-label">PDF</span>
+        <select id="optPdfMode"><option value="hybrid" selected>HYBRID</option><option value="flatten">FLATTEN</option></select></div>
+      <div class="control-group" title="画像をPDFページにする際の用紙・余白"><span class="control-label">PAGE</span>
+        <select id="optImgPage"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="fit">FIT</option></select>
+        <select id="optMargin"><option value="0" selected>M0</option><option value="5">M5</option><option value="10">M10</option></select></div>
+      <div class="control-group" title="出力ファイル名"><span class="control-label">NAME</span>
+        <select id="optSuffix"><option value="">ORIGINAL</option><option value="_redacted" selected>_REDACTED</option></select></div>
+      <span class="spacer"></span>
+      <div class="control-group tabs" id="targetTabs" title="出力対象">
+        <button class="ghost active" data-target="all" type="button">ALL</button><span class="sep">/</span>
+        <button class="ghost" data-target="current" type="button">CURRENT</button>
+      </div>
+      <div class="control-group">
+        <button class="primary-action" id="expPdfBtn" type="button" title="ファイルごとにPDF保存（複数はZIP）">PDF</button>
+        <button class="primary-action" id="expImgBtn" type="button" title="全ページを画像化（複数はZIP）">IMAGES</button>
+        <input class="text-input" id="mergeName" type="text" placeholder="結合名（任意）" aria-label="結合PDFのファイル名">
+        <button class="primary-action" id="mergeBtn" type="button" title="Aの並び順で1つのPDFに結合">MERGE</button>
+      </div>
+      <div class="progress"><span id="progressBar"></span></div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel files-panel">
+        <div class="editor-head"><span class="editor-title">A FILES</span><span></span><span class="meta" id="fileCount">0</span></div>
+        <div class="scroll" id="fileList"></div>
+      </div>
+
+      <div class="panel">
+        <div class="editor-head">
+          <span class="editor-title" id="viewerTitle">B VIEWER</span><span></span>
+          <div class="head-actions">
+            <button class="ghost" id="prevBtn" type="button" title="←">PREV</button>
+            <span class="meta" id="pageInfo">- / -</span>
+            <button class="ghost" id="nextBtn" type="button" title="→">NEXT</button>
+            <span class="sep">/</span>
+            <button class="ghost" id="zoomOutBtn" type="button" title="Ctrl+ホイールでも可">−</button>
+            <span class="meta" id="zoomInfo">FIT</span>
+            <button class="ghost" id="zoomInBtn" type="button">+</button>
+            <button class="ghost" id="fitPageBtn" type="button">FIT</button>
+            <button class="ghost" id="fitWidthBtn" type="button">WIDTH</button>
+          </div>
+        </div>
+        <div class="viewer" id="viewer">
+          <div class="viewer-stage"><canvas id="viewCanvas" width="1" height="1" hidden></canvas></div>
+          <div class="viewer-empty" id="viewerEmpty"><div><div class="big">DROP FILES</div><p>PDF・画像をドロップ / クリックで選択 / Ctrl+V で貼付</p></div></div>
+        </div>
+        <div class="page-strip" id="pageStrip"></div>
+      </div>
+
+      <div class="panel">
+        <div class="editor-head"><span class="editor-title">C REDACTION</span><span></span><span class="meta" id="pageRectCount"></span></div>
+        <div class="scroll">
+          <div class="side-block" title="ドラッグで追加 / クリックで選択→移動・四隅で拡縮 / Delで削除 / 矢印で微調整">
+            <div class="kv">
+              <span class="lbl">ADD</span>
+              <div class="tabs" id="scopeTabs" title="1 / 2 / 3 キーで切替">
+                <button class="ghost active sig" data-scope="page" type="button">PAGE</button><span class="sep">/</span>
+                <button class="ghost" data-scope="file" type="button">FILE</button><span class="sep">/</span>
+                <button class="ghost" data-scope="global" type="button">ALL</button>
+              </div>
+              <span class="lbl">FILL</span>
+              <div class="tabs" id="fillTabs">
+                <button class="ghost active" data-fill="#000000" type="button">BLACK</button><span class="sep">/</span>
+                <button class="ghost" data-fill="#ffffff" type="button">WHITE</button>
+              </div>
+              <span class="lbl">VIEW</span>
+              <div class="tabs" id="viewTabs">
+                <button class="ghost active" data-view="solid" type="button">SOLID</button><span class="sep">/</span>
+                <button class="ghost" data-view="see" type="button">SEE</button>
+              </div>
+            </div>
+          </div>
+          <div class="side-block">
+            <div class="side-kicker"><span>ON PAGE</span><span id="selInfo"></span></div>
+            <div id="rectList"></div>
+            <div class="tabs" id="selActions" style="margin-top:6px">
+              <span class="lbl" style="color:var(--mid)">TO</span>
+              <button class="ghost" data-move="page" type="button">PAGE</button><span class="sep">/</span>
+              <button class="ghost" data-move="file" type="button">FILE</button><span class="sep">/</span>
+              <button class="ghost" data-move="global" type="button">ALL</button>
+              <span class="spacer"></span>
+              <button class="ghost danger" id="delSelBtn" type="button">DEL</button>
+            </div>
+          </div>
+          <div class="side-block">
+            <div class="kv">
+              <span class="lbl">PAGE</span>
+              <div class="tabs">
+                <button class="ghost" id="pRotL" type="button" title="左90°">↺</button><span class="sep">/</span>
+                <button class="ghost" id="pRotR" type="button" title="右90°（R）">↻</button><span class="sep">/</span>
+                <button class="ghost" id="pExclude" type="button" title="出力から除外（X）">EXCLUDE</button>
+              </div>
+              <span></span>
+              <div class="tabs">
+                <button class="ghost" id="pCopyAll" type="button" title="このページの黒塗りを全ページへ複製">COPY→ALL P</button><span class="sep">/</span>
+                <button class="ghost danger" id="pClear" type="button">CLEAR</button>
+              </div>
+              <span class="lbl">FILE</span>
+              <div class="tabs">
+                <button class="ghost" id="fRotL" type="button" title="全ページ左90°">↺ ALL</button><span class="sep">/</span>
+                <button class="ghost" id="fRotR" type="button" title="全ページ右90°">↻ ALL</button><span class="sep">/</span>
+                <button class="ghost danger" id="fClear" type="button">CLEAR</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="footer-strip">
+  <div class="footer-main"><span class="state-line" id="stateLine"></span><span id="statusText">READY</span><span id="lastOut"></span></div>
+  <nav class="width-switcher" aria-label="Application width">
+    <button class="width-btn active" data-width="fit">FIT</button><span class="sep">/</span>
+    <button class="width-btn" data-width="720">720</button><span class="sep">/</span>
+    <button class="width-btn" data-width="960">960</button><span class="sep">/</span>
+    <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
+    <button class="width-btn" data-width="1440">1440</button>
+  </nav>
+  <div class="footer-side"><span id="mFiles">0</span> FILES · <span id="mPages">0</span>P · OUT <span id="mOut">0</span> · <span id="mRedWrap">■ <span id="mRed">0</span>P</span> · EXCL <span id="mEx">0</span> · V1.1</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+<div class="drop-overlay" id="dropOverlay"><div>DROP</div></div>
+<input id="fileInput" type="file" accept="application/pdf,.pdf,image/*" multiple>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+(function(){
+  const KEY='web-app-ui-width', VALID=['fit','720','960','1200','1440'];
+  function apply(m){
+    const v=VALID.includes(m)?m:'fit';
+    document.body.dataset.widthMode=v;
+    document.querySelectorAll('.width-btn').forEach(b=>b.classList.toggle('active',b.dataset.width===v));
+    try{localStorage.setItem(KEY,v)}catch(e){}
+    window.dispatchEvent(new Event('resize'));
+  }
+  document.querySelectorAll('.width-btn').forEach(b=>b.addEventListener('click',()=>apply(b.dataset.width)));
+  let s='fit'; try{s=localStorage.getItem(KEY)||'fit'}catch(e){}
+  apply(s);
+})();
+</script>
+
+<script type="module">
+import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+const PDFJS_ASSET_BASE = "https://unpkg.com/pdfjs-dist@4.10.38/";
+
+/* ===== STATE ===== */
+const $ = id => document.getElementById(id);
+const state = {
+  items: [], globalRects: [], currentId: null, pageIndex: 0,
+  scope: 'page', fill: '#000000', view: 'solid', selected: null,
+  zoom: { mode: 'page', value: 1 }, target: 'all',
+  undo: [], redo: [], logs: [], busy: false
+};
+let idSeed = 0, rectSeed = 0;
+const MAX_CANVAS_PIXELS = 36e6;
+const PT_PER_MM = 72 / 25.4;
+
+/* ===== UTIL ===== */
+const toastEl = $('toast'); let toastTimer;
+function toast(m){ toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1600); }
+function setStatus(t, mode){ $('statusText').textContent = t; $('stateLine').className = 'state-line' + (mode ? ' ' + mode : ''); }
+function setProgress(r){ $('progressBar').style.width = Math.round(Math.max(0, Math.min(1, r)) * 100) + '%'; }
+function formatBytes(b){ if(!b) return '0 B'; const u = ['B','KB','MB','GB']; const i = Math.min(3, Math.floor(Math.log(b) / Math.log(1024))); return (b / Math.pow(1024, i)).toFixed(i ? 1 : 0) + ' ' + u[i]; }
+function stem(n){ return n.replace(/\.[^.]+$/, ''); }
+function safeName(s){ return s.replace(/[\\/:*?"<>|]+/g, '_').trim() || 'output'; }
+function norm(d){ return ((d % 360) + 360) % 360; }
+function isPdf(f){ return f && (f.type === 'application/pdf' || /\.pdf$/i.test(f.name)); }
+function isImage(f){ return f && ((f.type && f.type.startsWith('image/')) || /\.(jpe?g|png|webp|gif|bmp|avif)$/i.test(f.name)); }
+function cur(){ return state.items.find(x => x.id === state.currentId) || null; }
+function curPage(){ const it = cur(); return it && it.pages[state.pageIndex] ? it.pages[state.pageIndex] : null; }
+function nextFrame(){ return new Promise(r => requestAnimationFrame(() => r())); }
+function stamp(){ const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; }
+function download(blob, name){ const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 1500); }
+function canvasToBlob(c, mime, q){ return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('encode failed')), mime, q)); }
+function extOf(m){ return m === 'image/png' ? 'png' : m === 'image/webp' ? 'webp' : 'jpg'; }
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+/* rects stored in BASE (unrotated) normalized coords; rotation clockwise */
+function mapPt(x, y, rot){
+  switch(norm(rot)){ case 90: return [1 - y, x]; case 180: return [1 - x, 1 - y]; case 270: return [y, 1 - x]; default: return [x, y]; }
+}
+function mapRect(r, rot){
+  const [ax, ay] = mapPt(r.x, r.y, rot), [bx, by] = mapPt(r.x + r.w, r.y + r.h, rot);
+  return { x: Math.min(ax, bx), y: Math.min(ay, by), w: Math.abs(bx - ax), h: Math.abs(by - ay) };
+}
+const toDisp = (r, rot) => mapRect(r, rot);
+const toBase = (r, rot) => mapRect(r, 360 - norm(rot));
+function clampRect(r){ const w = Math.min(1, Math.max(0, r.w)), h = Math.min(1, Math.max(0, r.h)); return { x: Math.min(1 - w, Math.max(0, r.x)), y: Math.min(1 - h, Math.max(0, r.y)), w, h }; }
+function rotateCanvas(src, rot){
+  rot = norm(rot); if(!rot) return src;
+  const c = document.createElement('canvas'), swap = rot === 90 || rot === 270;
+  c.width = swap ? src.height : src.width; c.height = swap ? src.width : src.height;
+  const ctx = c.getContext('2d');
+  if(rot === 90) ctx.translate(c.width, 0); else if(rot === 180) ctx.translate(c.width, c.height); else ctx.translate(0, c.height);
+  ctx.rotate(rot * Math.PI / 180); ctx.drawImage(src, 0, 0);
+  return c;
+}
+function fillRects(ctx, w, h, rects){
+  rects.forEach(r => {
+    ctx.fillStyle = r.fill || '#000';
+    const x = Math.floor(r.x * w), y = Math.floor(r.y * h), x2 = Math.ceil((r.x + r.w) * w), y2 = Math.ceil((r.y + r.h) * h);
+    ctx.fillRect(x, y, Math.max(1, x2 - x), Math.max(1, y2 - y));
+  });
+}
+function effectiveRects(item, pi){ const p = item.pages[pi]; return [...state.globalRects, ...item.fileRects, ...(p ? p.rects : [])]; }
+
+/* ===== LOADING ===== */
+function loadPdfDoc(bytes){
+  const task = pdfjsLib.getDocument({
+    data: bytes.slice(0), cMapUrl: PDFJS_ASSET_BASE + 'cmaps/', cMapPacked: true,
+    standardFontDataUrl: PDFJS_ASSET_BASE + 'standard_fonts/', enableXfa: true, disableFontFace: true, useSystemFonts: true
+  });
+  task.onPassword = (update, reason) => {
+    const pw = prompt(reason === 2 ? 'パスワードが違います。再入力してください。' : 'パスワード保護されたPDFです。パスワードを入力してください。');
+    if(pw === null){ task.destroy(); return; }
+    update(pw);
+  };
+  return task.promise;
+}
+function loadImageFromBlob(blob){
+  return new Promise((res, rej) => { const u = URL.createObjectURL(blob), img = new Image(); img.onload = () => res(img); img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('decode')); }; img.src = u; });
+}
+async function addFiles(fileList){
+  const all = [...fileList], files = all.filter(f => isPdf(f) || isImage(f));
+  if(!files.length){ toast('UNSUPPORTED FILE'); return; }
+  let added = 0;
+  for(const file of files){
+    if(state.items.some(x => x.file.name === file.name && x.file.size === file.size && x.file.lastModified === file.lastModified)) continue;
+    const item = { id: ++idSeed, kind: isPdf(file) ? 'pdf' : 'image', file, bytes: null, pdf: null, img: null, numPages: 0, pages: [], fileRects: [], error: null, loading: true, lastPage: 0, thumbCache: {} };
+    state.items.push(item); added++;
+    if(!state.currentId){ state.currentId = item.id; state.pageIndex = 0; }
+    renderFiles(); setStatus(`LOADING ${file.name}`, 'run');
+    try{
+      item.bytes = new Uint8Array(await file.arrayBuffer());
+      if(item.kind === 'pdf'){
+        item.pdf = await loadPdfDoc(item.bytes);
+        item.numPages = item.pdf.numPages;
+        for(let i = 0; i < item.numPages; i++) item.pages.push({ rects: [], rot: 0, excluded: false, w: 0, h: 0 });
+        const p1 = await item.pdf.getPage(1), vp = p1.getViewport({ scale: 1 });
+        item.pages[0].w = vp.width; item.pages[0].h = vp.height;
+      }else{
+        item.img = await loadImageFromBlob(file);
+        item.numPages = 1;
+        item.pages.push({ rects: [], rot: 0, excluded: false, w: item.img.naturalWidth, h: item.img.naturalHeight });
+      }
+    }catch(err){ console.error(err); item.error = item.kind === 'pdf' ? 'PDF READ ERROR' : 'IMAGE ERROR'; }
+    item.loading = false;
+    renderFiles();
+    if(item.id === state.currentId){ renderViewer(true); renderStrip(); }
+    makeThumb(item, 0).then(() => { renderFiles(); if(item.id === state.currentId) renderStrip(); });
+  }
+  updateMetrics(); renderSide();
+  setStatus(`${state.items.length} FILES` + (all.length > files.length ? ` / ${all.length - files.length} SKIPPED` : ''), 'done');
+  if(added) toast(`${added} FILE ADDED`);
+}
+async function pageBaseSize(item, pi){
+  const p = item.pages[pi]; if(p.w && p.h) return { w: p.w, h: p.h };
+  const page = await item.pdf.getPage(pi + 1), vp = page.getViewport({ scale: 1 });
+  p.w = vp.width; p.h = vp.height; return { w: p.w, h: p.h };
+}
+async function renderBase(item, pi, scale){
+  const size = await pageBaseSize(item, pi);
+  let s = scale; if(size.w * size.h * s * s > MAX_CANVAS_PIXELS) s = Math.sqrt(MAX_CANVAS_PIXELS / (size.w * size.h));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(size.w * s)); c.height = Math.max(1, Math.round(size.h * s));
+  const ctx = c.getContext('2d', { alpha: false });
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  if(item.kind === 'pdf'){
+    const page = await item.pdf.getPage(pi + 1), vp = page.getViewport({ scale: c.width / size.w });
+    await page.render({ canvasContext: ctx, viewport: vp, intent: 'print', annotationMode: pdfjsLib.AnnotationMode.ENABLE_STORAGE }).promise;
+  }else{ ctx.imageSmoothingQuality = 'high'; ctx.drawImage(item.img, 0, 0, c.width, c.height); }
+  return c;
+}
+async function makeThumb(item, pi){
+  if(item.error || item.thumbCache[pi]) return item.thumbCache[pi];
+  try{ const sz = await pageBaseSize(item, pi); const c = await renderBase(item, pi, 120 / Math.max(sz.w, sz.h)); item.thumbCache[pi] = c.toDataURL('image/jpeg', .75); }catch(e){ console.error(e); }
+  return item.thumbCache[pi];
+}
+function thumbEl(item, pi, box){
+  const p = item.pages[pi], wrap = document.createElement('div');
+  wrap.className = 'tbox'; wrap.style.width = box + 'px'; wrap.style.height = box + 'px';
+  const url = item.thumbCache[pi];
+  if(!url || !p || !p.w){ const m = document.createElement('div'); m.className = 'tmsg'; m.textContent = item.error ? 'ERR' : '···'; wrap.appendChild(m); return wrap; }
+  const k = (box - 4) / Math.max(p.w, p.h);
+  const pg = document.createElement('div'); pg.className = 'tpage';
+  pg.style.width = p.w * k + 'px'; pg.style.height = p.h * k + 'px';
+  pg.style.transform = `translate(-50%,-50%) rotate(${p.rot}deg)`;
+  const img = document.createElement('img'); img.src = url; img.alt = ''; pg.appendChild(img);
+  effectiveRects(item, pi).forEach(r => {
+    const d = document.createElement('div'); d.className = 'tr' + (r.fill === '#ffffff' ? ' w' : '');
+    Object.assign(d.style, { left: r.x * 100 + '%', top: r.y * 100 + '%', width: r.w * 100 + '%', height: r.h * 100 + '%' });
+    pg.appendChild(d);
+  });
+  wrap.appendChild(pg); return wrap;
+}
+
+/* ===== HISTORY ===== */
+function snapshot(){ return JSON.stringify({ g: state.globalRects, f: state.items.map(it => ({ id: it.id, fr: it.fileRects, p: it.pages.map(p => ({ r: p.rects, rot: p.rot, ex: p.excluded })) })) }); }
+function restore(json){
+  const s = JSON.parse(json); state.globalRects = s.g;
+  s.f.forEach(f => { const it = state.items.find(x => x.id === f.id); if(!it) return; it.fileRects = f.fr; f.p.forEach((p, i) => { if(it.pages[i]) Object.assign(it.pages[i], { rects: p.r, rot: p.rot, excluded: p.ex }); }); });
+  state.selected = null;
+}
+function pushHistory(snap){ state.undo.push(snap || snapshot()); if(state.undo.length > 150) state.undo.shift(); state.redo = []; updateUndoButtons(); }
+function undo(){ if(!state.undo.length) return; state.redo.push(snapshot()); restore(state.undo.pop()); afterChange({ rotate: true }); toast('UNDO'); }
+function redo(){ if(!state.redo.length) return; state.undo.push(snapshot()); restore(state.redo.pop()); afterChange({ rotate: true }); toast('REDO'); }
+function updateUndoButtons(){ $('undoBtn').disabled = !state.undo.length; $('redoBtn').disabled = !state.redo.length; }
+function afterChange(o = {}){ if(o.rotate) renderViewer(); else drawView(); renderStrip(); renderFiles(); renderSide(); updateMetrics(); updateUndoButtons(); }
+
+/* ===== FILES (A) ===== */
+let dragId = null;
+function renderFiles(){
+  const list = $('fileList');
+  $('fileCount').textContent = state.items.length ? `${state.items.length}` : '';
+  if(!state.items.length){ list.innerHTML = '<div class="empty">PDF・画像をドロップ<br>Ctrl+V で貼付も可</div>'; return; }
+  const st = list.scrollTop; list.innerHTML = '';
+  state.items.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'file-row' + (item.id === state.currentId ? ' selected' : '');
+    row.draggable = true;
+    row.appendChild(thumbEl(item, 0, 36));
+    const info = document.createElement('div'); info.style.minWidth = '0';
+    const nm = document.createElement('div'); nm.className = 'file-name'; nm.textContent = item.file.name; nm.title = item.file.name;
+    const meta = document.createElement('div'); meta.className = 'meta file-meta';
+    const red = item.pages.reduce((n, p, i) => n + (effectiveRects(item, i).length ? 1 : 0), 0);
+    const ex = item.pages.filter(p => p.excluded).length;
+    if(item.error){ meta.textContent = item.error; meta.style.color = 'var(--signal)'; }
+    else if(item.loading) meta.textContent = 'LOADING…';
+    else meta.innerHTML = `${String(idx + 1).padStart(2, '0')} · ${item.kind === 'pdf' ? 'PDF' : 'IMG'} · ${item.numPages}P · ${formatBytes(item.file.size)}` + (red ? ` · <span style="color:var(--signal)">■${red}</span>` : '') + (ex ? ` · EX${ex}` : '');
+    const acts = document.createElement('div'); acts.className = 'file-acts';
+    const mk = (l, fn, cls = '') => { const b = document.createElement('button'); b.type = 'button'; b.className = 'ghost ' + cls; b.textContent = l; b.onclick = e => { e.stopPropagation(); fn(); }; return b; };
+    const sep = () => { const s = document.createElement('span'); s.className = 'sep'; s.textContent = '/'; return s; };
+    const up = mk('UP', () => moveItem(item.id, -1)); up.disabled = idx === 0;
+    const dn = mk('DN', () => moveItem(item.id, 1)); dn.disabled = idx === state.items.length - 1;
+    acts.append(up, sep(), dn, sep(), mk('DEL', () => removeItem(item.id), 'danger'));
+    info.append(nm, meta, acts); row.appendChild(info);
+    row.onclick = () => selectItem(item.id);
+    row.addEventListener('dragstart', e => { dragId = item.id; row.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/x-reorder', '1'); });
+    row.addEventListener('dragend', () => { dragId = null; row.classList.remove('dragging'); document.querySelectorAll('.drag-over').forEach(r => r.classList.remove('drag-over')); });
+    row.addEventListener('dragover', e => { if(dragId == null) return; e.preventDefault(); e.stopPropagation(); row.classList.add('drag-over'); });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      if(dragId == null) return; e.preventDefault(); e.stopPropagation();
+      const from = state.items.findIndex(x => x.id === dragId), to = state.items.findIndex(x => x.id === item.id);
+      if(from < 0 || to < 0 || from === to) return;
+      const [m] = state.items.splice(from, 1); state.items.splice(to, 0, m); renderFiles(); toast('REORDERED');
+    });
+    list.appendChild(row);
+  });
+  list.scrollTop = st;
+}
+function moveItem(id, d){ const i = state.items.findIndex(x => x.id === id), j = i + d; if(i < 0 || j < 0 || j >= state.items.length) return; [state.items[i], state.items[j]] = [state.items[j], state.items[i]]; renderFiles(); }
+function removeItem(id){
+  const i = state.items.findIndex(x => x.id === id); if(i < 0) return;
+  const [it] = state.items.splice(i, 1);
+  try{ it.pdf && it.pdf.destroy(); }catch(e){}
+  if(it.img && it.img.src.startsWith('blob:')) URL.revokeObjectURL(it.img.src);
+  if(state.currentId === id){ const nx = state.items[Math.min(i, state.items.length - 1)]; state.currentId = nx ? nx.id : null; state.pageIndex = nx ? nx.lastPage : 0; }
+  state.selected = null;
+  renderFiles(); renderViewer(true); renderStrip(); renderSide(); updateMetrics(); toast('REMOVED');
+}
+function selectItem(id, page){
+  const prev = cur(); if(prev) prev.lastPage = state.pageIndex;
+  state.currentId = id; const it = cur();
+  state.pageIndex = page != null ? page : (it ? it.lastPage : 0); state.selected = null;
+  renderFiles(); renderViewer(true); renderStrip(); renderSide();
+}
+
+/* ===== PAGE STRIP ===== */
+let stripToken = 0;
+function renderStrip(){
+  const strip = $('pageStrip'), it = cur(), sl = strip.scrollLeft;
+  strip.innerHTML = '';
+  if(!it || it.error || it.loading) return;
+  const token = ++stripToken;
+  it.pages.forEach((p, i) => {
+    const d = document.createElement('div');
+    d.className = 'pthumb' + (i === state.pageIndex ? ' current' : '') + (p.excluded ? ' excluded' : '');
+    d.dataset.i = i; d.appendChild(thumbEl(it, i, 52));
+    const n = effectiveRects(it, i).length;
+    const info = document.createElement('div'); info.className = 'pinfo meta'; info.innerHTML = `<span>${i + 1}</span><span class="rc">${n ? '■' + n : ''}</span>`;
+    d.appendChild(info);
+    if(p.excluded){ const x = document.createElement('div'); x.className = 'ex lbl'; x.textContent = 'EX'; d.appendChild(x); }
+    d.onclick = () => gotoPage(i);
+    strip.appendChild(d);
+  });
+  strip.scrollLeft = sl;
+  const c = strip.querySelector('.pthumb.current');
+  if(c){ const l = c.offsetLeft, r = l + c.offsetWidth; if(l < strip.scrollLeft || r > strip.scrollLeft + strip.clientWidth) strip.scrollLeft = l - strip.clientWidth / 2 + c.offsetWidth / 2; }
+  (async () => {
+    for(let i = 0; i < it.pages.length; i++){
+      if(token !== stripToken) return;
+      if(it.thumbCache[i]) continue;
+      await makeThumb(it, i);
+      if(token !== stripToken) return;
+      const slot = strip.querySelector(`.pthumb[data-i="${i}"] .tbox`); if(slot) slot.replaceWith(thumbEl(it, i, 52));
+      if(i === 0) renderFiles();
+    }
+  })();
+}
+function gotoPage(i){
+  const it = cur(); if(!it || !it.pages.length) return;
+  i = Math.max(0, Math.min(it.pages.length - 1, i)); if(i === state.pageIndex) return;
+  state.pageIndex = i; state.selected = null; renderViewer(true); renderStrip(); renderSide();
+}
+
+/* ===== VIEWER (B) ===== */
+const viewer = $('viewer'), canvas = $('viewCanvas'), vctx = canvas.getContext('2d');
+const view = { key: '', rotated: null, dpr: 1, drag: null, token: 0 };
+async function renderViewer(force){
+  const it = cur();
+  $('viewerEmpty').style.display = it ? 'none' : 'grid';
+  canvas.hidden = !it || !!it.error || it.loading;
+  $('pageInfo').textContent = it && it.numPages ? `${state.pageIndex + 1} / ${it.numPages}` : '- / -';
+  $('viewerTitle').innerHTML = it ? `B<span class="jp">${escapeHtml(it.file.name)}</span>` : 'B VIEWER';
+  if(!it || it.error || it.loading){ updateZoomInfo(); return; }
+  const p = it.pages[state.pageIndex], size = await pageBaseSize(it, state.pageIndex);
+  const swap = p.rot === 90 || p.rot === 270, dw = swap ? size.h : size.w, dh = swap ? size.w : size.h;
+  const aw = Math.max(80, viewer.clientWidth - 20), ah = Math.max(80, viewer.clientHeight - 20);
+  let cs = state.zoom.mode === 'page' ? Math.min(aw / dw, ah / dh) : state.zoom.mode === 'width' ? aw / dw : state.zoom.value;
+  cs = Math.max(0.05, Math.min(cs, 8)); state.zoom.value = cs; updateZoomInfo();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const key = `${it.id}|${state.pageIndex}|${cs.toFixed(4)}|${dpr}|${p.rot}`;
+  if(!force && key === view.key && view.rotated){ drawView(); return; }
+  const token = ++view.token;
+  try{
+    const base = await renderBase(it, state.pageIndex, cs * dpr);
+    if(token !== view.token) return;
+    view.rotated = rotateCanvas(base, p.rot); view.key = key; view.dpr = dpr;
+    canvas.width = view.rotated.width; canvas.height = view.rotated.height;
+    canvas.style.width = view.rotated.width / dpr + 'px'; canvas.style.height = view.rotated.height / dpr + 'px';
+    drawView();
+  }catch(e){ console.error(e); setStatus('PREVIEW ERROR'); }
+}
+function updateZoomInfo(){ $('zoomInfo').textContent = state.zoom.mode === 'page' ? 'FIT' : state.zoom.mode === 'width' ? 'W' : Math.round(state.zoom.value * 100) + '%'; }
+function scopedRects(){
+  const it = cur(), p = curPage(); if(!it || !p) return [];
+  return [...state.globalRects.map(r => ({ scope: 'global', rect: r })), ...it.fileRects.map(r => ({ scope: 'file', rect: r })), ...p.rects.map(r => ({ scope: 'page', rect: r }))];
+}
+function corners(x, y, w, h){ return [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]; }
+function drawView(){
+  if(!view.rotated || canvas.hidden) return;
+  const p = curPage(); if(!p) return;
+  const W = canvas.width, H = canvas.height, dpr = view.dpr;
+  vctx.drawImage(view.rotated, 0, 0);
+  const alpha = state.view === 'solid' ? 1 : 0.45, list = scopedRects();
+  if(view.drag && view.drag.mode === 'draw' && view.drag.temp) list.push({ scope: state.scope, rect: toBase(view.drag.temp, p.rot), temp: true });
+  list.forEach(o => {
+    const d = toDisp(o.rect, p.rot), x = d.x * W, y = d.y * H, w = d.w * W, h = d.h * H;
+    vctx.globalAlpha = o.temp ? 0.6 : alpha; vctx.fillStyle = o.temp ? state.fill : (o.rect.fill || '#000'); vctx.fillRect(x, y, w, h); vctx.globalAlpha = 1;
+    vctx.lineWidth = dpr; vctx.setLineDash(o.scope === 'file' ? [4 * dpr, 3 * dpr] : o.scope === 'global' ? [1.5 * dpr, 2.5 * dpr] : []);
+    vctx.strokeStyle = o.scope === 'global' ? '#c81f3a' : (o.rect.fill === '#ffffff' ? '#999' : 'rgba(255,255,255,.85)');
+    vctx.strokeRect(x + .5, y + .5, w - 1, h - 1); vctx.setLineDash([]);
+  });
+  const sel = state.selected;
+  if(sel && list.some(o => o.rect === sel.rect)){
+    const d = toDisp(sel.rect, p.rot), x = d.x * W, y = d.y * H, w = d.w * W, h = d.h * H, hs = 7 * dpr;
+    vctx.lineWidth = 2 * dpr; vctx.strokeStyle = '#c81f3a'; vctx.strokeRect(x - dpr, y - dpr, w + 2 * dpr, h + 2 * dpr);
+    vctx.fillStyle = '#fff';
+    corners(x, y, w, h).forEach(([cx, cy]) => { vctx.fillRect(cx - hs / 2, cy - hs / 2, hs, hs); vctx.strokeRect(cx - hs / 2, cy - hs / 2, hs, hs); });
+  }
+}
+function evtPoint(e){ const b = canvas.getBoundingClientRect(); return { x: Math.max(0, Math.min(1, (e.clientX - b.left) / b.width)), y: Math.max(0, Math.min(1, (e.clientY - b.top) / b.height)), bw: b.width, bh: b.height }; }
+function hitTest(pt){
+  const p = curPage(); if(!p) return null;
+  if(state.selected){
+    const d = toDisp(state.selected.rect, p.rot), cs = corners(d.x, d.y, d.w, d.h);
+    for(let i = 0; i < 4; i++) if(Math.abs(pt.x - cs[i][0]) <= 8 / pt.bw && Math.abs(pt.y - cs[i][1]) <= 8 / pt.bh) return { type: 'handle', target: state.selected, anchor: cs[3 - i], corner: i };
+  }
+  const list = scopedRects();
+  for(let i = list.length - 1; i >= 0; i--){ const d = toDisp(list[i].rect, p.rot); if(pt.x >= d.x && pt.x <= d.x + d.w && pt.y >= d.y && pt.y <= d.y + d.h) return { type: 'rect', target: list[i] }; }
+  return null;
+}
+canvas.addEventListener('pointerdown', e => {
+  if(e.button !== 0) return; const p = curPage(); if(!p) return;
+  canvas.setPointerCapture(e.pointerId);
+  const pt = evtPoint(e), hit = e.shiftKey ? null : hitTest(pt);
+  if(hit && hit.type === 'handle') view.drag = { mode: 'resize', snap: snapshot(), target: hit.target, anchor: hit.anchor };
+  else if(hit){ state.selected = hit.target; view.drag = { mode: 'move', snap: snapshot(), target: hit.target, start: pt, orig: toDisp(hit.target.rect, p.rot) }; renderSide(); }
+  else { state.selected = null; view.drag = { mode: 'draw', start: pt, temp: null }; renderSide(); }
+  drawView();
+});
+canvas.addEventListener('pointermove', e => {
+  const p = curPage(); if(!p) return;
+  const pt = evtPoint(e), d = view.drag;
+  if(!d){ const h = hitTest(pt); canvas.style.cursor = !h ? 'crosshair' : h.type === 'handle' ? ((h.corner === 0 || h.corner === 3) ? 'nwse-resize' : 'nesw-resize') : 'move'; return; }
+  if(d.mode === 'draw') d.temp = { x: Math.min(d.start.x, pt.x), y: Math.min(d.start.y, pt.y), w: Math.abs(pt.x - d.start.x), h: Math.abs(pt.y - d.start.y) };
+  else if(d.mode === 'move'){ Object.assign(d.target.rect, toBase(clampRect({ x: d.orig.x + pt.x - d.start.x, y: d.orig.y + pt.y - d.start.y, w: d.orig.w, h: d.orig.h }), p.rot)); d.moved = true; }
+  else { const [ax, ay] = d.anchor, nd = { x: Math.min(ax, pt.x), y: Math.min(ay, pt.y), w: Math.abs(pt.x - ax), h: Math.abs(pt.y - ay) }; if(nd.w * pt.bw >= 3 && nd.h * pt.bh >= 3){ Object.assign(d.target.rect, toBase(nd, p.rot)); d.moved = true; } }
+  drawView();
+});
+function endDrag(){
+  const d = view.drag; if(!d) return; view.drag = null;
+  const it = cur(), p = curPage();
+  if(d.mode === 'draw'){
+    const t = d.temp, b = canvas.getBoundingClientRect();
+    if(t && t.w * b.width >= 4 && t.h * b.height >= 4){
+      pushHistory();
+      const r = Object.assign({ id: ++rectSeed, fill: state.fill }, toBase(clampRect(t), p.rot));
+      (state.scope === 'global' ? state.globalRects : state.scope === 'file' ? it.fileRects : p.rects).push(r);
+      state.selected = { scope: state.scope, rect: r }; afterChange();
+      setStatus(`ADDED · ${state.scope.toUpperCase()}`, 'done'); return;
+    }
+    drawView(); return;
+  }
+  if(d.moved){ pushHistory(d.snap); afterChange(); } else { drawView(); renderSide(); }
+}
+canvas.addEventListener('pointerup', endDrag);
+canvas.addEventListener('pointercancel', endDrag);
+function containerOf(scope){ const it = cur(), p = curPage(); return scope === 'global' ? state.globalRects : scope === 'file' ? (it && it.fileRects) : (p && p.rects); }
+function deleteSelected(){ const s = state.selected; if(!s) return; const a = containerOf(s.scope), i = a ? a.indexOf(s.rect) : -1; if(i < 0) return; pushHistory(); a.splice(i, 1); state.selected = null; afterChange(); toast('DELETED'); }
+function moveSelectedTo(scope){
+  const s = state.selected; if(!s || s.scope === scope) return;
+  const f = containerOf(s.scope), t = containerOf(scope), i = f.indexOf(s.rect); if(i < 0) return;
+  pushHistory(); f.splice(i, 1); t.push(s.rect); state.selected = { scope, rect: s.rect }; afterChange(); toast('MOVED → ' + scope.toUpperCase());
+}
+function nudgeSelected(dx, dy){
+  const s = state.selected, p = curPage(); if(!s || !p) return;
+  const b = canvas.getBoundingClientRect(), d = toDisp(s.rect, p.rot);
+  if(!nudgeSelected.snap) nudgeSelected.snap = snapshot();
+  clearTimeout(nudgeSelected.t); nudgeSelected.t = setTimeout(() => { pushHistory(nudgeSelected.snap); nudgeSelected.snap = null; afterChange(); }, 400);
+  Object.assign(s.rect, toBase(clampRect({ x: d.x + dx / b.width, y: d.y + dy / b.height, w: d.w, h: d.h }), p.rot)); drawView();
+}
+function setZoom(mode, v){ state.zoom.mode = mode; if(v != null) state.zoom.value = v; renderViewer(); }
+$('zoomInBtn').onclick = () => setZoom('custom', state.zoom.value * 1.25);
+$('zoomOutBtn').onclick = () => setZoom('custom', state.zoom.value / 1.25);
+$('fitPageBtn').onclick = () => setZoom('page');
+$('fitWidthBtn').onclick = () => setZoom('width');
+viewer.addEventListener('wheel', e => { if(!(e.ctrlKey || e.metaKey) || !cur()) return; e.preventDefault(); setZoom('custom', state.zoom.value * (e.deltaY < 0 ? 1.12 : 1 / 1.12)); }, { passive: false });
+let rzT; new ResizeObserver(() => { clearTimeout(rzT); rzT = setTimeout(() => { if(state.zoom.mode !== 'custom') renderViewer(); }, 120); }).observe(viewer);
+$('viewerEmpty').onclick = () => $('fileInput').click();
+$('prevBtn').onclick = () => gotoPage(state.pageIndex - 1);
+$('nextBtn').onclick = () => gotoPage(state.pageIndex + 1);
+
+/* ===== SIDE (C) ===== */
+function setScope(s){ state.scope = s; document.querySelectorAll('#scopeTabs .ghost').forEach(b => { const on = b.dataset.scope === s; b.classList.toggle('active', on); b.classList.toggle('sig', on); }); }
+document.querySelectorAll('#scopeTabs .ghost').forEach(b => b.onclick = () => setScope(b.dataset.scope));
+document.querySelectorAll('#fillTabs .ghost').forEach(b => b.onclick = () => {
+  state.fill = b.dataset.fill; document.querySelectorAll('#fillTabs .ghost').forEach(x => x.classList.toggle('active', x === b));
+  if(state.selected){ pushHistory(); state.selected.rect.fill = state.fill; afterChange(); }
+});
+document.querySelectorAll('#viewTabs .ghost').forEach(b => b.onclick = () => { state.view = b.dataset.view; document.querySelectorAll('#viewTabs .ghost').forEach(x => x.classList.toggle('active', x === b)); drawView(); });
+document.querySelectorAll('#selActions [data-move]').forEach(b => b.onclick = () => moveSelectedTo(b.dataset.move));
+$('delSelBtn').onclick = deleteSelected;
+function renderSide(){
+  const it = cur(), p = curPage(), list = $('rectList'), rs = scopedRects();
+  list.innerHTML = '';
+  $('pageRectCount').textContent = p ? `${rs.length}` : '';
+  if(!rs.length) list.innerHTML = '<span class="meta">NONE</span>';
+  rs.forEach((o, i) => {
+    const row = document.createElement('div'); row.className = 'rect-row' + (state.selected && state.selected.rect === o.rect ? ' sel' : '');
+    row.innerHTML = `<span class="sw${o.rect.fill === '#ffffff' ? ' w' : ''}"></span><span class="meta" style="color:var(--black)">${String(i + 1).padStart(2, '0')} · ${o.scope === 'global' ? 'ALL' : o.scope.toUpperCase()}</span>`;
+    const del = document.createElement('button'); del.type = 'button'; del.className = 'ghost danger'; del.textContent = 'DEL';
+    del.onclick = ev => { ev.stopPropagation(); state.selected = o; deleteSelected(); };
+    row.appendChild(del);
+    row.onclick = () => { state.selected = o; renderSide(); drawView(); };
+    list.appendChild(row);
+  });
+  const sel = state.selected;
+  $('selInfo').textContent = sel ? 'SEL · ' + (sel.scope === 'global' ? 'ALL' : sel.scope.toUpperCase()) : '';
+  document.querySelectorAll('#selActions .ghost').forEach(b => { b.disabled = !sel; if(b.dataset.move) b.classList.toggle('active', !!sel && sel.scope === b.dataset.move); });
+  const has = !!(it && p && !it.error);
+  ['pRotL','pRotR','pExclude','pCopyAll','pClear','fRotL','fRotR','fClear'].forEach(id => $(id).disabled = !has);
+  if(has){
+    $('pExclude').textContent = p.excluded ? 'INCLUDE' : 'EXCLUDE'; $('pExclude').classList.toggle('danger', p.excluded);
+    $('pCopyAll').disabled = !p.rects.length || it.pages.length < 2;
+    $('pClear').disabled = !p.rects.length;
+    $('fClear').disabled = !it.fileRects.length && !it.pages.some(x => x.rects.length);
+  }
+  $('prevBtn').disabled = !has || state.pageIndex <= 0;
+  $('nextBtn').disabled = !has || state.pageIndex >= it.pages.length - 1;
+  updateUndoButtons();
+}
+function rotatePage(dl){ const p = curPage(); if(!p) return; pushHistory(); p.rot = norm(p.rot + dl); afterChange({ rotate: true }); }
+function rotateFile(dl){ const it = cur(); if(!it) return; pushHistory(); it.pages.forEach(p => p.rot = norm(p.rot + dl)); afterChange({ rotate: true }); toast('ROTATED'); }
+$('pRotL').onclick = () => rotatePage(-90); $('pRotR').onclick = () => rotatePage(90);
+$('fRotL').onclick = () => rotateFile(-90); $('fRotR').onclick = () => rotateFile(90);
+$('pExclude').onclick = () => { const p = curPage(); if(!p) return; pushHistory(); p.excluded = !p.excluded; afterChange(); toast(p.excluded ? 'EXCLUDED' : 'INCLUDED'); };
+$('pCopyAll').onclick = () => { const it = cur(), p = curPage(); if(!it || !p || !p.rects.length) return; pushHistory(); it.pages.forEach(q => { if(q !== p) p.rects.forEach(r => q.rects.push(Object.assign({}, r, { id: ++rectSeed }))); }); afterChange(); toast('COPIED'); };
+$('pClear').onclick = () => { const p = curPage(); if(!p || !p.rects.length) return; pushHistory(); p.rects = []; state.selected = null; afterChange(); toast('CLEARED'); };
+$('fClear').onclick = () => { const it = cur(); if(!it || !confirm('このファイルの黒塗りをすべて削除しますか？')) return; pushHistory(); it.fileRects = []; it.pages.forEach(p => p.rects = []); state.selected = null; afterChange(); toast('CLEARED'); };
+
+function updateMetrics(){
+  let pages = 0, out = 0, red = 0, ex = 0;
+  state.items.forEach(it => it.pages.forEach((p, i) => { pages++; if(p.excluded) ex++; else { out++; if(effectiveRects(it, i).length) red++; } }));
+  $('mFiles').textContent = state.items.length; $('mPages').textContent = pages; $('mOut').textContent = out; $('mRed').textContent = red; $('mEx').textContent = ex;
+  $('mRedWrap').classList.toggle('changed', red > 0);
+}
+
+/* ===== EXPORT ===== */
+function opts(){ return { scale: +$('optDpi').value, mime: $('optFormat').value, q: +$('optQuality').value / 100, pdfMode: $('optPdfMode').value, imgPage: $('optImgPage').value, margin: +$('optMargin').value * PT_PER_MM, suffix: $('optSuffix').value }; }
+function targets(){ return (state.target === 'current' ? [cur()].filter(Boolean) : state.items.slice()).filter(it => !it.error && !it.loading); }
+async function rasterPage(item, pi, o){
+  const base = await renderBase(item, pi, item.kind === 'pdf' ? o.scale : 1);
+  const rects = effectiveRects(item, pi);
+  if(rects.length) fillRects(base.getContext('2d'), base.width, base.height, rects);
+  return rotateCanvas(base, item.pages[pi].rot);
+}
+async function pageSizePt(item, pi){ const s = await pageBaseSize(item, pi), r = item.pages[pi].rot; return (r === 90 || r === 270) ? { w: s.h, h: s.w } : { w: s.w, h: s.h }; }
+function imagePlacement(iw, ih, o){
+  if(o.imgPage === 'fit'){ const w = iw * .75, h = ih * .75; return { pw: w + o.margin * 2, ph: h + o.margin * 2, x: o.margin, y: o.margin, w, h }; }
+  const paper = o.imgPage === 'a3' ? [841.89, 1190.55] : [595.28, 841.89], land = iw > ih;
+  const pw = land ? paper[1] : paper[0], ph = land ? paper[0] : paper[1], k = Math.min((pw - o.margin * 2) / iw, (ph - o.margin * 2) / ih), w = iw * k, h = ih * k;
+  return { pw, ph, x: (pw - w) / 2, y: (ph - h) / 2, w, h };
+}
+async function appendItemToPdf(outDoc, item, o, onPage){
+  const { PDFDocument, degrees } = PDFLib;
+  if(item.kind === 'image'){
+    const p = item.pages[0]; onPage && onPage(); if(p.excluded) return 0;
+    const t = (item.file.type || '').toLowerCase(), usePng = t === 'image/png'; let emb;
+    if(!effectiveRects(item, 0).length && !p.rot && (t === 'image/jpeg' || usePng)) emb = usePng ? await outDoc.embedPng(item.bytes) : await outDoc.embedJpg(item.bytes);
+    else { const c = await rasterPage(item, 0, o), b = await canvasToBlob(c, usePng ? 'image/png' : 'image/jpeg', o.q), buf = new Uint8Array(await b.arrayBuffer()); emb = usePng ? await outDoc.embedPng(buf) : await outDoc.embedJpg(buf); }
+    const pl = imagePlacement(emb.width, emb.height, o);
+    outDoc.addPage([pl.pw, pl.ph]).drawImage(emb, { x: pl.x, y: pl.y, width: pl.w, height: pl.h });
+    return 1;
+  }
+  let src = null;
+  if(o.pdfMode === 'hybrid'){ try{ src = await PDFDocument.load(item.bytes, { updateMetadata: false }); }catch(e){ console.warn('vector copy unavailable → raster', e); } }
+  const vec = []; if(src) item.pages.forEach((p, i) => { if(!p.excluded && !effectiveRects(item, i).length) vec.push(i); });
+  const copied = new Map(); if(vec.length){ const cps = await outDoc.copyPages(src, vec); vec.forEach((v, k) => copied.set(v, cps[k])); }
+  let n = 0;
+  for(let i = 0; i < item.pages.length; i++){
+    const p = item.pages[i]; onPage && onPage();
+    if(p.excluded) continue;
+    if(copied.has(i)){ const cp = copied.get(i); cp.setRotation(degrees(norm((cp.getRotation().angle || 0) + p.rot))); outDoc.addPage(cp); }
+    else {
+      const c = await rasterPage(item, i, o), b = await canvasToBlob(c, 'image/jpeg', o.q), emb = await outDoc.embedJpg(new Uint8Array(await b.arrayBuffer())), sz = await pageSizePt(item, i);
+      outDoc.addPage([sz.w, sz.h]).drawImage(emb, { x: 0, y: 0, width: sz.w, height: sz.h }); c.width = c.height = 1;
+    }
+    n++; await nextFrame();
+  }
+  return n;
+}
+async function newPdfDoc(){ const d = await PDFLib.PDFDocument.create(); d.setProducer('REDACT CONVERTER'); d.setCreator('REDACT CONVERTER'); return d; }
+function countPages(l){ return l.reduce((n, it) => n + it.pages.length, 0); }
+function uniqueName(used, name){ let n = name, k = 2; const st = stem(name), ext = name.slice(st.length); while(used.has(n.toLowerCase())) n = `${st}_${k++}${ext}`; used.add(n.toLowerCase()); return n; }
+function lockUI(on){ state.busy = on; ['expPdfBtn','expImgBtn','mergeBtn','clearAllBtn'].forEach(id => $(id).disabled = on); }
+function addLog(name, blob, ok = true){ state.logs.unshift({ name, blob, ok }); const el = $('lastOut'); el.innerHTML = ''; const sp = document.createElement('span'); sp.textContent = '· ' + name; el.appendChild(sp); if(blob){ const b = document.createElement('button'); b.className = 'ghost bracket'; b.type = 'button'; b.textContent = 'SAVE AGAIN'; b.onclick = () => download(blob, name); el.appendChild(b); } }
+function guard(list){
+  if(state.busy) return false;
+  if(!list.length){ toast('NO FILES'); return false; }
+  if(!window.PDFLib || !window.JSZip){ toast('LIBRARY NOT LOADED'); setStatus('ライブラリ読込失敗：ネット接続を確認'); return false; }
+  return true;
+}
+async function finish(outs, zipPrefix, label){
+  if(!outs.length){ toast('NO OUTPUT PAGES'); return; }
+  if(outs.length === 1){ download(outs[0].blob, outs[0].name); addLog(outs[0].name, outs[0].blob); }
+  else { setStatus('ZIPPING…', 'run'); const z = new JSZip(); outs.forEach(x => z.file(x.name, x.blob)); const blob = await z.generateAsync({ type: 'blob', compression: 'STORE' }); const name = `${zipPrefix}_${stamp()}.zip`; download(blob, name); addLog(name, blob); }
+  setProgress(1); setStatus(`EXPORTED ${outs.length} ${label}`, 'done'); toast('EXPORTED');
+}
+async function runExport(kind){
+  const list = targets(); if(!guard(list)) return;
+  const o = opts(), total = countPages(list); let done = 0;
+  const onPage = () => { done++; setProgress(done / total); setStatus(`${kind} ${done}/${total}`, 'run'); };
+  lockUI(true);
+  try{
+    if(kind === 'PDF'){
+      const outs = [], used = new Set();
+      for(const it of list){ const d = await newPdfDoc(); if(!await appendItemToPdf(d, it, o, onPage)) continue; outs.push({ name: uniqueName(used, safeName(stem(it.file.name) + o.suffix) + '.pdf'), blob: new Blob([await d.save()], { type: 'application/pdf' }) }); }
+      await finish(outs, 'PDF', 'PDF');
+    }else if(kind === 'IMAGES'){
+      const outs = [], used = new Set(), ext = extOf(o.mime);
+      for(const it of list){
+        const pad = String(it.pages.length).length;
+        for(let i = 0; i < it.pages.length; i++){
+          const p = it.pages[i]; onPage(); if(p.excluded) continue;
+          let blob;
+          if(it.kind === 'image' && !effectiveRects(it, i).length && !p.rot && it.file.type === o.mime) blob = it.file;
+          else { const c = await rasterPage(it, i, o); blob = await canvasToBlob(c, o.mime, o.q); c.width = c.height = 1; }
+          const base = safeName(stem(it.file.name) + o.suffix);
+          outs.push({ name: uniqueName(used, it.kind === 'pdf' ? `${base}_${String(i + 1).padStart(pad, '0')}.${ext}` : `${base}.${ext}`), blob });
+          await nextFrame();
+        }
+      }
+      await finish(outs, 'IMAGES', 'IMAGES');
+    }else{
+      const d = await newPdfDoc(); let n = 0;
+      for(const it of list) n += await appendItemToPdf(d, it, o, onPage);
+      if(!n){ toast('NO OUTPUT PAGES'); return; }
+      const name = safeName(($('mergeName').value.trim() || `MERGED_${stamp()}`).replace(/\.pdf$/i, '')) + '.pdf';
+      const blob = new Blob([await d.save()], { type: 'application/pdf' });
+      download(blob, name); addLog(name, blob); setProgress(1); setStatus(`MERGED ${n} PAGES`, 'done'); toast('MERGED');
+    }
+  }catch(err){ console.error(err); setStatus(`ERROR: ${err.message || err}`); toast('ERROR'); }
+  finally{ lockUI(false); setTimeout(() => setProgress(0), 1200); }
+}
+$('expPdfBtn').onclick = () => runExport('PDF');
+$('expImgBtn').onclick = () => runExport('IMAGES');
+$('mergeBtn').onclick = () => runExport('MERGE');
+document.querySelectorAll('#targetTabs [data-target]').forEach(b => b.onclick = () => { state.target = b.dataset.target; document.querySelectorAll('#targetTabs [data-target]').forEach(x => x.classList.toggle('active', x === b)); });
+$('optQuality').addEventListener('input', e => $('optQualityVal').textContent = e.target.value);
+
+/* ===== INPUT ===== */
+$('addBtn').onclick = () => $('fileInput').click();
+$('fileInput').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
+const overlay = $('dropOverlay'); let depth = 0;
+const isFileDrag = e => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
+window.addEventListener('dragenter', e => { if(!isFileDrag(e)) return; e.preventDefault(); depth++; overlay.classList.add('show'); });
+window.addEventListener('dragover', e => { if(!isFileDrag(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+window.addEventListener('dragleave', e => { if(!isFileDrag(e)) return; depth = Math.max(0, depth - 1); if(!depth) overlay.classList.remove('show'); });
+window.addEventListener('drop', e => { if(!isFileDrag(e)) return; e.preventDefault(); depth = 0; overlay.classList.remove('show'); addFiles(e.dataTransfer.files); });
+window.addEventListener('paste', e => {
+  if(e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  const files = [...(e.clipboardData ? e.clipboardData.files : [])]; if(!files.length) return;
+  e.preventDefault();
+  addFiles(files.map((f, i) => (f.name && f.name !== 'image.png') ? f : new File([f], `PASTE_${stamp()}_${i + 1}.${(f.type.split('/')[1] || 'png').replace('jpeg', 'jpg')}`, { type: f.type, lastModified: Date.now() + i })));
+});
+$('clearAllBtn').onclick = () => {
+  if(!state.items.length || !confirm('ファイルと黒塗り設定をすべてクリアしますか？')) return;
+  state.items.forEach(it => { try{ it.pdf && it.pdf.destroy(); }catch(e){} if(it.img && it.img.src.startsWith('blob:')) URL.revokeObjectURL(it.img.src); });
+  Object.assign(state, { items: [], globalRects: [], currentId: null, pageIndex: 0, selected: null, undo: [], redo: [] });
+  view.rotated = null; view.key = '';
+  renderFiles(); renderViewer(true); renderStrip(); renderSide(); updateMetrics(); setStatus('READY'); toast('CLEARED');
+};
+$('undoBtn').onclick = undo; $('redoBtn').onclick = redo;
+window.addEventListener('keydown', e => {
+  if(/INPUT|TEXTAREA|SELECT/.test((e.target && e.target.tagName) || '')) return;
+  const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
+  if(mod && k === 'z' && !e.shiftKey){ e.preventDefault(); undo(); return; }
+  if(mod && (k === 'y' || (k === 'z' && e.shiftKey))){ e.preventDefault(); redo(); return; }
+  if(mod) return;
+  if(e.key === 'Delete' || e.key === 'Backspace'){ if(state.selected){ e.preventDefault(); deleteSelected(); } return; }
+  if(e.key === 'Escape'){ state.selected = null; drawView(); renderSide(); return; }
+  const st = e.shiftKey ? 10 : 1;
+  if(state.selected && e.key.startsWith('Arrow')){ e.preventDefault(); nudgeSelected(e.key === 'ArrowLeft' ? -st : e.key === 'ArrowRight' ? st : 0, e.key === 'ArrowUp' ? -st : e.key === 'ArrowDown' ? st : 0); return; }
+  if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); gotoPage(state.pageIndex + 1); }
+  else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); gotoPage(state.pageIndex - 1); }
+  else if(e.key === 'Home') gotoPage(0);
+  else if(e.key === 'End'){ const it = cur(); if(it) gotoPage(it.pages.length - 1); }
+  else if(e.key === '1') setScope('page'); else if(e.key === '2') setScope('file'); else if(e.key === '3') setScope('global');
+  else if(k === 'r') rotatePage(e.shiftKey ? -90 : 90);
+  else if(k === 'x') $('pExclude').click();
+});
+window.addEventListener('beforeunload', e => { if(state.globalRects.length || state.items.some(it => it.fileRects.length || it.pages.some(p => p.rects.length))){ e.preventDefault(); e.returnValue = ''; } });
+
+renderFiles(); renderViewer(); renderSide(); updateMetrics(); updateUndoButtons();
+window.__rc = { state };
+</script>
+</body>
+</html>
