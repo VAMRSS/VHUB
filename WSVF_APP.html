@@ -846,6 +846,10 @@ html[data-theme="dark"]{--signal:#e8c547;--signal-soft:rgba(232,197,71,.14);--ac
 html[data-theme="dark"] .lib-link:hover,html[data-theme="dark"] .danger-btn:hover,html[data-theme="dark"] .evt-del:hover{color:#121413}
 html[data-theme="dark"] ::selection{background:rgba(232,197,71,.35);color:#fff}
 html[data-theme="dark"] .side-search,html[data-theme="dark"] .ai-rail{box-shadow:none}
+/* v0.55.0 / DARK: 罫線は周りの背景より「少しだけ」暗く（#070808 → #0e100f。背景 #121413・#1a1c1b よりわずかに暗い） */
+html[data-theme="dark"]{--border:#0e100f;--lc-bd-b4d1c0:#0e100f;--lc-bd-c1d1c5:#0e100f;--lc-bd-c4d9ca:#0e100f;--lc-bd-c5d7c9:#0e100f;--lc-bd-d4e3d9:#0e100f;--lc-bd-e1e5e1:#0e100f;--lc-bd-e5eae6:#0e100f;--lc-bd-e6e6e6:#0e100f;--lc-bd-e6ece7:#0e100f;--lc-bd-e7e5da:#0e100f;--lc-bd-edf0ec:#0e100f;--lc-bd-edf1ec:#0e100f;--lc-bd-eef0ed:#0e100f;--lc-bd-f0f0f0:#0e100f;--lc-bd-a0-0-0-0-04:rgba(0,0,0,0.10);--lc-bd-a0-0-0-0-08:rgba(0,0,0,0.16);--lc-bd-a0-0-0-0-12:rgba(0,0,0,0.22);--lc-bd-a0-0-0-0-14:rgba(0,0,0,0.25);--lc-bd-a0-0-0-0-15:rgba(0,0,0,0.27)}
+/* v0.55.0 / DARK: 罫線をさらに控えめに（#0e100f → #111312。背景 #121413 よりごくわずかに暗い） */
+html[data-theme="dark"]{--border:#111312;--lc-bd-b4d1c0:#111312;--lc-bd-c1d1c5:#111312;--lc-bd-c4d9ca:#111312;--lc-bd-c5d7c9:#111312;--lc-bd-d4e3d9:#111312;--lc-bd-e1e5e1:#111312;--lc-bd-e5eae6:#111312;--lc-bd-e6e6e6:#111312;--lc-bd-e6ece7:#111312;--lc-bd-e7e5da:#111312;--lc-bd-edf0ec:#111312;--lc-bd-edf1ec:#111312;--lc-bd-eef0ed:#111312;--lc-bd-f0f0f0:#111312;--lc-bd-a0-0-0-0-04:rgba(0,0,0,0.06);--lc-bd-a0-0-0-0-08:rgba(0,0,0,0.10);--lc-bd-a0-0-0-0-12:rgba(0,0,0,0.14);--lc-bd-a0-0-0-0-14:rgba(0,0,0,0.16);--lc-bd-a0-0-0-0-15:rgba(0,0,0,0.17)}
 /* v0.50.0 / SCROLLBAR (Chrome / Edge): 6px・矢印なし・角は四角・通り道は透明。テーマ別の色。
    scrollbar-width / scrollbar-color を指定すると ::-webkit-scrollbar が無効になるため、F4・P2-f は auto に戻す（.topnav の none は維持） */
 :root{--sb-thumb:#d5dad6;--sb-thumb-hover:#87918b}
@@ -906,9 +910,9 @@ html[data-theme="dark"] .cal-legend .hol:before,html[data-theme="dark"] .cal-leg
 <script>'use strict';
 const WSVF_ROLE='app';
 const SELF_HTML=(()=>{try{return WSVF_ROLE==='app'?'<!doctype html>\n'+document.documentElement.outerHTML:'';}catch{return '';}})();
-/* WSVF v0.53.0 (APP / UI MAP / GUIDEBOOK share one version; UI = v0.15.0 baseline). The APP never rewrites MD except adding / editing / deleting a SCHEDULE row, adding / cancelling task requests and SCHEDULE add requests (## REQUESTS: UP / DONE / DEL / SCH) and applying a LIBRARY move table (library_path / category / revision only) and a LIBRARY ID migration (id / project_id / former_id / revision only). Source files are immutable input. No network calls. */
+/* WSVF v0.55.0 (APP / UI MAP / GUIDEBOOK share one version; UI = v0.15.0 baseline). The APP never rewrites MD except adding / editing / deleting a SCHEDULE row, adding / cancelling task requests and SCHEDULE add requests (## REQUESTS: UP / DONE / DEL / SCH) and applying a LIBRARY move table (library_path / category / revision only) and a LIBRARY ID migration (id / project_id / former_id / revision only). Source files are immutable input. No network calls. */
 const LOGO_URL='https://cdn.jsdelivr.net/gh/VAMRSS/wsv-vamrss@d3689eec9ad61314d4afe73bd2b602064df48b56/admin/assets/wsv-logo.svg';
-const APP_VERSION='0.53.0', DB_NAME='wsvf-folio-v10-clean-v1', DB_VERSION=1;
+const APP_VERSION='0.55.0', DB_NAME='wsvf-folio-v10-clean-v1', DB_VERSION=1;
 const NINE=['CURRENT','NEXT','SCHEDULE','DECISIONS','OPEN','HISTORY','LIBRARY','RECALL','AI REVIEW'];
 const LABELS={CURRENT:'現在の状態',NEXT:'次の行動',SCHEDULE:'予定・実績',DECISIONS:'決定事項',OPEN:'参考・気づき',HISTORY:'経緯',LIBRARY:'関連資料',RECALL:'RECALL', 'AI REVIEW':'AI REVIEW'};
 const STATUSES=['予定','実施','延期','中止','希望','要確認'];
