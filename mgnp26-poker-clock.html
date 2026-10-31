@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#082018">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MGNP'26 Poker Clock">
+<title>MGNP’26 Poker Clock</title>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#081d17;
+  --bg2:#0d271f;
+  --line:#28463b;
+  --gold:#d4ba7a;
+  --gold-soft:#b59b63;
+  --text:#f6f3ea;
+  --sub:#93a79d;
+  --alert:#f2a99d;
+  --shadow:#00000055;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,"Hiragino Sans","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:radial-gradient(circle at center, #103529 0%, var(--bg2) 38%, var(--bg) 100%);color:var(--text);overflow:hidden}
+body{user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;background:transparent;border:1px solid #45685b;border-radius:12px;padding:12px 16px;cursor:pointer}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--gold);border-color:var(--gold);color:#102118;font-weight:700}
+#app{height:100dvh;width:100%;padding:clamp(10px,1.5vw,18px);display:grid;grid-template-rows:minmax(0,1fr) auto;gap:12px}
+#screen{
+  min-height:0;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.005));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), 0 14px 36px var(--shadow);
+  padding:clamp(16px,2.2vw,28px);
+  display:grid;
+  grid-template-rows:2fr 1fr;
+  gap:clamp(10px,1.6vw,18px);
+  position:relative;
+  overflow:hidden;
+}
+#screen::before{
+  content:"";
+  position:absolute;inset:0;
+  background:
+    radial-gradient(circle at center, rgba(255,255,255,.03), transparent 55%),
+    linear-gradient(180deg, transparent, rgba(0,0,0,.10));
+  pointer-events:none;
+}
+.brand{
+  position:absolute;top:12px;right:18px;z-index:2;
+  font-size:clamp(10px,1vw,14px);letter-spacing:.28em;color:rgba(212,186,122,.7)
+}
+.top{
+  min-height:0;
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:clamp(10px,1.6vw,18px);
+  position:relative;z-index:1;
+}
+.top .cell, .bottom .cell{
+  min-height:0;
+  border:1px solid rgba(212,186,122,.18);
+  border-radius:18px;
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:clamp(8px,1.2vw,18px);
+}
+.bottom{
+  min-height:0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:clamp(10px,1.6vw,18px);
+  position:relative;z-index:1;
+}
+.label{
+  color:var(--gold); letter-spacing:.22em; font-weight:700;
+  line-height:1; white-space:nowrap;
+}
+.top .label{font-size:clamp(18px,2.2vw,30px); margin-bottom:clamp(8px,1.3vh,14px)}
+.bottom .label{font-size:clamp(16px,1.75vw,24px); margin-bottom:clamp(6px,1vh,12px)}
+.value-large{
+  font-size:clamp(88px,15.8vw,220px);
+  line-height:.95; font-weight:760; letter-spacing:-.08em; color:var(--text); white-space:nowrap;
+}
+#ante{color:#f0dfae}
+.value-mid{
+  font-size:clamp(72px,10.5vw,148px);
+  line-height:.95; font-weight:760; letter-spacing:-.07em; color:var(--text); white-space:nowrap;
+}
+#time.remaining.urgent{color:var(--alert)}
+.meta-strip{
+  position:absolute;left:18px;right:18px;bottom:10px;z-index:1;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;color:var(--sub);font-size:clamp(10px,1vw,13px);letter-spacing:.14em;
+}
+.meta-strip .accent{color:var(--gold)}
+.controls{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:10px;
+}
+.help{font-size:12px;color:var(--sub);text-align:center;margin-top:4px}
+.progress{
+  position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.05);z-index:1;
+}
+.progress > div{height:100%;width:0;background:linear-gradient(90deg, var(--gold-soft), var(--gold));transition:width .25s linear}
+.message{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;
+  width:min(88vw,680px);padding:28px 24px;border-radius:18px;
+  border:1px solid rgba(212,186,122,.7);background:rgba(5,17,14,.95);
+  box-shadow:0 20px 60px rgba(0,0,0,.45);text-align:center;display:none;
+}
+.message.show{display:block}
+.message h2{margin:0 0 8px;color:var(--gold);font-size:clamp(28px,3.2vw,40px);letter-spacing:.12em}
+.message p{margin:0;white-space:pre-line;font-size:clamp(16px,1.7vw,22px);line-height:1.5}
+/* fullscreen / presentation mode */
+body.presentation .controls,
+body.presentation .help,
+body.presentation .brand{display:none}
+body.presentation #app{padding:0}
+body.presentation #screen{border-radius:0;border:none;padding:clamp(16px,2.1vw,26px)}
+body.presentation .meta-strip{left:14px;right:14px;bottom:8px}
+
+@media (orientation:portrait){
+  #screen{grid-template-rows:1.6fr 1fr}
+  .top{gap:10px}
+  .bottom{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+  .value-large{font-size:clamp(70px,14.5vw,140px)}
+  .value-mid{font-size:clamp(68px,12.2vw,122px)}
+}
+
+@media (max-width: 900px) and (orientation:landscape){
+  #app{gap:8px;padding:8px}
+  #screen{padding:14px;gap:10px;border-radius:16px}
+  .top,.bottom{gap:10px}
+  .top .label{font-size:16px}
+  .bottom .label{font-size:14px}
+  .value-large{font-size:clamp(72px,14.5vw,160px)}
+  .value-mid{font-size:clamp(58px,9.4vw,112px)}
+  .controls button{padding:10px 12px;font-size:13px;border-radius:10px}
+  .meta-strip{font-size:10px}
+}
+
+/* Break between levels 6 and 7. The normal scoreboard remains the only screen outside a break. */
+#normalBoard{display:contents}
+#breakPanel{display:none;position:absolute;inset:clamp(14px,2vw,26px);z-index:4;
+  border:1px solid rgba(212,186,122,.30);border-radius:18px;
+  background:radial-gradient(ellipse at center,#17392c 0%,#0a241b 55%,#071c16 100%);
+  align-items:center;justify-content:center;flex-direction:column;text-align:center;
+  gap:clamp(9px,1.5vh,19px);padding:clamp(10px,2vw,26px)}
+body.is-break #normalBoard{display:none}
+body.is-break #breakPanel{display:flex}
+.break-kicker{font-size:clamp(13px,1.8vw,22px);letter-spacing:.24em;color:var(--gold)}
+.break-heading{font-size:clamp(72px,13vw,166px);font-weight:750;letter-spacing:-.035em;line-height:.9}
+.break-hint{font-size:clamp(17px,2.6vw,34px);font-weight:500;color:var(--text);line-height:1.4}
+.break-hint strong{color:var(--gold)}
+.break-action{margin-top:clamp(7px,2vh,22px);font-size:clamp(17px,2.5vw,29px);
+  min-height:clamp(55px,8vh,84px);min-width:min(66vw,430px);border-radius:10px;
+  border-color:var(--gold);background:var(--gold);color:#0b2218;font-weight:760;
+  padding:10px 26px}
+/* Settings panel */
+.settings-shade{display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.80);
+  align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.settings-shade.open{display:flex}
+.settings-panel{width:min(860px,100%);max-height:100%;background:#0d281f;
+  border:1px solid #567664;border-radius:14px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 16px 80px #0009;user-select:auto;-webkit-user-select:auto}
+.settings-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 22px 6px}
+.settings-head h2{font-weight:600;color:var(--gold);font-size:20px;letter-spacing:.12em;margin:0}
+.settings-head button{border:0;padding:3px 8px;font-size:29px}
+.settings-desc{margin:2px 22px 12px;color:var(--sub);font-size:13px;line-height:1.6}
+.settings-scroller{overflow:auto;min-height:0;margin:0 15px;padding:0 7px 10px}
+.settings-table{width:100%;border-collapse:separate;border-spacing:0 7px;table-layout:fixed}
+.settings-table th{color:var(--gold);font-weight:650;font-size:13px;letter-spacing:.06em;text-align:center}
+.settings-table th:first-child{width:14%}
+.settings-table td{text-align:center}
+.settings-table .row-id{font-size:15px;color:var(--sub)}
+.settings-table input{appearance:textfield;-moz-appearance:textfield;width:calc(100% - 9px);height:43px;
+  min-width:0;background:#071c15;border:1px solid #426152;border-radius:7px;
+  text-align:center;color:var(--text);font:inherit;font-size:16px}
+.settings-table input::-webkit-outer-spin-button,.settings-table input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.settings-table input:focus{outline:2px solid var(--gold);outline-offset:1px}
+.settings-foot{padding:12px 20px 18px;border-top:1px solid #315143;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.settings-total{color:var(--sub);font-size:13px}
+.settings-actions{display:flex;gap:8px;flex-wrap:wrap}
+.settings-actions button{border-radius:8px;font-size:14px;padding:11px 14px}
+.settings-actions .save{background:var(--gold);border-color:var(--gold);color:#10261b;font-weight:700}
+#settingsError{color:#f2a99d;font-size:13px;padding:0 22px;min-height:0}
+@media(max-height:560px){
+ .settings-head{padding:8px 14px 3px}
+ .settings-head h2{font-size:17px}
+ .settings-desc{margin:0 14px 3px;font-size:11px}
+ .settings-table{border-spacing:0 3px}
+ .settings-table input{height:36px}
+ .settings-foot{padding:6px 14px}
+ .break-heading{font-size:clamp(64px,11vw,116px)}
+ .break-hint{font-size:clamp(16px,2vw,22px)}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="screen" aria-label="poker blind timer">
+    <div class="brand">MGNP’26</div>
+    <div id="normalBoard">
+    <section class="top" aria-label="SB BB AT">
+      <div class="cell"><div class="label">SB</div><div class="value-large" id="sb">5</div></div>
+      <div class="cell"><div class="label">BB</div><div class="value-large" id="bb">10</div></div>
+      <div class="cell"><div class="label">AT</div><div class="value-large" id="ante">10</div></div>
+    </section>
+    <section class="bottom" aria-label="level and remaining time">
+      <div class="cell"><div class="label">LEVEL</div><div class="value-mid" id="level">01</div></div>
+      <div class="cell"><div class="label">TIME</div><div class="value-mid remaining" id="time">10:00</div></div>
+    </section>
+    <div class="meta-strip">
+      <div id="status">READY</div>
+      <div class="accent" id="total">TOTAL 90:00</div>
+      <div id="next">NEXT 10 / 20 / 20</div>
+    </div>
+    <div class="progress"><div id="progress"></div></div>
+    </div>
+    <div id="breakPanel" role="status" aria-live="polite">
+      <div class="break-kicker">LEVEL 06 COMPLETE</div>
+      <div class="break-heading">BREAK</div>
+      <div class="break-hint">CHIP COLOR-UP &nbsp;/&nbsp; <strong>5・25</strong> チップ回収</div>
+      <button class="break-action" id="endBreak">休憩終了　›　LEVEL 07</button>
+    </div>
+  </main>
+  <div>
+    <div class="controls" id="controls">
+      <button class="primary" id="startPause">START</button>
+      <button id="prevLevel">LEVEL -</button>
+      <button id="nextLevel">LEVEL +</button>
+      <button id="reset">RESET</button>
+      <button id="soundBtn">BELL ON</button>
+      <button id="settingsBtn">SETTINGS</button>
+      <button id="presentBtn">FULLSCREEN</button>
+    </div>
+    <div class="help">フルスクリーン時は操作ボタンを非表示。休憩終了ボタンは表示されます。退出する場合は画面左上を1.5秒長押し。</div>
+  </div>
+</div>
+<div class="message" id="message"><h2 id="messageTitle">LEVEL UP</h2><p id="messageBody"></p></div>
+<div class="settings-shade" id="settingsShade" role="presentation">
+  <div class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-head"><h2 id="settingsTitle">BLIND SETTINGS</h2><button id="settingsClose" aria-label="閉じる">×</button></div>
+    <p class="settings-desc">全9レベルの時間・SB・BB・ATを編集できます。設定画面を開くと時計は一時停止し、保存後も停止状態です。</p>
+    <div class="settings-scroller">
+      <table class="settings-table"><thead><tr><th>LEVEL</th><th>MIN</th><th>SB</th><th>BB</th><th>AT</th></tr></thead><tbody id="settingsRows"></tbody></table>
+    </div>
+    <div id="settingsError" role="alert"></div>
+    <div class="settings-foot"><div class="settings-total" id="settingsTotal">TOTAL 90 MIN</div><div class="settings-actions">
+      <button id="defaultsBtn">初期値に戻す</button>
+      <button id="settingsCancel">キャンセル</button>
+      <button class="save" id="settingsSave">保存</button>
+    </div></div>
+  </div>
+</div>
+<script>
+(()=>{
+  'use strict';
+  const DEFAULT_LEVELS = [
+    {minutes:10,sb:5,bb:10,ante:10},
+    {minutes:10,sb:10,bb:20,ante:20},
+    {minutes:10,sb:20,bb:40,ante:40},
+    {minutes:10,sb:30,bb:60,ante:60},
+    {minutes:10,sb:50,bb:100,ante:100},
+    {minutes:10,sb:75,bb:150,ante:150},
+    {minutes:10,sb:100,bb:200,ante:200},
+    {minutes:10,sb:200,bb:400,ante:400},
+    {minutes:10,sb:400,bb:800,ante:800}
+  ];
+  const K = 'MGNP26_IPADMINI_PRESENT_V2';
+  const PRIOR_K = 'MGNP26_IPADMINI_PRESENT_V1';
+  const $ = id => document.getElementById(id);
+  const clone = v => JSON.parse(JSON.stringify(v));
+  function valid(list){
+    return Array.isArray(list) && list.length === 9 && list.every(l => l &&
+      ['minutes','sb','bb','ante'].every(key => Number.isInteger(l[key])) &&
+      l.minutes >= 1 && l.minutes <= 180 &&
+      ['sb','bb','ante'].every(key => l[key] >= 0 && l[key] <= 999999));
+  }
+  let stored={};
+  try{stored=JSON.parse(localStorage.getItem(K) || localStorage.getItem(PRIOR_K) || '{}')}catch(e){}
+  let levels = valid(stored.levels) ? clone(stored.levels) : clone(DEFAULT_LEVELS);
+  const state = {
+    running:!!stored.running,
+    elapsedBase:Number.isFinite(stored.elapsedBase)?stored.elapsedBase:0,
+    baseTimestamp:Number.isFinite(stored.baseTimestamp)?stored.baseTimestamp:Date.now(),
+    soundOn:stored.soundOn!==false,
+    breakActive:!!stored.breakActive,
+    breakDone:!!stored.breakDone,
+    presentation:false
+  };
+  let wakeLock=null, audioContext=null, notifyTimeout=null, settingsOpen=false;
+  let lastIndex=-1, wasFinished=false, lastStateSave=0, holdTimer=null;
+  const totalMs=()=>levels.reduce((sum,l)=>sum+l.minutes*60000,0);
+  function ranges(){let t=0;return levels.map(l=>{let start=t;t+=l.minutes*60000;return {start,end:t};});}
+  const breakAt=()=>ranges()[5].end;
+  function elapsed(){
+    const e=state.elapsedBase+(state.running?Math.max(0,Date.now()-state.baseTimestamp):0);
+    return Math.max(0,Math.min(totalMs(),e));
+  }
+  function idxAt(e){
+    if(e>=totalMs())return 8;
+    const i=ranges().findIndex(r=>e<r.end);
+    return i<0?8:i;
+  }
+  const num=n=>Number(n).toLocaleString('en-US');
+  const two=n=>String(n).padStart(2,'0');
+  function timeText(ms){const sec=Math.max(0,Math.ceil(ms/1000));return two(Math.floor(sec/60))+':'+two(sec%60);}
+  function save(){try{localStorage.setItem(K,JSON.stringify({...state,levels}))}catch(e){}}
+  async function wake(){
+    if(!state.running||document.hidden||!('wakeLock' in navigator)||wakeLock)return;
+    try{const lock=await navigator.wakeLock.request('screen');wakeLock=lock;lock.addEventListener('release',()=>{if(wakeLock===lock)wakeLock=null});}catch(e){wakeLock=null;}
+  }
+  function releaseWake(){if(wakeLock){let l=wakeLock;wakeLock=null;l.release().catch(()=>{});}}
+  function unlockAudio(){
+    try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+      if(!audioContext)audioContext=new C();
+      if(audioContext.state!=='running')audioContext.resume().catch(()=>{});
+    }catch(e){}
+  }
+  function bell(count=1){
+    if(!state.soundOn||!audioContext||audioContext.state!=='running')return;
+    for(let hit=0;hit<count;hit++){
+      const t=audioContext.currentTime+.025+hit*.36;
+      const out=audioContext.createGain();out.gain.value=.19;out.connect(audioContext.destination);
+      [660,990,1320,1760].forEach((f,i)=>{
+        const o=audioContext.createOscillator(),g=audioContext.createGain();o.type=i<2?'sine':'triangle';o.frequency.value=f;
+        g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime([.8,.5,.24,.1][i],t+.025);
+        g.gain.exponentialRampToValueAtTime(.0001,t+(i<2?1.8:1.1));
+        o.connect(g);g.connect(out);o.start(t);o.stop(t+1.95);
+      });
+      setTimeout(()=>{try{out.disconnect()}catch(e){}},2700+hit*360);
+    }
+  }
+  function showMessage(title,body,delay=4400){
+    $('messageTitle').textContent=title;$('messageBody').textContent=body;
+    $('message').classList.add('show');clearTimeout(notifyTimeout);
+    notifyTimeout=setTimeout(()=>$('message').classList.remove('show'),delay);
+  }
+  function clearMessage(){clearTimeout(notifyTimeout);$('message').classList.remove('show');}
+  // Stop exactly at the level-6 boundary, even if Safari was suspended for a while.
+  function reachBreak(){
+    state.running=false;state.breakActive=true;state.breakDone=false;
+    state.elapsedBase=breakAt();state.baseTimestamp=Date.now();releaseWake();save();
+    bell(2);
+    clearMessage();
+    render(true);
+  }
+  function maintain(){
+    if(!state.running||state.breakActive)return;
+    let e=elapsed();
+    if(!state.breakDone && e>=breakAt()){
+      reachBreak();return;
+    }
+    if(e>=totalMs()){
+      state.running=false;state.elapsedBase=totalMs();state.baseTimestamp=Date.now();releaseWake();save();
+      if(!wasFinished){bell(3);showMessage('TIME UP','試合終了。残存チップ数で順位を判定してください。',8500);}
+    }
+  }
+  function render(force=false){
+    maintain();
+    const e=elapsed(),finished=e>=totalMs(),idx=idxAt(e),rs=ranges(),current=levels[idx];
+    const left=finished?0:Math.max(0,rs[idx].end-e);
+    if(state.breakActive){document.body.classList.add('is-break');}
+    else{document.body.classList.remove('is-break');}
+    $('sb').textContent=num(current.sb);$('bb').textContent=num(current.bb);$('ante').textContent=num(current.ante);
+    $('level').textContent=two(idx+1);$('time').textContent=timeText(left);
+    $('time').classList.toggle('urgent',state.running && left<=60000 && !finished);
+    $('status').textContent=state.breakActive?'BREAK':finished?'TIME UP':state.running?'RUNNING':e>0?'PAUSED':'READY';
+    $('total').textContent='TOTAL '+timeText(Math.max(0,totalMs()-e));
+    const next=levels[idx+1];
+    $('next').textContent=state.breakActive?'NEXT LEVEL 07':next?`NEXT ${num(next.sb)} / ${num(next.bb)} / ${num(next.ante)}`:'FINAL LEVEL';
+    $('progress').style.width=(finished?100:Math.max(0,Math.min(100,100*(e-rs[idx].start)/(rs[idx].end-rs[idx].start)))).toFixed(2)+'%';
+    $('startPause').textContent=state.breakActive?'END BREAK':finished?'NEW GAME':state.running?'PAUSE':e>0?'RESUME':'START';
+    $('soundBtn').textContent=state.soundOn?'BELL ON':'BELL OFF';
+    if(!force&&state.running&&lastIndex>=0&&idx!==lastIndex){
+      bell();showMessage('LEVEL '+two(idx+1),`SB ${num(current.sb)} / BB ${num(current.bb)} / AT ${num(current.ante)}`);
+    }
+    lastIndex=idx;wasFinished=finished;
+    if(Date.now()-lastStateSave>4500){save();lastStateSave=Date.now();}
+    fitValues();
+  }
+  function fitValues(){
+    // Shrink long, edited numeric values only when their cell would otherwise clip.
+    for(const id of ['sb','bb','ante','level','time']){
+      const e=$(id); e.style.fontSize='';
+      const cell=e.parentElement;
+      const pad=parseFloat(getComputedStyle(cell).paddingLeft)||0;
+      const available=cell.clientWidth-2*pad-5;
+      const width=e.getBoundingClientRect().width;
+      if(width>available && width>0){
+        const current=parseFloat(getComputedStyle(e).fontSize);
+        e.style.fontSize=Math.max(22,Math.floor(current*available/width))+'px';
+      }
+    }
+  }
+  function position(ms,run=false){
+    state.elapsedBase=Math.max(0,Math.min(totalMs(),ms));state.baseTimestamp=Date.now();
+    state.running=!!run && state.elapsedBase<totalMs() && !state.breakActive;
+    save();if(state.running)wake();else releaseWake();render(true);
+  }
+  function beginEndBreak(){
+    if(!state.breakActive)return;
+    unlockAudio();state.breakActive=false;state.breakDone=true;clearMessage();
+    position(breakAt(),true);
+    bell();showMessage('LEVEL 07',`SB ${num(levels[6].sb)} / BB ${num(levels[6].bb)} / AT ${num(levels[6].ante)}`,3200);
+  }
+  function playPause(){
+    unlockAudio();
+    if(state.breakActive){beginEndBreak();return;}
+    const e=elapsed();
+    if(state.running)position(e,false);
+    else if(e>=totalMs()){
+      state.breakDone=false;state.breakActive=false;position(0,true);
+    }else position(e,true);
+  }
+  function moveLevel(dir){
+    unlockAudio();
+    if(state.breakActive){
+      if(dir>0){beginEndBreak();return;}
+      state.breakActive=false;state.breakDone=false;
+      position(ranges()[5].start,false);return;
+    }
+    const old=idxAt(elapsed()),next=Math.max(0,Math.min(8,old+dir));if(next===old)return;
+    if(next===6 && old===5 && !state.breakDone){reachBreak();return;}
+    state.breakActive=false;
+    state.breakDone=next>=6;
+    position(ranges()[next].start,state.running);
+    bell();showMessage('LEVEL '+two(next+1),`SB ${num(levels[next].sb)} / BB ${num(levels[next].bb)} / AT ${num(levels[next].ante)}`,3000);
+  }
+  function resetClock(){
+    if((elapsed()>0||state.breakActive)&&!confirm('時計をレベル1からリセットしますか？'))return;
+    state.breakActive=false;state.breakDone=false;clearMessage();position(0,false);
+  }
+  // Settings pause the current game, but preserve current level elapsed time.
+  function openSettings(){
+    if(state.running)position(elapsed(),false);
+    settingsOpen=true;
+    fillSettingsRows(levels);
+    $('settingsError').textContent='';
+    $('settingsShade').classList.add('open');
+  }
+  function fillSettingsRows(data){
+    $('settingsRows').innerHTML=data.map((l,i)=>`<tr><td class="row-id">${two(i+1)}</td>`+
+      ['minutes','sb','bb','ante'].map(k=>`<td><input aria-label="Level ${i+1} ${k}" type="number" inputmode="numeric" step="1" min="${k==='minutes'?1:0}" max="${k==='minutes'?180:999999}" data-i="${i}" data-key="${k}" value="${l[k]}"></td>`).join('')+'</tr>').join('');
+    settingsTotal();
+  }
+  function readSettings(){
+    const draft=clone(levels);
+    for(const input of $('settingsRows').querySelectorAll('input')){
+      const value=input.value.trim();
+      draft[Number(input.dataset.i)][input.dataset.key]=value===''?NaN:Number(value);
+    }
+    return draft;
+  }
+  function settingsTotal(){
+    const arr=readSettings();
+    const minutes=arr.reduce((s,l)=>s+(Number.isFinite(l.minutes)?l.minutes:0),0);
+    $('settingsTotal').textContent='TOTAL '+minutes+' MIN';
+  }
+  function closeSettings(){settingsOpen=false;$('settingsShade').classList.remove('open');}
+  function saveSettings(){
+    const draft=readSettings();
+    if(!valid(draft)){
+      $('settingsError').textContent='時間は1〜180分、SB・BB・ATは0〜999999の整数で入力してください。';return;
+    }
+    const oldRanges=ranges(),oldElapsed=elapsed(),wasDone=oldElapsed>=totalMs(),oldBreak=state.breakActive;
+    const oldIdx=idxAt(oldElapsed);
+    let within=Math.max(0,oldElapsed-oldRanges[oldIdx].start);
+    levels=draft;
+    const nr=ranges();
+    let newPosition=wasDone?totalMs():oldBreak?breakAt():nr[oldIdx].start+Math.min(within,nr[oldIdx].end-nr[oldIdx].start-1000);
+    if(!oldBreak && !wasDone && oldIdx===6 && state.breakDone){newPosition=Math.max(breakAt(),newPosition);}
+    state.breakActive=oldBreak;
+    state.running=false;
+    closeSettings();position(newPosition,false);
+  }
+  function setPresentation(on){
+    document.body.classList.toggle('presentation',on);
+    state.presentation=on;
+    $('presentBtn').textContent=on?'EXIT FULL':'FULLSCREEN';
+  }
+  async function toggleFullscreen(){
+    if(document.fullscreenElement){
+      try{await document.exitFullscreen();}catch(e){}setPresentation(false);
+    }else if(state.presentation){
+      setPresentation(false);
+    }else{
+      try{
+        if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();
+      }catch(e){}
+      setPresentation(true);
+    }
+  }
+  $('startPause').addEventListener('click',playPause);
+  $('prevLevel').addEventListener('click',()=>moveLevel(-1));
+  $('nextLevel').addEventListener('click',()=>moveLevel(1));
+  $('endBreak').addEventListener('click',beginEndBreak);
+  $('reset').addEventListener('click',resetClock);
+  $('settingsBtn').addEventListener('click',openSettings);
+  $('settingsClose').addEventListener('click',closeSettings);
+  $('settingsCancel').addEventListener('click',closeSettings);
+  $('settingsSave').addEventListener('click',saveSettings);
+  $('settingsRows').addEventListener('input',settingsTotal);
+  $('defaultsBtn').addEventListener('click',()=>fillSettingsRows(DEFAULT_LEVELS));
+  $('settingsShade').addEventListener('click',e=>{if(e.target===$('settingsShade'))closeSettings();});
+  $('soundBtn').addEventListener('click',()=>{
+    unlockAudio();state.soundOn=!state.soundOn;save();render(true);if(state.soundOn)bell();
+  });
+  $('presentBtn').addEventListener('click',toggleFullscreen);
+  document.addEventListener('fullscreenchange',()=>{
+    if(!document.fullscreenElement && state.presentation)setPresentation(false);
+  });
+  // On iPad Safari fallback, restore controls by holding the top-left corner for 1.5 seconds.
+  $('screen').addEventListener('pointerdown',e=>{
+    if(!state.presentation||e.target.closest('button')||e.clientX>90||e.clientY>90)return;
+    clearTimeout(holdTimer);
+    holdTimer=setTimeout(()=>{
+      if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+      setPresentation(false);
+    },1500);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>$('screen').addEventListener(ev,()=>clearTimeout(holdTimer)));
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseWake();else{render(true);wake();}});
+  window.addEventListener('resize',()=>render(true));
+  document.addEventListener('keydown',e=>{
+    if(settingsOpen){if(e.key==='Escape'){closeSettings();}return;}
+    if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;
+    if(e.code==='Space'){e.preventDefault();playPause();}
+    else if(e.code==='ArrowRight'){moveLevel(1);}
+    else if(e.code==='ArrowLeft'){moveLevel(-1);}
+    else if(e.key.toLowerCase()==='f'){toggleFullscreen();}
+    else if(e.key==='Escape'&&state.presentation){setPresentation(false);}
+  });
+  // If an older version was running across a browser sleep, stop at the break boundary.
+  if(!state.breakDone && (state.breakActive || elapsed()>=breakAt())){
+    state.breakActive=true;state.running=false;state.elapsedBase=breakAt();state.baseTimestamp=Date.now();
+  }
+  render(true);save();if(state.running)wake();
+  setInterval(()=>render(false),250);
+})();
+</script>
+</body>
+</html>
