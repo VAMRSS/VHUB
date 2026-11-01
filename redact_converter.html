@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>REDACT CONVERTER</title>
 <style>
-/* REDACT CONVERTER / V1.1 — ONE-SCREEN LAYOUT (UI ref: WEB APP UI SYSTEM v1.3) */
+/* REDACT CONVERTER / V1.2 — ONE-SCREEN LAYOUT (UI ref: WEB APP UI SYSTEM v1.3) */
 :root{
   --app-max-width:100vw;
   --bone:#f6f6f6;--white:#ffffff;--black:#0a0a0a;--divider:#e6e6e6;--muted:#b2b2b2;--mid:#6e6e6e;
@@ -92,7 +92,7 @@ input[type=range]{width:70px;accent-color:var(--black);margin:0}
 .tpage{position:absolute;left:50%;top:50%;background:#fff}
 .tpage img{display:block;width:100%;height:100%}
 .tpage .tr{position:absolute;background:#000}
-.tpage .tr.w{background:#fff;outline:.5px solid #ccc}
+.tpage .tr.w{outline:.5px solid #ccc}
 .tbox .tmsg{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-euro);font-size:7px;color:var(--muted)}
 
 /* viewer */
@@ -119,7 +119,12 @@ input[type=range]{width:70px;accent-color:var(--black);margin:0}
 .rect-row{display:grid;grid-template-columns:14px 1fr auto;gap:6px;align-items:center;padding:3px 0;border-bottom:.5px solid var(--divider);cursor:pointer}
 .rect-row:last-child{border-bottom:0}
 .rect-row.sel{box-shadow:inset 2px 0 0 var(--signal);padding-left:5px}
-.sw{width:10px;height:10px;background:#000}
+.sw{width:10px;height:10px;background:#000;outline:.5px solid rgba(0,0,0,.25)}
+.swb{appearance:none;width:14px;height:14px;padding:0;border:0;outline:.5px solid #bbb;outline-offset:0;position:relative;display:inline-block;cursor:pointer}
+.swb.active{outline:1.5px solid var(--signal);outline-offset:1px}
+.swb.custom{background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);overflow:hidden}
+.swb.custom input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:0;padding:0}
+#fillTabs{gap:5px}
 .sw.w{background:#fff;outline:.5px solid #999}
 
 /* footer */
@@ -189,6 +194,8 @@ input[type=file]{display:none}
       <div class="control-group" title="画像をPDFページにする際の用紙・余白"><span class="control-label">PAGE</span>
         <select id="optImgPage"><option value="a4" selected>A4</option><option value="a3">A3</option><option value="fit">FIT</option></select>
         <select id="optMargin"><option value="0" selected>M0</option><option value="5">M5</option><option value="10">M10</option></select></div>
+      <div class="control-group" title="埋め込みフォントの描画方式（AUTO：通常／PATH：文字が白く抜ける場合の代替）"><span class="control-label">FONT</span>
+        <select id="optFont"><option value="auto" selected>AUTO</option><option value="path">PATH</option></select></div>
       <div class="control-group" title="出力ファイル名"><span class="control-label">NAME</span>
         <select id="optSuffix"><option value="">ORIGINAL</option><option value="_redacted" selected>_REDACTED</option></select></div>
       <span class="spacer"></span>
@@ -246,8 +253,15 @@ input[type=file]{display:none}
               </div>
               <span class="lbl">FILL</span>
               <div class="tabs" id="fillTabs">
-                <button class="ghost active" data-fill="#000000" type="button">BLACK</button><span class="sep">/</span>
-                <button class="ghost" data-fill="#ffffff" type="button">WHITE</button>
+                <button class="swb active" data-fill="#000000" type="button" title="BLACK" style="background:#000000"></button>
+                <button class="swb" data-fill="#ffffff" type="button" title="WHITE" style="background:#ffffff"></button>
+                <button class="swb" data-fill="#808080" type="button" title="GRAY" style="background:#808080"></button>
+                <button class="swb" data-fill="#c81f3a" type="button" title="RED" style="background:#c81f3a"></button>
+                <button class="swb" data-fill="#1f4fc8" type="button" title="BLUE" style="background:#1f4fc8"></button>
+                <button class="swb" data-fill="#168a52" type="button" title="GREEN" style="background:#168a52"></button>
+                <button class="swb" data-fill="#ffd400" type="button" title="YELLOW" style="background:#ffd400"></button>
+                <label class="swb custom" title="CUSTOM"><input type="color" id="fillCustom" value="#ff8800"></label>
+                <span class="meta" id="fillHex">#000000</span>
               </div>
               <span class="lbl">VIEW</span>
               <div class="tabs" id="viewTabs">
@@ -304,7 +318,7 @@ input[type=file]{display:none}
     <button class="width-btn" data-width="1200">1200</button><span class="sep">/</span>
     <button class="width-btn" data-width="1440">1440</button>
   </nav>
-  <div class="footer-side"><span id="mFiles">0</span> FILES · <span id="mPages">0</span>P · OUT <span id="mOut">0</span> · <span id="mRedWrap">■ <span id="mRed">0</span>P</span> · EXCL <span id="mEx">0</span> · V1.1</div>
+  <div class="footer-side"><span id="mFiles">0</span> FILES · <span id="mPages">0</span>P · OUT <span id="mOut">0</span> · <span id="mRedWrap">■ <span id="mRed">0</span>P</span> · EXCL <span id="mEx">0</span> · V1.2</div>
 </footer>
 
 <div class="toast" id="toast"></div>
@@ -338,7 +352,7 @@ const PDFJS_ASSET_BASE = "https://unpkg.com/pdfjs-dist@4.10.38/";
 const $ = id => document.getElementById(id);
 const state = {
   items: [], globalRects: [], currentId: null, pageIndex: 0,
-  scope: 'page', fill: '#000000', view: 'solid', selected: null,
+  scope: 'page', fill: '#000000', fontMode: 'auto', view: 'solid', selected: null,
   zoom: { mode: 'page', value: 1 }, target: 'all',
   undo: [], redo: [], logs: [], busy: false
 };
@@ -399,7 +413,7 @@ function effectiveRects(item, pi){ const p = item.pages[pi]; return [...state.gl
 function loadPdfDoc(bytes){
   const task = pdfjsLib.getDocument({
     data: bytes.slice(0), cMapUrl: PDFJS_ASSET_BASE + 'cmaps/', cMapPacked: true,
-    standardFontDataUrl: PDFJS_ASSET_BASE + 'standard_fonts/', enableXfa: true, disableFontFace: true, useSystemFonts: true
+    standardFontDataUrl: PDFJS_ASSET_BASE + 'standard_fonts/', enableXfa: true, disableFontFace: state.fontMode === 'path', useSystemFonts: true, fontExtraProperties: true, isEvalSupported: true
   });
   task.onPassword = (update, reason) => {
     const pw = prompt(reason === 2 ? 'パスワードが違います。再入力してください。' : 'パスワード保護されたPDFです。パスワードを入力してください。');
@@ -459,6 +473,7 @@ async function renderBase(item, pi, scale){
   if(item.kind === 'pdf'){
     const page = await item.pdf.getPage(pi + 1), vp = page.getViewport({ scale: c.width / size.w });
     await page.render({ canvasContext: ctx, viewport: vp, intent: 'print', annotationMode: pdfjsLib.AnnotationMode.ENABLE_STORAGE }).promise;
+    try{ if(document.fonts && document.fonts.status !== 'loaded'){ await document.fonts.ready; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); await page.render({ canvasContext: ctx, viewport: vp, intent: 'print', annotationMode: pdfjsLib.AnnotationMode.ENABLE_STORAGE }).promise; } }catch(e){}
   }else{ ctx.imageSmoothingQuality = 'high'; ctx.drawImage(item.img, 0, 0, c.width, c.height); }
   return c;
 }
@@ -478,7 +493,7 @@ function thumbEl(item, pi, box){
   pg.style.transform = `translate(-50%,-50%) rotate(${p.rot}deg)`;
   const img = document.createElement('img'); img.src = url; img.alt = ''; pg.appendChild(img);
   effectiveRects(item, pi).forEach(r => {
-    const d = document.createElement('div'); d.className = 'tr' + (r.fill === '#ffffff' ? ' w' : '');
+    const d = document.createElement('div'); d.className = 'tr' + (isLight(r.fill) ? ' w' : ''); d.style.background = r.fill || '#000';
     Object.assign(d.style, { left: r.x * 100 + '%', top: r.y * 100 + '%', width: r.w * 100 + '%', height: r.h * 100 + '%' });
     pg.appendChild(d);
   });
@@ -640,7 +655,7 @@ function drawView(){
     const d = toDisp(o.rect, p.rot), x = d.x * W, y = d.y * H, w = d.w * W, h = d.h * H;
     vctx.globalAlpha = o.temp ? 0.6 : alpha; vctx.fillStyle = o.temp ? state.fill : (o.rect.fill || '#000'); vctx.fillRect(x, y, w, h); vctx.globalAlpha = 1;
     vctx.lineWidth = dpr; vctx.setLineDash(o.scope === 'file' ? [4 * dpr, 3 * dpr] : o.scope === 'global' ? [1.5 * dpr, 2.5 * dpr] : []);
-    vctx.strokeStyle = o.scope === 'global' ? '#c81f3a' : (o.rect.fill === '#ffffff' ? '#999' : 'rgba(255,255,255,.85)');
+    vctx.strokeStyle = o.scope === 'global' ? '#c81f3a' : (isLight(o.rect.fill) ? '#999' : 'rgba(255,255,255,.85)');
     vctx.strokeRect(x + .5, y + .5, w - 1, h - 1); vctx.setLineDash([]);
   });
   const sel = state.selected;
@@ -726,10 +741,14 @@ $('nextBtn').onclick = () => gotoPage(state.pageIndex + 1);
 /* ===== SIDE (C) ===== */
 function setScope(s){ state.scope = s; document.querySelectorAll('#scopeTabs .ghost').forEach(b => { const on = b.dataset.scope === s; b.classList.toggle('active', on); b.classList.toggle('sig', on); }); }
 document.querySelectorAll('#scopeTabs .ghost').forEach(b => b.onclick = () => setScope(b.dataset.scope));
-document.querySelectorAll('#fillTabs .ghost').forEach(b => b.onclick = () => {
-  state.fill = b.dataset.fill; document.querySelectorAll('#fillTabs .ghost').forEach(x => x.classList.toggle('active', x === b));
-  if(state.selected){ pushHistory(); state.selected.rect.fill = state.fill; afterChange(); }
-});
+function setFill(color, btn){
+  state.fill = color.toLowerCase(); $('fillHex').textContent = state.fill.toUpperCase();
+  document.querySelectorAll('#fillTabs .swb').forEach(x => x.classList.toggle('active', x === btn));
+  if(state.selected && state.selected.rect.fill !== state.fill){ pushHistory(); state.selected.rect.fill = state.fill; afterChange(); }
+}
+document.querySelectorAll('#fillTabs button.swb').forEach(b => b.onclick = () => setFill(b.dataset.fill, b));
+$('fillCustom').addEventListener('input', e => { const l = e.target.closest('.swb'); l.style.background = e.target.value; setFill(e.target.value, l); });
+function isLight(c){ const m = /^#?([0-9a-f]{6})$/i.exec(c || ''); if(!m) return false; const n = parseInt(m[1], 16); return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 180; }
 document.querySelectorAll('#viewTabs .ghost').forEach(b => b.onclick = () => { state.view = b.dataset.view; document.querySelectorAll('#viewTabs .ghost').forEach(x => x.classList.toggle('active', x === b)); drawView(); });
 document.querySelectorAll('#selActions [data-move]').forEach(b => b.onclick = () => moveSelectedTo(b.dataset.move));
 $('delSelBtn').onclick = deleteSelected;
@@ -740,7 +759,7 @@ function renderSide(){
   if(!rs.length) list.innerHTML = '<span class="meta">NONE</span>';
   rs.forEach((o, i) => {
     const row = document.createElement('div'); row.className = 'rect-row' + (state.selected && state.selected.rect === o.rect ? ' sel' : '');
-    row.innerHTML = `<span class="sw${o.rect.fill === '#ffffff' ? ' w' : ''}"></span><span class="meta" style="color:var(--black)">${String(i + 1).padStart(2, '0')} · ${o.scope === 'global' ? 'ALL' : o.scope.toUpperCase()}</span>`;
+    row.innerHTML = `<span class="sw" style="background:${o.rect.fill || '#000'}"></span><span class="meta" style="color:var(--black)">${String(i + 1).padStart(2, '0')} · ${o.scope === 'global' ? 'ALL' : o.scope.toUpperCase()}</span>`;
     const del = document.createElement('button'); del.type = 'button'; del.className = 'ghost danger'; del.textContent = 'DEL';
     del.onclick = ev => { ev.stopPropagation(); state.selected = o; deleteSelected(); };
     row.appendChild(del);
@@ -769,7 +788,7 @@ $('fRotL').onclick = () => rotateFile(-90); $('fRotR').onclick = () => rotateFil
 $('pExclude').onclick = () => { const p = curPage(); if(!p) return; pushHistory(); p.excluded = !p.excluded; afterChange(); toast(p.excluded ? 'EXCLUDED' : 'INCLUDED'); };
 $('pCopyAll').onclick = () => { const it = cur(), p = curPage(); if(!it || !p || !p.rects.length) return; pushHistory(); it.pages.forEach(q => { if(q !== p) p.rects.forEach(r => q.rects.push(Object.assign({}, r, { id: ++rectSeed }))); }); afterChange(); toast('COPIED'); };
 $('pClear').onclick = () => { const p = curPage(); if(!p || !p.rects.length) return; pushHistory(); p.rects = []; state.selected = null; afterChange(); toast('CLEARED'); };
-$('fClear').onclick = () => { const it = cur(); if(!it || !confirm('このファイルの黒塗りをすべて削除しますか？')) return; pushHistory(); it.fileRects = []; it.pages.forEach(p => p.rects = []); state.selected = null; afterChange(); toast('CLEARED'); };
+$('fClear').onclick = () => { const it = cur(); if(!it || !confirm('このファイルの塗りをすべて削除しますか？')) return; pushHistory(); it.fileRects = []; it.pages.forEach(p => p.rects = []); state.selected = null; afterChange(); toast('CLEARED'); };
 
 function updateMetrics(){
   let pages = 0, out = 0, red = 0, ex = 0;
@@ -879,6 +898,11 @@ $('expPdfBtn').onclick = () => runExport('PDF');
 $('expImgBtn').onclick = () => runExport('IMAGES');
 $('mergeBtn').onclick = () => runExport('MERGE');
 document.querySelectorAll('#targetTabs [data-target]').forEach(b => b.onclick = () => { state.target = b.dataset.target; document.querySelectorAll('#targetTabs [data-target]').forEach(x => x.classList.toggle('active', x === b)); });
+$('optFont').addEventListener('change', async e => {
+  state.fontMode = e.target.value; setStatus('RELOADING FONTS…', 'run');
+  for(const it of state.items){ if(it.kind !== 'pdf' || !it.bytes) continue; try{ it.pdf && await it.pdf.destroy(); it.pdf = await loadPdfDoc(it.bytes); it.thumbCache = {}; it.error = null; }catch(err){ console.error(err); it.error = 'PDF READ ERROR'; } }
+  view.key = ''; renderViewer(true); renderStrip(); renderFiles(); setStatus('FONT · ' + state.fontMode.toUpperCase(), 'done');
+});
 $('optQuality').addEventListener('input', e => $('optQualityVal').textContent = e.target.value);
 
 /* ===== INPUT ===== */
